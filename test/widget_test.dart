@@ -14,8 +14,9 @@ void main() {
   testWidgets('App launches with intro screen', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MoneyManagerApp());
+    await tester.pumpAndSettle();
 
-    // Verify that the intro screen is displayed
+    // Verify that the intro screen is displayed with English strings
     expect(find.text('Welcome to Money Manager'), findsOneWidget);
     expect(find.text('Skip'), findsOneWidget);
 
@@ -27,6 +28,7 @@ void main() {
   testWidgets('Can navigate to second page', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MoneyManagerApp());
+    await tester.pumpAndSettle();
 
     // Verify we start on first page
     expect(find.text('Welcome to Money Manager'), findsOneWidget);
@@ -47,6 +49,7 @@ void main() {
   ) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MoneyManagerApp());
+    await tester.pumpAndSettle();
 
     // Verify Skip button is visible on first page
     expect(find.text('Skip'), findsOneWidget);
@@ -65,6 +68,7 @@ void main() {
   ) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MoneyManagerApp());
+    await tester.pumpAndSettle();
 
     // Navigate through all pages to the last one
     // Page 1 -> 2
@@ -100,6 +104,7 @@ void main() {
   ) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MoneyManagerApp());
+    await tester.pumpAndSettle();
 
     // Navigate to the last page
     for (int i = 0; i < 3; i++) {
@@ -118,8 +123,8 @@ void main() {
     expect(find.text('Multiple Accounts'), findsOneWidget);
     expect(find.text('Skip'), findsOneWidget); // Skip should be visible again
     expect(
-      find.text('Get Started'),
-      findsNothing,
-    ); // Get Started should be hidden
+      find.byIcon(Icons.arrow_forward_ios),
+      findsOneWidget,
+    ); // Forward arrow should be visible again
   });
 }

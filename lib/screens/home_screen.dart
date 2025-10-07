@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,35 +11,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Money Manager'),
+        title: Text(l10n.appTitle),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.account_balance_wallet,
               size: 80,
               color: Colors.blue,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              'Welcome to Money Manager!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              l10n.welcomeToMoneyManagerHome,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
-              'Your financial tracking journey starts here.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              l10n.financialTrackingJourney,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         ),
@@ -47,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           // TODO: Add transaction functionality
         },
-        tooltip: 'Add Transaction',
+        tooltip: l10n.addTransaction,
         child: const Icon(Icons.add),
       ),
     );

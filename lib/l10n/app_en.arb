@@ -1,0 +1,55 @@
+{
+  "@@locale": "en",
+  "appTitle": "Money Manager",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text in intro screen"
+  },
+  "welcomeToMoneyManager": "Welcome to Money Manager",
+  "@welcomeToMoneyManager": {
+    "description": "Title of the first intro page"
+  },
+  "welcomeDescription": "Take control of your finances with our comprehensive money tracking app. Monitor your income and expenses effortlessly.",
+  "@welcomeDescription": {
+    "description": "Description of the first intro page"
+  },
+  "trackIncomeExpenses": "Track Income & Expenses",
+  "@trackIncomeExpenses": {
+    "description": "Title of the second intro page"
+  },
+  "trackIncomeExpensesDescription": "Log all your financial transactions easily. Keep track of every penny that comes in and goes out of your accounts.",
+  "@trackIncomeExpensesDescription": {
+    "description": "Description of the second intro page"
+  },
+  "multipleAccounts": "Multiple Accounts",
+  "@multipleAccounts": {
+    "description": "Title of the third intro page"
+  },
+  "multipleAccountsDescription": "Manage different accounts like Home, Office, Apartment, and more. Keep your finances organized across all your accounts.",
+  "@multipleAccountsDescription": {
+    "description": "Description of the third intro page"
+  },
+  "customCategories": "Custom Categories",
+  "@customCategories": {
+    "description": "Title of the fourth intro page"
+  },
+  "customCategoriesDescription": "Use default categories or create your own custom categories for income and expenses to better organize your transactions.",
+  "@customCategoriesDescription": {
+    "description": "Description of the fourth intro page"
+  },
+  "welcomeToMoneyManagerHome": "Welcome to Money Manager!",
+  "@welcomeToMoneyManagerHome": {
+    "description": "Welcome message on home screen"
+  },
+  "financialTrackingJourney": "Your financial tracking journey starts here.",
+  "@financialTrackingJourney": {
+    "description": "Subtitle message on home screen"
+  },
+  "addTransaction": "Add Transaction",
+  "@addTransaction": {
+    "description": "Tooltip for the floating action button"
+  }
+}

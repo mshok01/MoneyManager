@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -11,36 +12,34 @@ class _IntroScreenState extends State<IntroScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<IntroPage> _pages = [
-    IntroPage(
-      title: "Welcome to Money Manager",
-      description:
-          "Take control of your finances with our comprehensive money tracking app. Monitor your income and expenses effortlessly.",
-      icon: Icons.account_balance_wallet,
-      color: Colors.blue,
-    ),
-    IntroPage(
-      title: "Track Income & Expenses",
-      description:
-          "Log all your financial transactions easily. Keep track of every penny that comes in and goes out of your accounts.",
-      icon: Icons.trending_up,
-      color: Colors.green,
-    ),
-    IntroPage(
-      title: "Multiple Accounts",
-      description:
-          "Manage different accounts like Home, Office, Apartment, and more. Keep your finances organized across all your accounts.",
-      icon: Icons.account_balance,
-      color: Colors.orange,
-    ),
-    IntroPage(
-      title: "Custom Categories",
-      description:
-          "Use default categories or create your own custom categories for income and expenses to better organize your transactions.",
-      icon: Icons.category,
-      color: Colors.purple,
-    ),
-  ];
+  List<IntroPage> _getPages(AppLocalizations l10n) {
+    return [
+      IntroPage(
+        title: l10n.welcomeToMoneyManager,
+        description: l10n.welcomeDescription,
+        icon: Icons.account_balance_wallet,
+        color: Colors.blue,
+      ),
+      IntroPage(
+        title: l10n.trackIncomeExpenses,
+        description: l10n.trackIncomeExpensesDescription,
+        icon: Icons.trending_up,
+        color: Colors.green,
+      ),
+      IntroPage(
+        title: l10n.multipleAccounts,
+        description: l10n.multipleAccountsDescription,
+        icon: Icons.account_balance,
+        color: Colors.orange,
+      ),
+      IntroPage(
+        title: l10n.customCategories,
+        description: l10n.customCategoriesDescription,
+        icon: Icons.category,
+        color: Colors.purple,
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -55,7 +54,8 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < 3) {
+      // 4 pages total, so index 3 is the last
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -78,21 +78,24 @@ class _IntroScreenState extends State<IntroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final pages = _getPages(l10n);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             // Skip button (only show when not on last page)
-            if (_currentPage < _pages.length - 1)
+            if (_currentPage < pages.length - 1)
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextButton(
                     onPressed: _finishIntro,
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.skip,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -111,10 +114,10 @@ class _IntroScreenState extends State<IntroScreen> {
                     onPageChanged: _onPageChanged,
                     physics: const PageScrollPhysics(),
                     children: [
-                      for (int i = 0; i < _pages.length; i++)
+                      for (int i = 0; i < pages.length; i++)
                         Container(
                           key: ValueKey('page_$i'),
-                          child: _buildPage(_pages[i]),
+                          child: _buildPage(pages[i]),
                         ),
                     ],
                   ),
@@ -165,7 +168,7 @@ class _IntroScreenState extends State<IntroScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
+                      pages.length,
                       (index) => _buildIndicator(index),
                     ),
                   ),
@@ -174,7 +177,7 @@ class _IntroScreenState extends State<IntroScreen> {
                   SizedBox(
                     width: 48,
                     height: 48,
-                    child: _currentPage < _pages.length - 1
+                    child: _currentPage < pages.length - 1
                         ? Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -191,7 +194,7 @@ class _IntroScreenState extends State<IntroScreen> {
                               onPressed: _nextPage,
                               icon: Icon(
                                 Icons.arrow_forward_ios,
-                                color: _pages[_currentPage].color,
+                                color: pages[_currentPage].color,
                                 size: 20,
                               ),
                               padding: EdgeInsets.zero,
@@ -199,7 +202,7 @@ class _IntroScreenState extends State<IntroScreen> {
                           )
                         : Container(
                             decoration: BoxDecoration(
-                              color: _pages[_currentPage].color,
+                              color: pages[_currentPage].color,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -277,6 +280,10 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   Widget _buildIndicator(int index) {
+    // Get the current pages from the build context
+    final l10n = AppLocalizations.of(context)!;
+    final pages = _getPages(l10n);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -284,7 +291,7 @@ class _IntroScreenState extends State<IntroScreen> {
       height: 8.0,
       decoration: BoxDecoration(
         color: _currentPage == index
-            ? _pages[_currentPage].color
+            ? pages[_currentPage].color
             : Colors.grey.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4.0),
       ),
