@@ -73,7 +73,7 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   void _finishIntro() {
-    Navigator.of(context).pushReplacementNamed('/home');
+    Navigator.of(context).pushReplacementNamed('/auth-choice');
   }
 
   @override

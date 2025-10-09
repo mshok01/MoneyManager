@@ -51,5 +51,85 @@
   "addTransaction": "Add Transaction",
   "@addTransaction": {
     "description": "Tooltip for the floating action button"
+  },
+  "authChoiceSubtitle": "Take control of your finances today",
+  "@authChoiceSubtitle": {
+    "description": "Subtitle on authentication choice screen"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Primary button text on authentication choice screen"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Divider text between options"
+  },
+  "iHaveAnAccount": "I have an account",
+  "@iHaveAnAccount": {
+    "description": "Secondary button text on authentication choice screen"
+  },
+  "chooseCurrency": "Choose Your Currency",
+  "@chooseCurrency": {
+    "description": "Title of currency selection screen"
+  },
+  "searchCurrency": "Search currency...",
+  "@searchCurrency": {
+    "description": "Placeholder text for currency search field"
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button text"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Text for save button"
+  },
+  "secureYourData": "Secure Your Data",
+  "@secureYourData": {
+    "description": "Title of backup account screen"
+  },
+  "backupAccountDescription": "Add a backup account to sync across devices",
+  "@backupAccountDescription": {
+    "description": "Description on backup account screen"
+  },
+  "signInWithGoogle": "Sign in with Google",
+  "@signInWithGoogle": {
+    "description": "Google sign-in button text"
+  },
+  "signInWithApple": "Sign in with Apple",
+  "@signInWithApple": {
+    "description": "Apple sign-in button text"
+  },
+  "skipForNow": "Skip for now",
+  "@skipForNow": {
+    "description": "Skip button text on backup account screen"
+  },
+  "addBackupLaterInSettings": "You can add this later in Settings",
+  "@addBackupLaterInSettings": {
+    "description": "Helper text on backup account screen"
+  },
+  "welcomeBack": "Welcome Back!",
+  "@welcomeBack": {
+    "description": "Title of sign-in screen"
+  },
+  "signInToRestoreData": "Sign in to restore your data",
+  "@signInToRestoreData": {
+    "description": "Description on sign-in screen"
+  },
+  "restoreYourData": "Restore your data",
+  "@restoreYourData": {
+    "description": "Subtitle for Google sign-in button"
+  },
+  "secureAndPrivate": "Secure & private",
+  "@secureAndPrivate": {
+    "description": "Subtitle for Apple sign-in button"
+  },
+  "startFresh": "Start Fresh",
+  "@startFresh": {
+    "description": "Start fresh button text on sign-in screen"
+  },
+  "notYouSignInDifferent": "Not you? Sign in with different account",
+  "@notYouSignInDifferent": {
+    "description": "Helper text on sign-in screen"
   }
 }

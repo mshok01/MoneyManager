@@ -171,6 +171,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Transaction'**
   String get addTransaction;
+
+  /// Subtitle on authentication choice screen
+  ///
+  /// In en, this message translates to:
+  /// **'Take control of your finances today'**
+  String get authChoiceSubtitle;
+
+  /// Primary button text on authentication choice screen
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Divider text between options
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get or;
+
+  /// Secondary button text on authentication choice screen
+  ///
+  /// In en, this message translates to:
+  /// **'I have an account'**
+  String get iHaveAnAccount;
+
+  /// Title of currency selection screen
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Currency'**
+  String get chooseCurrency;
+
+  /// Placeholder text for currency search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search currency...'**
+  String get searchCurrency;
+
+  /// Continue button text
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// Text for save button
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Title of backup account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Your Data'**
+  String get secureYourData;
+
+  /// Description on backup account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add a backup account to sync across devices'**
+  String get backupAccountDescription;
+
+  /// Google sign-in button text
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInWithGoogle;
+
+  /// Apple sign-in button text
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInWithApple;
+
+  /// Skip button text on backup account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get skipForNow;
+
+  /// Helper text on backup account screen
+  ///
+  /// In en, this message translates to:
+  /// **'You can add this later in Settings'**
+  String get addBackupLaterInSettings;
+
+  /// Title of sign-in screen
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back!'**
+  String get welcomeBack;
+
+  /// Description on sign-in screen
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to restore your data'**
+  String get signInToRestoreData;
+
+  /// Subtitle for Google sign-in button
+  ///
+  /// In en, this message translates to:
+  /// **'Restore your data'**
+  String get restoreYourData;
+
+  /// Subtitle for Apple sign-in button
+  ///
+  /// In en, this message translates to:
+  /// **'Secure & private'**
+  String get secureAndPrivate;
+
+  /// Start fresh button text on sign-in screen
+  ///
+  /// In en, this message translates to:
+  /// **'Start Fresh'**
+  String get startFresh;
+
+  /// Helper text on sign-in screen
+  ///
+  /// In en, this message translates to:
+  /// **'Not you? Sign in with different account'**
+  String get notYouSignInDifferent;
 }
 
 class _AppLocalizationsDelegate

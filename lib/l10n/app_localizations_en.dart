@@ -51,4 +51,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addTransaction => 'Add Transaction';
+
+  @override
+  String get authChoiceSubtitle => 'Take control of your finances today';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get or => 'or';
+
+  @override
+  String get iHaveAnAccount => 'I have an account';
+
+  @override
+  String get chooseCurrency => 'Choose Your Currency';
+
+  @override
+  String get searchCurrency => 'Search currency...';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get secureYourData => 'Secure Your Data';
+
+  @override
+  String get backupAccountDescription =>
+      'Add a backup account to sync across devices';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get signInWithApple => 'Sign in with Apple';
+
+  @override
+  String get skipForNow => 'Skip for now';
+
+  @override
+  String get addBackupLaterInSettings => 'You can add this later in Settings';
+
+  @override
+  String get welcomeBack => 'Welcome Back!';
+
+  @override
+  String get signInToRestoreData => 'Sign in to restore your data';
+
+  @override
+  String get restoreYourData => 'Restore your data';
+
+  @override
+  String get secureAndPrivate => 'Secure & private';
+
+  @override
+  String get startFresh => 'Start Fresh';
+
+  @override
+  String get notYouSignInDifferent => 'Not you? Sign in with different account';
 }
