@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:io' show Platform;
 import '../l10n/app_localizations.dart';
+import '../services/preferences_service.dart';
 
 class CurrencySelectionScreen extends StatefulWidget {
   final bool isFromSettings;
@@ -22,6 +22,7 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  PreferencesService? _preferencesService;
 
   // Comprehensive list of world currencies with their country codes and symbols
   final List<Currency> _currencies = [
@@ -169,6 +170,39 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
   @override
   void initState() {
     super.initState();
+    _initializePreferences();
+  }
+
+  Future<void> _initializePreferences() async {
+    _preferencesService = await PreferencesService.getInstance();
+
+    // Load saved currency if available and not from settings
+    if (!widget.isFromSettings) {
+      final savedCurrency = _preferencesService!.getSelectedCurrency();
+      if (savedCurrency != null) {
+        setState(() {
+          _selectedCurrency = savedCurrency;
+        });
+        // Scroll to saved currency after widget is built
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToSelectedCurrency();
+        });
+        return;
+      }
+    } else {
+      // If from settings, use the current currency passed as parameter
+      if (widget.currentCurrency != null) {
+        setState(() {
+          _selectedCurrency = widget.currentCurrency;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToSelectedCurrency();
+        });
+        return;
+      }
+    }
+
+    // If no saved currency or from settings without current currency, detect default
     _detectAndSetDefaultCurrency();
   }
 
@@ -354,9 +388,13 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
     });
   }
 
-  void _onContinue() {
+  void _onContinue() async {
     if (_selectedCurrency != null) {
-      // TODO: Save selected currency to preferences
+      // Save selected currency to preferences
+      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+
+      if (!mounted) return;
+
       if (widget.isFromSettings) {
         // Return to settings with selected currency
         Navigator.of(context).pop(_selectedCurrency);
@@ -367,15 +405,22 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
     }
   }
 
-  void _onSkip() {
+  void _onSkip() async {
     // Use the auto-detected currency as default
-    // TODO: Save detected currency to preferences
+    if (_selectedCurrency != null) {
+      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+    }
+
+    if (!mounted) return;
     Navigator.of(context).pushNamed('/backup-account');
   }
 
-  void _onSave() {
+  void _onSave() async {
     if (_selectedCurrency != null) {
-      // TODO: Save selected currency to preferences
+      // Save selected currency to preferences
+      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+
+      if (!mounted) return;
       Navigator.of(context).pop(_selectedCurrency);
     }
   }

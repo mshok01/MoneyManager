@@ -221,6 +221,13 @@ This guide provides step-by-step instructions for manually testing the complete 
    - ✅ Scroll animation should be smooth (500ms duration)
    - ✅ Scroll position should adapt to different screen sizes
 
+6. **Test Currency Persistence**
+   - ✅ Select a currency and continue/save - should persist to SharedPreferences
+   - ✅ Close and reopen app - should load previously selected currency
+   - ✅ Auto-scroll should work with loaded currency
+   - ✅ Settings mode should show current currency parameter
+   - ✅ Onboarding mode should load saved currency or auto-detect
+
 2. **Test Without Network (for Google logo)**
    - ✅ Google sign-in buttons should show fallback icon
    - ✅ App should not crash or show errors

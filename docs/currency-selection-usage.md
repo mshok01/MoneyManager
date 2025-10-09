@@ -182,6 +182,14 @@ The screen automatically detects and pre-selects currencies based on device loca
 - **Search Integration**: Returns to selected currency when search is cleared
 - **Responsive Calculation**: Scroll position adapts to different screen sizes and grid layouts
 
+### Persistent Storage
+- **SharedPreferences Integration**: Automatically saves selected currency to device storage
+- **Smart Loading**: Loads previously saved currency on app restart
+- **Onboarding vs Settings**: Different behavior based on context:
+  - **Onboarding**: Loads saved currency or auto-detects if none saved
+  - **Settings**: Shows current currency passed as parameter
+- **Automatic Persistence**: All currency selections are automatically saved
+
 ### Responsive Design
 - **Adaptive Grid Layout**: Automatically adjusts columns based on screen width
   - Large Desktop (>1200px): 4 columns
@@ -217,3 +225,41 @@ If you're updating from the previous version:
 - Add new settings route for currency changes
 - Update any direct widget usage to include new parameters
 - Test both onboarding and settings flows
+
+## Technical Implementation
+
+### Dependencies
+- `flutter/material.dart` - Material Design components
+- `flutter_gen/gen_l10n/app_localizations.dart` - Internationalization
+- `shared_preferences` - Persistent storage for currency selection
+- `../services/preferences_service.dart` - Custom preferences management service
+
+### PreferencesService API
+```dart
+// Get singleton instance
+final prefsService = await PreferencesService.getInstance();
+
+// Currency operations
+await prefsService.setSelectedCurrency('USD');
+String? currency = prefsService.getSelectedCurrency();
+bool hasCurrency = prefsService.hasCurrencySet();
+await prefsService.clearSelectedCurrency();
+
+// Onboarding operations
+await prefsService.setOnboardingComplete(true);
+bool isComplete = prefsService.isOnboardingComplete();
+
+// Utility operations
+await prefsService.clearAll();
+Map<String, dynamic> allPrefs = prefsService.getAllPreferences();
+```
+
+### Storage Keys
+- `selected_currency` - Stores the user's selected currency code
+- `is_onboarding_complete` - Tracks onboarding completion status
+
+### Persistence Flow
+1. **On Currency Selection**: Automatically saves to SharedPreferences
+2. **On App Launch**: Loads saved currency if available
+3. **Fallback**: Auto-detects based on locale if no saved currency
+4. **Settings Mode**: Uses passed current currency parameter
