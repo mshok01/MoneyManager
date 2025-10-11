@@ -7,13 +7,37 @@ import 'screens/currency_selection_screen.dart';
 import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/theme_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ThemeService.instance.initialize();
   runApp(const MoneyManagerApp());
 }
 
-class MoneyManagerApp extends StatelessWidget {
+class MoneyManagerApp extends StatefulWidget {
   const MoneyManagerApp({super.key});
+
+  @override
+  State<MoneyManagerApp> createState() => _MoneyManagerAppState();
+}
+
+class _MoneyManagerAppState extends State<MoneyManagerApp> {
+  @override
+  void initState() {
+    super.initState();
+    ThemeService.instance.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    ThemeService.instance.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +45,9 @@ class MoneyManagerApp extends StatelessWidget {
       title: 'Money Manager',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: ThemeService.instance.lightTheme,
+      darkTheme: ThemeService.instance.darkTheme,
+      themeMode: ThemeService.instance.themeMode,
       home: const IntroScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),

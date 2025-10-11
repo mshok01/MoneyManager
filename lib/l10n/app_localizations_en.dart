@@ -148,4 +148,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get english => 'English';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String themeChangedTo(String themeName) {
+    return 'Theme changed to $themeName';
+  }
 }

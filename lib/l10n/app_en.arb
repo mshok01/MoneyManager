@@ -179,5 +179,19 @@
   "english": "English",
   "@english": {
     "description": "English language option"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "themeChangedTo": "Theme changed to {themeName}",
+  "@themeChangedTo": {
+    "description": "Message shown when theme is changed",
+    "placeholders": {
+      "themeName": {
+        "type": "String",
+        "description": "The name of the selected theme"
+      }
+    }
   }
 }

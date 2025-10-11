@@ -363,6 +363,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get english;
+
+  /// Cancel button text
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Message shown when theme is changed
+  ///
+  /// In en, this message translates to:
+  /// **'Theme changed to {themeName}'**
+  String themeChangedTo(String themeName);
 }
 
 class _AppLocalizationsDelegate

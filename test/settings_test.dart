@@ -128,9 +128,7 @@ void main() {
       }
     });
 
-    testWidgets('Other settings show coming soon message', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Theme setting opens dialog', (WidgetTester tester) async {
       // Build the app and navigate to home screen
       await tester.pumpWidget(const MoneyManagerApp());
       await tester.pumpAndSettle();
@@ -162,10 +160,17 @@ void main() {
       if (find.text('Theme').evaluate().isNotEmpty) {
         // Tap theme setting (tap the icon instead)
         await tester.tap(find.byIcon(Icons.palette));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // Should show coming soon snackbar
-        expect(find.text('Theme is coming soon!'), findsOneWidget);
+        // Should show theme selection dialog
+        expect(find.text('Theme'), findsAtLeastNWidgets(1));
+        expect(find.text('Light'), findsOneWidget);
+        expect(find.text('Dark'), findsOneWidget);
+        expect(
+          find.text('System'),
+          findsAtLeastNWidgets(1),
+        ); // Can appear in both dialog and settings
+        expect(find.text('Cancel'), findsOneWidget);
       }
     });
   });

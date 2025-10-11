@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
+import '../services/theme_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -60,6 +61,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _showThemeSelectionDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final currentTheme = ThemeService.instance.currentTheme;
+
+    final selectedTheme = await showDialog<AppThemeMode>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.theme),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<AppThemeMode>(
+                title: Text(l10n.light),
+                value: AppThemeMode.light,
+                groupValue: currentTheme,
+                onChanged: (AppThemeMode? value) {
+                  Navigator.of(context).pop(value);
+                },
+              ),
+              RadioListTile<AppThemeMode>(
+                title: Text(l10n.dark),
+                value: AppThemeMode.dark,
+                groupValue: currentTheme,
+                onChanged: (AppThemeMode? value) {
+                  Navigator.of(context).pop(value);
+                },
+              ),
+              RadioListTile<AppThemeMode>(
+                title: Text(l10n.system),
+                value: AppThemeMode.system,
+                groupValue: currentTheme,
+                onChanged: (AppThemeMode? value) {
+                  Navigator.of(context).pop(value);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedTheme != null && selectedTheme != currentTheme) {
+      await ThemeService.instance.setTheme(selectedTheme);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.themeChangedTo(
+                ThemeService.instance.getCurrentThemeDisplayName(l10n),
+              ),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -98,9 +164,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.palette),
             title: Text(l10n.theme),
-            subtitle: Text(l10n.system),
+            subtitle: Text(
+              ThemeService.instance.getCurrentThemeDisplayName(l10n),
+            ),
             trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showComingSoonSnackBar(l10n.theme),
+            onTap: _showThemeSelectionDialog,
           ),
           const Divider(),
 
