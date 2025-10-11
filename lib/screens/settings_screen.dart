@@ -183,16 +183,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
 
-          // Notifications Section
-          _buildSectionHeader(l10n.notifications),
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: Text(l10n.notifications),
-            subtitle: const Text('Enabled'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showComingSoonSnackBar(l10n.notifications),
-          ),
-          const Divider(),
+          // Notifications Section - Hidden for now
+          // _buildSectionHeader(l10n.notifications),
+          // ListTile(
+          //   leading: const Icon(Icons.notifications),
+          //   title: Text(l10n.notifications),
+          //   subtitle: const Text('Enabled'),
+          //   trailing: const Icon(Icons.arrow_forward_ios),
+          //   onTap: () => _showComingSoonSnackBar(l10n.notifications),
+          // ),
+          // const Divider(),
 
           // About Section
           _buildSectionHeader(l10n.about),

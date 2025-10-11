@@ -83,7 +83,8 @@ void main() {
         expect(find.text('Currency'), findsAtLeastNWidgets(1));
         expect(find.text('Theme'), findsOneWidget);
         expect(find.text('Backup & Sync'), findsOneWidget);
-        expect(find.text('Notifications'), findsAtLeastNWidgets(1));
+        // Notifications section is hidden for now
+        // expect(find.text('Notifications'), findsAtLeastNWidgets(1));
         // About section might be below the fold, so just check if it exists
         expect(find.text('About'), findsAtLeastNWidgets(0));
       }
