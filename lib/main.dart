@@ -6,6 +6,7 @@ import 'screens/auth_choice_screen.dart';
 import 'screens/currency_selection_screen.dart';
 import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
+import 'screens/settings_screen.dart';
 
 void main() {
   runApp(const MoneyManagerApp());
@@ -31,6 +32,7 @@ class MoneyManagerApp extends StatelessWidget {
         '/currency-selection': (context) => const CurrencySelectionScreen(),
         '/backup-account': (context) => const BackupAccountScreen(),
         '/sign-in': (context) => const SignInScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/currency-selection-settings') {

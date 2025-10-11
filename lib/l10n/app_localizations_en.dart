@@ -112,4 +112,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notYouSignInDifferent => 'Not you? Sign in with different account';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get backup => 'Backup & Sync';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get dark => 'Dark';
+
+  @override
+  String get system => 'System';
+
+  @override
+  String get english => 'English';
 }

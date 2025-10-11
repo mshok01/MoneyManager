@@ -131,5 +131,53 @@
   "notYouSignInDifferent": "Not you? Sign in with different account",
   "@notYouSignInDifferent": {
     "description": "Helper text on sign-in screen"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title and menu item"
+  },
+  "currency": "Currency",
+  "@currency": {
+    "description": "Currency setting label"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme setting label"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications setting label"
+  },
+  "backup": "Backup & Sync",
+  "@backup": {
+    "description": "Backup setting label"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About setting label"
+  },
+  "version": "Version",
+  "@version": {
+    "description": "App version label"
+  },
+  "light": "Light",
+  "@light": {
+    "description": "Light theme option"
+  },
+  "dark": "Dark",
+  "@dark": {
+    "description": "Dark theme option"
+  },
+  "system": "System",
+  "@system": {
+    "description": "System theme option"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
   }
 }
