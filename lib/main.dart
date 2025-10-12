@@ -7,6 +7,7 @@ import 'screens/currency_selection_screen.dart';
 import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/category_screen.dart';
 import 'services/theme_service.dart';
 
 void main() async {
@@ -56,6 +57,7 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
         '/backup-account': (context) => const BackupAccountScreen(),
         '/sign-in': (context) => const SignInScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/categories': (context) => const CategoryScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/currency-selection-settings') {

@@ -375,6 +375,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Theme changed to {themeName}'**
   String themeChangedTo(String themeName);
+
+  /// Categories setting label and screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// Manage categories setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Categories'**
+  String get manageCategories;
+
+  /// Add category dialog title and button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add Category'**
+  String get addCategory;
+
+  /// Category title input field label
+  ///
+  /// In en, this message translates to:
+  /// **'Category Title'**
+  String get categoryTitle;
+
+  /// Category description input field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get categoryDescription;
+
+  /// Category type selection label
+  ///
+  /// In en, this message translates to:
+  /// **'Category Type'**
+  String get categoryType;
+
+  /// Income category type
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get income;
+
+  /// Expense category type
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get expense;
+
+  /// Validation message for empty category title
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a category title'**
+  String get pleaseEnterTitle;
+
+  /// Validation message for empty category description
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a description'**
+  String get pleaseEnterDescription;
+
+  /// Success message when category is added
+  ///
+  /// In en, this message translates to:
+  /// **'Category \'{categoryName}\' added successfully'**
+  String categoryAdded(String categoryName);
 }
 
 class _AppLocalizationsDelegate

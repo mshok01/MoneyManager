@@ -61,6 +61,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _navigateToCategories() {
+    Navigator.of(context).pushNamed('/categories');
+  }
+
   Future<void> _showThemeSelectionDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ThemeService.instance.currentTheme;
@@ -169,6 +173,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _showThemeSelectionDialog,
+          ),
+          const Divider(),
+
+          // Categories Section
+          _buildSectionHeader(l10n.categories),
+          ListTile(
+            leading: const Icon(Icons.category),
+            title: Text(l10n.categories),
+            subtitle: Text(l10n.manageCategories),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: _navigateToCategories,
           ),
           const Divider(),
 

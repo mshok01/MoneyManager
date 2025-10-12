@@ -156,4 +156,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String themeChangedTo(String themeName) {
     return 'Theme changed to $themeName';
   }
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get manageCategories => 'Manage Categories';
+
+  @override
+  String get addCategory => 'Add Category';
+
+  @override
+  String get categoryTitle => 'Category Title';
+
+  @override
+  String get categoryDescription => 'Description';
+
+  @override
+  String get categoryType => 'Category Type';
+
+  @override
+  String get income => 'Income';
+
+  @override
+  String get expense => 'Expense';
+
+  @override
+  String get pleaseEnterTitle => 'Please enter a category title';
+
+  @override
+  String get pleaseEnterDescription => 'Please enter a description';
+
+  @override
+  String categoryAdded(String categoryName) {
+    return 'Category \'$categoryName\' added successfully';
+  }
 }

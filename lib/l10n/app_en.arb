@@ -193,5 +193,55 @@
         "description": "The name of the selected theme"
       }
     }
+  },
+  "categories": "Categories",
+  "@categories": {
+    "description": "Categories setting label and screen title"
+  },
+  "manageCategories": "Manage Categories",
+  "@manageCategories": {
+    "description": "Manage categories setting subtitle"
+  },
+  "addCategory": "Add Category",
+  "@addCategory": {
+    "description": "Add category dialog title and button text"
+  },
+  "categoryTitle": "Category Title",
+  "@categoryTitle": {
+    "description": "Category title input field label"
+  },
+  "categoryDescription": "Description",
+  "@categoryDescription": {
+    "description": "Category description input field label"
+  },
+  "categoryType": "Category Type",
+  "@categoryType": {
+    "description": "Category type selection label"
+  },
+  "income": "Income",
+  "@income": {
+    "description": "Income category type"
+  },
+  "expense": "Expense",
+  "@expense": {
+    "description": "Expense category type"
+  },
+  "pleaseEnterTitle": "Please enter a category title",
+  "@pleaseEnterTitle": {
+    "description": "Validation message for empty category title"
+  },
+  "pleaseEnterDescription": "Please enter a description",
+  "@pleaseEnterDescription": {
+    "description": "Validation message for empty category description"
+  },
+  "categoryAdded": "Category '{categoryName}' added successfully",
+  "@categoryAdded": {
+    "description": "Success message when category is added",
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "description": "The name of the added category"
+      }
+    }
   }
 }
