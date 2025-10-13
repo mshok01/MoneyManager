@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/preferences_service.dart';
 
 class BackupAccountScreen extends StatelessWidget {
   const BackupAccountScreen({super.key});
+
+  /// Complete onboarding and navigate to home
+  Future<void> _completeOnboarding(BuildContext context) async {
+    try {
+      final prefsService = await PreferencesService.getInstance();
+      await prefsService.setOnboardingComplete(true);
+
+      if (context.mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    } catch (e) {
+      // If there's an error, still navigate to home but log the error
+      print('Error completing onboarding: $e');
+      if (context.mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    }
+  }
 
   void _onGoogleSignIn(BuildContext context) {
     // TODO: Implement Google Sign-in
@@ -12,8 +35,8 @@ class BackupAccountScreen extends StatelessWidget {
         duration: Duration(seconds: 2),
       ),
     );
-    // For now, navigate to home
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    // Complete onboarding and navigate to home
+    _completeOnboarding(context);
   }
 
   void _onAppleSignIn(BuildContext context) {
@@ -24,13 +47,13 @@ class BackupAccountScreen extends StatelessWidget {
         duration: Duration(seconds: 2),
       ),
     );
-    // For now, navigate to home
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    // Complete onboarding and navigate to home
+    _completeOnboarding(context);
   }
 
   void _onSkip(BuildContext context) {
-    // Navigate to home without backup account
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    // Complete onboarding and navigate to home without backup account
+    _completeOnboarding(context);
   }
 
   @override

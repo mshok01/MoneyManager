@@ -1,8 +1,51 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/user_service.dart';
+import '../services/device_record_service.dart';
 
 class AuthChoiceScreen extends StatelessWidget {
   const AuthChoiceScreen({super.key});
+
+  /// Handle "Get Started" button press - create new user
+  Future<void> _onGetStarted(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Create new user
+      final userService = UserService.instance;
+      final user = await userService.createUser();
+
+      // Update device record with user ID
+      final deviceService = DeviceRecordService.instance;
+      await deviceService.updateUserId(user.id);
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        // Navigate to currency selection
+        Navigator.of(context).pushNamed('/currency-selection');
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create user account: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +60,7 @@ class AuthChoiceScreen extends StatelessWidget {
             children: [
               // Top spacing
               const SizedBox(height: 60),
-              
+
               // App logo/icon
               Container(
                 width: 100,
@@ -32,9 +75,9 @@ class AuthChoiceScreen extends StatelessWidget {
                   color: theme.colorScheme.primary,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Title
               Text(
                 l10n.appTitle,
@@ -45,9 +88,9 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Subtitle
               Text(
                 l10n.authChoiceSubtitle,
@@ -58,17 +101,15 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const Spacer(),
-              
+
               // Primary CTA - Get Started
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/currency-selection');
-                  },
+                  onPressed: () => _onGetStarted(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -86,39 +127,30 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Divider with "or"
               Row(
                 children: [
                   const Expanded(
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1,
-                    ),
+                    child: Divider(color: Colors.grey, thickness: 1),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       l10n.or,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ),
                   const Expanded(
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1,
-                    ),
+                    child: Divider(color: Colors.grey, thickness: 1),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Secondary CTA - I have an account
               SizedBox(
                 width: double.infinity,
@@ -146,7 +178,7 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),

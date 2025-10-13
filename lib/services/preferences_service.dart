@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/device.dart';
+import '../models/user.dart';
 
 class PreferencesService {
   static const String _currencyKey = 'selected_currency';
   static const String _isOnboardingCompleteKey = 'is_onboarding_complete';
   static const String _themeKey = 'selected_theme';
   static const String _deviceRecordKey = 'device_record';
+  static const String _userRecordKey = 'user_record';
 
   static PreferencesService? _instance;
   static SharedPreferences? _preferences;
@@ -124,6 +126,48 @@ class PreferencesService {
     if (deviceRecord != null) {
       final updatedRecord = deviceRecord.updateLastOpenedAt();
       await setDeviceRecord(updatedRecord);
+    }
+  }
+
+  // User record preferences
+  Future<void> setUserRecord(User userRecord) async {
+    final jsonString = json.encode(userRecord.toJson());
+    await _preferences!.setString(_userRecordKey, jsonString);
+  }
+
+  User? getUserRecord() {
+    final jsonString = _preferences!.getString(_userRecordKey);
+    if (jsonString == null) return null;
+
+    try {
+      final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+      return User.fromJson(jsonData);
+    } catch (e) {
+      // If parsing fails, return null and clear the corrupted data
+      clearUserRecord();
+      return null;
+    }
+  }
+
+  Future<void> clearUserRecord() async {
+    await _preferences!.remove(_userRecordKey);
+  }
+
+  bool hasUserRecord() {
+    return _preferences!.containsKey(_userRecordKey);
+  }
+
+  /// Update user record with new data
+  Future<void> updateUserRecord(User updatedUser) async {
+    await setUserRecord(updatedUser);
+  }
+
+  /// Update user record timestamp
+  Future<void> updateUserRecordTimestamp() async {
+    final userRecord = getUserRecord();
+    if (userRecord != null) {
+      final updatedRecord = userRecord.updateTimestamp();
+      await setUserRecord(updatedRecord);
     }
   }
 }

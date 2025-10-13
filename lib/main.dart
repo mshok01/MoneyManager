@@ -12,12 +12,14 @@ import 'screens/payment_sources_screen.dart';
 import 'services/theme_service.dart';
 import 'services/data_service.dart';
 import 'services/device_record_service.dart';
+import 'services/user_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeService.instance.initialize();
   await DataService.instance.initialize();
   await DeviceRecordService.instance.initialize();
+  await UserService.instance.initialize();
   runApp(const MoneyManagerApp());
 }
 
@@ -45,6 +47,19 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
     setState(() {});
   }
 
+  /// Determine the initial screen based on user existence and onboarding status
+  Widget _getInitialScreen() {
+    final userService = UserService.instance;
+
+    // If user exists and onboarding is complete, go to home screen
+    if (userService.hasUser) {
+      return const HomeScreen();
+    }
+
+    // Otherwise, start with intro screen for new users
+    return const IntroScreen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -54,7 +69,7 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
       theme: ThemeService.instance.lightTheme,
       darkTheme: ThemeService.instance.darkTheme,
       themeMode: ThemeService.instance.themeMode,
-      home: const IntroScreen(),
+      home: _getInitialScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
         '/auth-choice': (context) => const AuthChoiceScreen(),
