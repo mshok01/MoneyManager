@@ -65,6 +65,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.of(context).pushNamed('/categories');
   }
 
+  void _navigateToPaymentSources() {
+    Navigator.of(context).pushNamed('/payment-sources');
+  }
+
   Future<void> _showThemeSelectionDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ThemeService.instance.currentTheme;
@@ -184,6 +188,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: Text(l10n.manageCategories),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _navigateToCategories,
+          ),
+          const Divider(),
+
+          // Payment Sources Section
+          _buildSectionHeader('Payment Sources'),
+          ListTile(
+            leading: const Icon(Icons.payment),
+            title: const Text('Payment Sources'),
+            subtitle: const Text('Manage sources'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: _navigateToPaymentSources,
           ),
           const Divider(),
 
