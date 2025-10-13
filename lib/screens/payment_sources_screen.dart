@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 
 class PaymentSource {
   final String id;
@@ -8,6 +8,10 @@ class PaymentSource {
   final IconData icon;
   final Color color;
   final bool isDefault;
+  final String createdBy;
+  final int createdAt;
+  final int updatedAt;
+  final List<String> accessTo;
 
   PaymentSource({
     required this.id,
@@ -16,6 +20,10 @@ class PaymentSource {
     required this.icon,
     required this.color,
     required this.isDefault,
+    required this.createdBy,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.accessTo,
   });
 }
 
@@ -36,6 +44,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.credit_card,
       color: Colors.blue,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000, // 2025-01-01T00:00:00.000Z
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'debit_card',
@@ -44,6 +56,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.credit_card_outlined,
       color: Colors.green,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'upi',
@@ -52,6 +68,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.qr_code,
       color: Colors.orange,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'cash',
@@ -60,6 +80,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.money,
       color: Colors.brown,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'bank_transfer',
@@ -68,6 +92,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.account_balance,
       color: Colors.indigo,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'digital_wallet',
@@ -76,6 +104,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.wallet,
       color: Colors.purple,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
     PaymentSource(
       id: 'others',
@@ -84,6 +116,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       icon: Icons.more_horiz,
       color: Colors.grey,
       isDefault: true,
+      createdBy: 'default',
+      createdAt: 1735689600000,
+      updatedAt: 1735689600000,
+      accessTo: [],
     ),
   ];
 
@@ -157,7 +193,6 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final allSources = [..._defaultSources, ..._customSources];
 
@@ -260,15 +295,24 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
       return;
     }
 
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final isEditing = widget.existingSource != null;
+
     final source = PaymentSource(
-      id:
-          widget.existingSource?.id ??
-          DateTime.now().millisecondsSinceEpoch.toString(),
+      id: isEditing ? widget.existingSource!.id : const Uuid().v4(),
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       icon: Icons.payment,
       color: Colors.blue,
       isDefault: false,
+      createdBy: isEditing
+          ? widget.existingSource!.createdBy
+          : 'userId', // TODO: Replace with actual userId
+      createdAt: isEditing ? widget.existingSource!.createdAt : now,
+      updatedAt: now,
+      accessTo: isEditing
+          ? widget.existingSource!.accessTo
+          : ['userId'], // TODO: Replace with actual userId
     );
 
     widget.onAdd(source);
