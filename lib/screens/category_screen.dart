@@ -12,98 +12,188 @@ class _CategoryScreenState extends State<CategoryScreen> {
   // Lists to hold both default and custom categories
   final List<CategoryItem> _incomeCategories = [
     CategoryItem(
-      'Salary',
-      'Regular employment income, wages',
-      Icons.work,
-      Colors.green,
+      id: 'income_salary',
+      name: 'Salary',
+      description: 'Regular employment income, wages',
+      icon: Icons.work,
+      color: Colors.green,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Freelance',
-      'Freelance work, consulting, gig economy',
-      Icons.person_outline,
-      Colors.lightGreen,
+      id: 'income_freelance',
+      name: 'Freelance',
+      description: 'Freelance work, consulting, gig economy',
+      icon: Icons.person_outline,
+      color: Colors.lightGreen,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Business',
-      'Business income, self-employment',
-      Icons.business,
-      Colors.blue,
+      id: 'income_business',
+      name: 'Business',
+      description: 'Business income, self-employment',
+      icon: Icons.business,
+      color: Colors.blue,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Investment Returns',
-      'Dividends, interest, capital gains',
-      Icons.trending_up,
-      Colors.orange,
+      id: 'income_investment',
+      name: 'Investment Returns',
+      description: 'Dividends, interest, capital gains',
+      icon: Icons.trending_up,
+      color: Colors.orange,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Gifts Received',
-      'Money gifts, cash presents',
-      Icons.card_giftcard,
-      Colors.purple,
+      id: 'income_gifts',
+      name: 'Gifts Received',
+      description: 'Money gifts, cash presents',
+      icon: Icons.card_giftcard,
+      color: Colors.purple,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Other Income',
-      'Refunds, bonuses, miscellaneous income',
-      Icons.attach_money,
-      Colors.teal,
+      id: 'income_other',
+      name: 'Other Income',
+      description: 'Refunds, bonuses, miscellaneous income',
+      icon: Icons.attach_money,
+      color: Colors.teal,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
   ];
 
   // Default expense categories
   final List<CategoryItem> _expenseCategories = [
     CategoryItem(
-      'Food & Dining',
-      'Groceries, restaurants, takeout',
-      Icons.restaurant,
-      Colors.red,
+      id: 'expense_food',
+      name: 'Food & Dining',
+      description: 'Groceries, restaurants, takeout',
+      icon: Icons.restaurant,
+      color: Colors.red,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Transportation',
-      'Gas, public transport, car maintenance',
-      Icons.directions_car,
-      Colors.orange,
+      id: 'expense_transport',
+      name: 'Transportation',
+      description: 'Gas, public transport, car maintenance',
+      icon: Icons.directions_car,
+      color: Colors.orange,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Utilities',
-      'Electricity, water, internet, phone',
-      Icons.electrical_services,
-      Colors.amber,
+      id: 'expense_utilities',
+      name: 'Utilities',
+      description: 'Electricity, water, internet, phone',
+      icon: Icons.electrical_services,
+      color: Colors.amber,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Housing',
-      'Rent, mortgage, home maintenance',
-      Icons.home,
-      Colors.brown,
+      id: 'expense_housing',
+      name: 'Housing',
+      description: 'Rent, mortgage, home maintenance',
+      icon: Icons.home,
+      color: Colors.brown,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Entertainment',
-      'Movies, games, subscriptions, hobbies',
-      Icons.movie,
-      Colors.pink,
+      id: 'expense_entertainment',
+      name: 'Entertainment',
+      description: 'Movies, games, subscriptions, hobbies',
+      icon: Icons.movie,
+      color: Colors.pink,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Healthcare',
-      'Medical, dental, pharmacy, fitness',
-      Icons.local_hospital,
-      Colors.teal,
+      id: 'expense_healthcare',
+      name: 'Healthcare',
+      description: 'Medical, dental, pharmacy, fitness',
+      icon: Icons.local_hospital,
+      color: Colors.teal,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Shopping',
-      'Clothing, electronics, personal items',
-      Icons.shopping_bag,
-      Colors.purple,
+      id: 'expense_shopping',
+      name: 'Shopping',
+      description: 'Clothing, electronics, personal items',
+      icon: Icons.shopping_bag,
+      color: Colors.purple,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Financial',
-      'Insurance, taxes, debt payments, savings',
-      Icons.account_balance,
-      Colors.indigo,
+      id: 'expense_financial',
+      name: 'Financial',
+      description: 'Insurance, taxes, debt payments, savings',
+      icon: Icons.account_balance,
+      color: Colors.indigo,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
     CategoryItem(
-      'Other Expenses',
-      'Miscellaneous and uncategorized expenses',
-      Icons.more_horiz,
-      Colors.grey,
+      id: 'expense_other',
+      name: 'Other Expenses',
+      description: 'Miscellaneous and uncategorized expenses',
+      icon: Icons.more_horiz,
+      color: Colors.grey,
+      isDefault: true,
+      createdBy: '', // Empty for default categories
+      createdAt: 1735669800000, // January 1st, 2025
+      updatedAt: 1735669800000, // January 1st, 2025
+      accessTo: [], // Empty list for default categories
     ),
   ];
 
@@ -345,11 +435,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
     }
 
     // Create new category with default icon and color
+    final nowMillis = DateTime.now().millisecondsSinceEpoch;
     final newCategory = CategoryItem(
-      title.trim(),
-      description.trim(),
-      _getDefaultIconForCategory(title.trim()),
-      _getDefaultColorForCategory(type),
+      id: 'custom_$nowMillis',
+      name: title.trim(),
+      description: description.trim(),
+      icon: _getDefaultIconForCategory(title.trim()),
+      color: _getDefaultColorForCategory(type),
+      isDefault: false,
+      createdBy: 'user', // User identifier for custom categories
+      createdAt: nowMillis,
+      updatedAt: nowMillis,
+      accessTo: [
+        'user123',
+        'user456',
+      ], // List of user IDs who can access this category
     );
 
     // Add to appropriate list
@@ -445,10 +545,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
 }
 
 class CategoryItem {
+  final String id;
   final String name;
   final String description;
   final IconData icon;
   final Color color;
+  final bool isDefault;
+  final String createdBy;
+  final int createdAt;
+  final int updatedAt;
+  final List<String> accessTo;
 
-  CategoryItem(this.name, this.description, this.icon, this.color);
+  CategoryItem({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.isDefault,
+    required this.createdBy,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.accessTo,
+  });
 }
