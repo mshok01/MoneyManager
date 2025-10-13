@@ -11,11 +11,13 @@ import 'screens/category_screen.dart';
 import 'screens/payment_sources_screen.dart';
 import 'services/theme_service.dart';
 import 'services/data_service.dart';
+import 'services/device_record_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeService.instance.initialize();
   await DataService.instance.initialize();
+  await DeviceRecordService.instance.initialize();
   runApp(const MoneyManagerApp());
 }
 

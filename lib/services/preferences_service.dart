@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/device.dart';
 
 class PreferencesService {
   static const String _currencyKey = 'selected_currency';
   static const String _isOnboardingCompleteKey = 'is_onboarding_complete';
   static const String _themeKey = 'selected_theme';
+  static const String _deviceRecordKey = 'device_record';
 
   static PreferencesService? _instance;
   static SharedPreferences? _preferences;
@@ -77,5 +80,50 @@ class PreferencesService {
     }
 
     return preferences;
+  }
+
+  // Device record preferences
+  Future<void> setDeviceRecord(Device deviceRecord) async {
+    final jsonString = json.encode(deviceRecord.toJson());
+    await _preferences!.setString(_deviceRecordKey, jsonString);
+  }
+
+  Device? getDeviceRecord() {
+    final jsonString = _preferences!.getString(_deviceRecordKey);
+    if (jsonString == null) return null;
+
+    try {
+      final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+      return Device.fromJson(jsonData);
+    } catch (e) {
+      // If parsing fails, return null and clear the corrupted data
+      clearDeviceRecord();
+      return null;
+    }
+  }
+
+  Future<void> clearDeviceRecord() async {
+    await _preferences!.remove(_deviceRecordKey);
+  }
+
+  bool hasDeviceRecord() {
+    return _preferences!.containsKey(_deviceRecordKey);
+  }
+
+  // Update specific device record fields
+  Future<void> updateDeviceRecordUserId(String userId) async {
+    final deviceRecord = getDeviceRecord();
+    if (deviceRecord != null) {
+      final updatedRecord = deviceRecord.updateUserId(userId);
+      await setDeviceRecord(updatedRecord);
+    }
+  }
+
+  Future<void> updateDeviceRecordLastOpenedAt() async {
+    final deviceRecord = getDeviceRecord();
+    if (deviceRecord != null) {
+      final updatedRecord = deviceRecord.updateLastOpenedAt();
+      await setDeviceRecord(updatedRecord);
+    }
   }
 }
