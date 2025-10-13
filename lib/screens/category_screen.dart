@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../models/category_item.dart';
+import '../services/data_service.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -10,192 +12,40 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   // Lists to hold both default and custom categories
-  final List<CategoryItem> _incomeCategories = [
-    CategoryItem(
-      id: 'income_salary',
-      name: 'Salary',
-      description: 'Regular employment income, wages',
-      icon: Icons.work,
-      color: Colors.green,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'income_freelance',
-      name: 'Freelance',
-      description: 'Freelance work, consulting, gig economy',
-      icon: Icons.person_outline,
-      color: Colors.lightGreen,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'income_business',
-      name: 'Business',
-      description: 'Business income, self-employment',
-      icon: Icons.business,
-      color: Colors.blue,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'income_investment',
-      name: 'Investment Returns',
-      description: 'Dividends, interest, capital gains',
-      icon: Icons.trending_up,
-      color: Colors.orange,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'income_gifts',
-      name: 'Gifts Received',
-      description: 'Money gifts, cash presents',
-      icon: Icons.card_giftcard,
-      color: Colors.purple,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'income_other',
-      name: 'Other Income',
-      description: 'Refunds, bonuses, miscellaneous income',
-      icon: Icons.attach_money,
-      color: Colors.teal,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-  ];
+  List<CategoryItem> _incomeCategories = [];
+  List<CategoryItem> _expenseCategories = [];
+  bool _isLoading = true;
 
-  // Default expense categories
-  final List<CategoryItem> _expenseCategories = [
-    CategoryItem(
-      id: 'expense_food',
-      name: 'Food & Dining',
-      description: 'Groceries, restaurants, takeout',
-      icon: Icons.restaurant,
-      color: Colors.red,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_transport',
-      name: 'Transportation',
-      description: 'Gas, public transport, car maintenance',
-      icon: Icons.directions_car,
-      color: Colors.orange,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_utilities',
-      name: 'Utilities',
-      description: 'Electricity, water, internet, phone',
-      icon: Icons.electrical_services,
-      color: Colors.amber,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_housing',
-      name: 'Housing',
-      description: 'Rent, mortgage, home maintenance',
-      icon: Icons.home,
-      color: Colors.brown,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_entertainment',
-      name: 'Entertainment',
-      description: 'Movies, games, subscriptions, hobbies',
-      icon: Icons.movie,
-      color: Colors.pink,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_healthcare',
-      name: 'Healthcare',
-      description: 'Medical, dental, pharmacy, fitness',
-      icon: Icons.local_hospital,
-      color: Colors.teal,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_shopping',
-      name: 'Shopping',
-      description: 'Clothing, electronics, personal items',
-      icon: Icons.shopping_bag,
-      color: Colors.purple,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_financial',
-      name: 'Financial',
-      description: 'Insurance, taxes, debt payments, savings',
-      icon: Icons.account_balance,
-      color: Colors.indigo,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-    CategoryItem(
-      id: 'expense_other',
-      name: 'Other Expenses',
-      description: 'Miscellaneous and uncategorized expenses',
-      icon: Icons.more_horiz,
-      color: Colors.grey,
-      isDefault: true,
-      createdBy: '', // Empty for default categories
-      createdAt: 1735669800000, // January 1st, 2025
-      updatedAt: 1735669800000, // January 1st, 2025
-      accessTo: [], // Empty list for default categories
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      // Ensure DataService is initialized
+      if (!DataService.instance.isInitialized) {
+        await DataService.instance.initialize();
+      }
+
+      setState(() {
+        _incomeCategories = DataService.instance.getIncomeCategories();
+        _expenseCategories = DataService.instance.getExpenseCategories();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load categories: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,32 +64,33 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ),
         ],
       ),
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            TabBar(
-              labelColor: theme.colorScheme.primary,
-              unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(
-                0.6,
-              ),
-              indicatorColor: theme.colorScheme.primary,
-              tabs: const [
-                Tab(icon: Icon(Icons.trending_up), text: 'Income'),
-                Tab(icon: Icon(Icons.trending_down), text: 'Expenses'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : DefaultTabController(
+              length: 2,
+              child: Column(
                 children: [
-                  _buildCategoryList(_incomeCategories, 'Income'),
-                  _buildCategoryList(_expenseCategories, 'Expenses'),
+                  TabBar(
+                    labelColor: theme.colorScheme.primary,
+                    unselectedLabelColor: theme.colorScheme.onSurface
+                        .withValues(alpha: 0.6),
+                    indicatorColor: theme.colorScheme.primary,
+                    tabs: const [
+                      Tab(icon: Icon(Icons.trending_up), text: 'Income'),
+                      Tab(icon: Icon(Icons.trending_down), text: 'Expenses'),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildCategoryList(_incomeCategories, 'Income'),
+                        _buildCategoryList(_expenseCategories, 'Expenses'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -253,7 +104,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: category.color.withOpacity(0.2),
+              backgroundColor: category.color.withValues(alpha: 0.2),
               child: Icon(category.icon, color: category.color),
             ),
             title: Text(
@@ -263,7 +114,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
             subtitle: Text(
               category.description,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
             trailing: PopupMenuButton<String>(
@@ -542,30 +395,4 @@ class _CategoryScreenState extends State<CategoryScreen> {
       ),
     );
   }
-}
-
-class CategoryItem {
-  final String id;
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final bool isDefault;
-  final String createdBy;
-  final int createdAt;
-  final int updatedAt;
-  final List<String> accessTo;
-
-  CategoryItem({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.icon,
-    required this.color,
-    required this.isDefault,
-    required this.createdBy,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.accessTo,
-  });
 }

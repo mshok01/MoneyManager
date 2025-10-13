@@ -1,31 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-
-class PaymentSource {
-  final String id;
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final bool isDefault;
-  final String createdBy;
-  final int createdAt;
-  final int updatedAt;
-  final List<String> accessTo;
-
-  PaymentSource({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.icon,
-    required this.color,
-    required this.isDefault,
-    required this.createdBy,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.accessTo,
-  });
-}
+import '../models/payment_source.dart';
+import '../services/data_service.dart';
 
 class PaymentSourcesScreen extends StatefulWidget {
   const PaymentSourcesScreen({super.key});
@@ -35,96 +11,40 @@ class PaymentSourcesScreen extends StatefulWidget {
 }
 
 class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
-  // Default payment sources that cannot be edited or deleted
-  final List<PaymentSource> _defaultSources = [
-    PaymentSource(
-      id: 'credit_card',
-      name: 'Credit Card',
-      description: 'Credit card payments',
-      icon: Icons.credit_card,
-      color: Colors.blue,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000, // 2025-01-01T00:00:00.000Z
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'debit_card',
-      name: 'Debit Card',
-      description: 'Debit card payments',
-      icon: Icons.credit_card_outlined,
-      color: Colors.green,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'upi',
-      name: 'UPI',
-      description: 'Unified Payments Interface',
-      icon: Icons.qr_code,
-      color: Colors.orange,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'cash',
-      name: 'Cash',
-      description: 'Cash payments',
-      icon: Icons.money,
-      color: Colors.brown,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'bank_transfer',
-      name: 'Bank Transfer',
-      description: 'Direct bank transfers',
-      icon: Icons.account_balance,
-      color: Colors.indigo,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'digital_wallet',
-      name: 'Digital Wallet',
-      description: 'Digital wallet payments',
-      icon: Icons.wallet,
-      color: Colors.purple,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-    PaymentSource(
-      id: 'others',
-      name: 'Others',
-      description: 'Other payment methods',
-      icon: Icons.more_horiz,
-      color: Colors.grey,
-      isDefault: true,
-      createdBy: 'default',
-      createdAt: 1735689600000,
-      updatedAt: 1735689600000,
-      accessTo: [],
-    ),
-  ];
-
-  // Custom payment sources added by user
+  // Payment sources loaded from DataService
+  List<PaymentSource> _defaultSources = [];
   final List<PaymentSource> _customSources = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentSources();
+  }
+
+  Future<void> _loadPaymentSources() async {
+    try {
+      // Ensure DataService is initialized
+      if (!DataService.instance.isInitialized) {
+        await DataService.instance.initialize();
+      }
+
+      setState(() {
+        _defaultSources = DataService.instance.getPaymentSources();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load payment sources: $e')),
+        );
+      }
+    }
+  }
 
   void _addNewPaymentSource() {
     showDialog(
@@ -201,7 +121,9 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
         title: const Text('Payment Sources'),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
-      body: allSources.isEmpty
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : allSources.isEmpty
           ? const Center(child: Text('No payment sources available'))
           : ListView.builder(
               itemCount: allSources.length,
@@ -214,7 +136,7 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: source.color.withOpacity(0.2),
+                      backgroundColor: source.color.withValues(alpha: 0.2),
                       child: Icon(source.icon, color: source.color),
                     ),
                     title: Text(source.name),
@@ -222,7 +144,8 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
                     trailing: source.isDefault
                         ? Chip(
                             label: const Text('Default'),
-                            backgroundColor: theme.colorScheme.surfaceVariant,
+                            backgroundColor:
+                                theme.colorScheme.surfaceContainerHighest,
                           )
                         : PopupMenuButton<String>(
                             onSelected: (value) {
@@ -307,12 +230,12 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
       isDefault: false,
       createdBy: isEditing
           ? widget.existingSource!.createdBy
-          : 'userId', // TODO: Replace with actual userId
+          : 'user', // Default user identifier for custom sources
       createdAt: isEditing ? widget.existingSource!.createdAt : now,
       updatedAt: now,
       accessTo: isEditing
           ? widget.existingSource!.accessTo
-          : ['userId'], // TODO: Replace with actual userId
+          : ['user'], // Default access list for custom sources
     );
 
     widget.onAdd(source);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:money_manager/screens/category_screen.dart';
+import 'package:money_manager/models/category_item.dart';
 
 void main() {
   group('CategoryItem Tests', () {

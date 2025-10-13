@@ -1,0 +1,88 @@
+{
+  "payment_sources": [
+    {
+      "id": "credit_card",
+      "name": "Credit Card",
+      "description": "Credit card payments",
+      "icon": "credit_card",
+      "color": "blue",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "debit_card",
+      "name": "Debit Card",
+      "description": "Debit card payments",
+      "icon": "credit_card_outlined",
+      "color": "green",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "upi",
+      "name": "UPI",
+      "description": "Unified Payments Interface",
+      "icon": "qr_code",
+      "color": "orange",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "cash",
+      "name": "Cash",
+      "description": "Cash payments",
+      "icon": "money",
+      "color": "brown",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "bank_transfer",
+      "name": "Bank Transfer",
+      "description": "Direct bank transfers",
+      "icon": "account_balance",
+      "color": "indigo",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "digital_wallet",
+      "name": "Digital Wallet",
+      "description": "Digital wallet payments",
+      "icon": "wallet",
+      "color": "purple",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    },
+    {
+      "id": "others",
+      "name": "Others",
+      "description": "Other payment methods",
+      "icon": "more_horiz",
+      "color": "grey",
+      "isDefault": true,
+      "createdBy": "default",
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000,
+      "accessTo": []
+    }
+  ]
+}

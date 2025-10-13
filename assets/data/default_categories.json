@@ -1,0 +1,186 @@
+{
+  "income_categories": [
+    {
+      "id": "income_salary",
+      "name": "Salary",
+      "description": "Regular employment income, wages",
+      "icon": "work",
+      "color": "green",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "income_freelance",
+      "name": "Freelance",
+      "description": "Freelance work, consulting, gig economy",
+      "icon": "person_outline",
+      "color": "lightGreen",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "income_business",
+      "name": "Business",
+      "description": "Business income, self-employment",
+      "icon": "business",
+      "color": "blue",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "income_investment",
+      "name": "Investment Returns",
+      "description": "Dividends, interest, capital gains",
+      "icon": "trending_up",
+      "color": "orange",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "income_gifts",
+      "name": "Gifts Received",
+      "description": "Money gifts, cash presents",
+      "icon": "card_giftcard",
+      "color": "purple",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "income_other",
+      "name": "Other Income",
+      "description": "Refunds, bonuses, miscellaneous income",
+      "icon": "attach_money",
+      "color": "teal",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    }
+  ],
+  "expense_categories": [
+    {
+      "id": "expense_food",
+      "name": "Food & Dining",
+      "description": "Groceries, restaurants, takeout",
+      "icon": "restaurant",
+      "color": "red",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_transport",
+      "name": "Transportation",
+      "description": "Gas, public transport, car maintenance",
+      "icon": "directions_car",
+      "color": "orange",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_utilities",
+      "name": "Utilities",
+      "description": "Electricity, water, internet, phone",
+      "icon": "electrical_services",
+      "color": "amber",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_housing",
+      "name": "Housing",
+      "description": "Rent, mortgage, home maintenance",
+      "icon": "home",
+      "color": "brown",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_entertainment",
+      "name": "Entertainment",
+      "description": "Movies, games, subscriptions, hobbies",
+      "icon": "movie",
+      "color": "pink",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_healthcare",
+      "name": "Healthcare",
+      "description": "Medical, dental, pharmacy, fitness",
+      "icon": "local_hospital",
+      "color": "teal",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_shopping",
+      "name": "Shopping",
+      "description": "Clothing, electronics, personal items",
+      "icon": "shopping_bag",
+      "color": "purple",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_financial",
+      "name": "Financial",
+      "description": "Insurance, taxes, debt payments, savings",
+      "icon": "account_balance",
+      "color": "indigo",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    },
+    {
+      "id": "expense_other",
+      "name": "Other Expenses",
+      "description": "Miscellaneous and uncategorized expenses",
+      "icon": "more_horiz",
+      "color": "grey",
+      "isDefault": true,
+      "createdBy": "",
+      "createdAt": 1735669800000,
+      "updatedAt": 1735669800000,
+      "accessTo": []
+    }
+  ]
+}
