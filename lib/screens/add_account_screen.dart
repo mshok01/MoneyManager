@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/account_service.dart';
 import '../services/user_service.dart';
 
@@ -34,7 +35,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     try {
       final currentUser = UserService.instance.currentUser;
       if (currentUser == null) {
-        throw Exception('No user logged in');
+        throw Exception(AppLocalizations.of(context)!.noUserLoggedIn);
       }
 
       await AccountService.instance.createAccount(
@@ -47,7 +48,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.accountCreatedSuccessfully,
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -56,9 +61,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to create account: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.failedToCreateAccount(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -77,19 +86,24 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final theme = Theme.of(context);
 
     // Predefined profile picture options
+    final l10n = AppLocalizations.of(context)!;
     final profilePicOptions = [
       {
         'icon': Icons.account_balance_wallet,
         'color': Colors.blue,
-        'name': 'Wallet',
+        'name': l10n.wallet,
       },
-      {'icon': Icons.home, 'color': Colors.green, 'name': 'Home'},
-      {'icon': Icons.business, 'color': Colors.orange, 'name': 'Business'},
-      {'icon': Icons.savings, 'color': Colors.purple, 'name': 'Savings'},
-      {'icon': Icons.credit_card, 'color': Colors.red, 'name': 'Credit'},
-      {'icon': Icons.account_balance, 'color': Colors.teal, 'name': 'Bank'},
-      {'icon': Icons.shopping_cart, 'color': Colors.pink, 'name': 'Shopping'},
-      {'icon': Icons.car_rental, 'color': Colors.indigo, 'name': 'Vehicle'},
+      {'icon': Icons.home, 'color': Colors.green, 'name': l10n.home},
+      {'icon': Icons.business, 'color': Colors.orange, 'name': l10n.business},
+      {'icon': Icons.savings, 'color': Colors.purple, 'name': l10n.savings},
+      {'icon': Icons.credit_card, 'color': Colors.red, 'name': l10n.credit},
+      {'icon': Icons.account_balance, 'color': Colors.teal, 'name': l10n.bank},
+      {
+        'icon': Icons.shopping_cart,
+        'color': Colors.pink,
+        'name': l10n.shopping,
+      },
+      {'icon': Icons.car_rental, 'color': Colors.indigo, 'name': l10n.vehicle},
     ];
 
     return Container(
@@ -98,7 +112,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Choose Profile Picture',
+            l10n.chooseProfilePicture,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -158,14 +172,14 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     });
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Remove'),
+                  child: Text(l10n.remove),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Done'),
+                  child: Text(l10n.done),
                 ),
               ),
             ],
@@ -189,15 +203,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     }
 
     // Map profile pic name to icon and color
+    final l10n = AppLocalizations.of(context)!;
     final profilePicMap = {
-      'Wallet': {'icon': Icons.account_balance_wallet, 'color': Colors.blue},
-      'Home': {'icon': Icons.home, 'color': Colors.green},
-      'Business': {'icon': Icons.business, 'color': Colors.orange},
-      'Savings': {'icon': Icons.savings, 'color': Colors.purple},
-      'Credit': {'icon': Icons.credit_card, 'color': Colors.red},
-      'Bank': {'icon': Icons.account_balance, 'color': Colors.teal},
-      'Shopping': {'icon': Icons.shopping_cart, 'color': Colors.pink},
-      'Vehicle': {'icon': Icons.car_rental, 'color': Colors.indigo},
+      l10n.wallet: {'icon': Icons.account_balance_wallet, 'color': Colors.blue},
+      l10n.home: {'icon': Icons.home, 'color': Colors.green},
+      l10n.business: {'icon': Icons.business, 'color': Colors.orange},
+      l10n.savings: {'icon': Icons.savings, 'color': Colors.purple},
+      l10n.credit: {'icon': Icons.credit_card, 'color': Colors.red},
+      l10n.bank: {'icon': Icons.account_balance, 'color': Colors.teal},
+      l10n.shopping: {'icon': Icons.shopping_cart, 'color': Colors.pink},
+      l10n.vehicle: {'icon': Icons.car_rental, 'color': Colors.indigo},
     };
 
     final option = profilePicMap[_selectedProfilePic];
@@ -227,10 +242,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Account'),
+        title: Text(l10n.addNewAccount),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
       body: Form(
@@ -268,7 +284,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tap to select picture',
+                    l10n.tapToSelectPicture,
                     style: TextStyle(
                       fontSize: 12,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -283,17 +299,17 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             // Account Name (Required)
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Account Name *',
-                border: OutlineInputBorder(),
-                helperText: 'Required',
+              decoration: InputDecoration(
+                labelText: l10n.accountNameStar,
+                border: const OutlineInputBorder(),
+                helperText: l10n.required,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Account name is required';
+                  return l10n.accountNameRequired;
                 }
                 if (value.trim().length < 2) {
-                  return 'Account name must be at least 2 characters';
+                  return l10n.accountNameMinLength;
                 }
                 return null;
               },
@@ -306,10 +322,10 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             TextFormField(
               controller: _descriptionController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-                helperText: 'Optional - Add a brief description',
+              decoration: InputDecoration(
+                labelText: l10n.description,
+                border: const OutlineInputBorder(),
+                helperText: l10n.optionalDescription,
                 alignLabelWithHint: true,
               ),
               textCapitalization: TextCapitalization.sentences,
@@ -325,7 +341,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     onPressed: _isLoading
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(l10n.cancel),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -338,7 +354,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Create'),
+                        : Text(l10n.create),
                   ),
                 ),
               ],

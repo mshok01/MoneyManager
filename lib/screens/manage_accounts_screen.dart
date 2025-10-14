@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/account_service.dart';
 import '../services/preferences_service.dart';
 import '../models/account.dart';
@@ -37,9 +38,13 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load accounts: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.failedToLoadAccounts(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -55,13 +60,21 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Primary account updated')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.primaryAccountUpdated),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update primary account: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToUpdatePrimaryAccount(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -86,10 +99,11 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Accounts'),
+        title: Text(l10n.manageAccounts),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
       body: _isLoading
@@ -105,7 +119,10 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_accounts.length} Account${_accounts.length != 1 ? 's' : ''}',
+                        l10n.accountsCount(
+                          _accounts.length,
+                          _accounts.length != 1 ? 's' : '',
+                        ),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -114,7 +131,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Tap an account to edit details',
+                        l10n.tapAccountToEdit,
                         style: TextStyle(
                           fontSize: 14,
                           color: theme.colorScheme.onSurface.withValues(
@@ -143,12 +160,13 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToAddAccount,
         icon: const Icon(Icons.add),
-        label: const Text('Add Account'),
+        label: Text(l10n.addAccount),
       ),
     );
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -160,7 +178,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No Accounts',
+            l10n.noAccounts,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -169,7 +187,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Create your first account to get started',
+            l10n.createFirstAccount,
             style: TextStyle(
               fontSize: 16,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -179,7 +197,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
           ElevatedButton.icon(
             onPressed: _navigateToAddAccount,
             icon: const Icon(Icons.add),
-            label: const Text('Add Account'),
+            label: Text(l10n.addAccount),
           ),
         ],
       ),
@@ -187,6 +205,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
   }
 
   Widget _buildAccountListItem(Account account, ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     final isPrimary = _primaryAccountId == account.id;
 
     return Card(
@@ -222,7 +241,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'PRIMARY',
+                  l10n.primary,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -243,7 +262,10 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
             Row(
               children: [
                 Text(
-                  '${account.memberCount} member${account.memberCount != 1 ? 's' : ''}',
+                  l10n.membersCount(
+                    account.memberCount,
+                    account.memberCount != 1 ? 's' : '',
+                  ),
                   style: TextStyle(
                     fontSize: 12,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -254,7 +276,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
                   GestureDetector(
                     onTap: () => _setPrimaryAccount(account.id),
                     child: Text(
-                      'Set as primary',
+                      l10n.setAsPrimary,
                       style: TextStyle(
                         fontSize: 12,
                         color: theme.colorScheme.primary,

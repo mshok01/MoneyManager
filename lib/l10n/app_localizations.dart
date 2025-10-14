@@ -441,6 +441,636 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category \'{categoryName}\' added successfully'**
   String categoryAdded(String categoryName);
+
+  /// Success message when account is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Account updated successfully'**
+  String get accountUpdatedSuccessfully;
+
+  /// Error message when account update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update account: {error}'**
+  String failedToUpdateAccount(String error);
+
+  /// Delete account dialog title and tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// Delete account confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{accountName}\"? This action cannot be undone.'**
+  String deleteAccountConfirmation(String accountName);
+
+  /// Delete button text
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Success message when account is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get accountDeletedSuccessfully;
+
+  /// Error message when account deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete account: {error}'**
+  String failedToDeleteAccount(String error);
+
+  /// Exit account dialog title and tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Account'**
+  String get exitAccount;
+
+  /// Cannot exit account dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot Exit Account'**
+  String get cannotExitAccount;
+
+  /// Cannot exit account dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'You are the only admin of this account. Please make another member an admin before exiting.'**
+  String get cannotExitAccountMessage;
+
+  /// OK button text
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// Exit account confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to exit \"{accountName}\"? You will no longer have access to this account.'**
+  String exitAccountConfirmation(String accountName);
+
+  /// Exit button text
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
+
+  /// Success message when exiting account
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully exited account'**
+  String get successfullyExitedAccount;
+
+  /// Error message when exiting account fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to exit account: {error}'**
+  String failedToExitAccount(String error);
+
+  /// Edit button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// Account name input field label
+  ///
+  /// In en, this message translates to:
+  /// **'Account Name'**
+  String get accountName;
+
+  /// Validation message for empty account name
+  ///
+  /// In en, this message translates to:
+  /// **'Account name is required'**
+  String get accountNameRequired;
+
+  /// Account description input field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Optional)'**
+  String get descriptionOptional;
+
+  /// Members section title
+  ///
+  /// In en, this message translates to:
+  /// **'Members ({count})'**
+  String members(int count);
+
+  /// Label for current user in members list
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// Label for other members in members list
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get member;
+
+  /// Creator role badge text
+  ///
+  /// In en, this message translates to:
+  /// **'CREATOR'**
+  String get creator;
+
+  /// Admin role badge text
+  ///
+  /// In en, this message translates to:
+  /// **'ADMIN'**
+  String get admin;
+
+  /// Add member button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add member'**
+  String get addMember;
+
+  /// Placeholder message for add member functionality
+  ///
+  /// In en, this message translates to:
+  /// **'Add member functionality coming soon!'**
+  String get addMemberComingSoon;
+
+  /// Account settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Settings'**
+  String get accountSettings;
+
+  /// Actions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// Exit account action button text
+  ///
+  /// In en, this message translates to:
+  /// **'EXIT ACCOUNT'**
+  String get exitAccountAction;
+
+  /// Add account screen title and button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Account'**
+  String get addNewAccount;
+
+  /// Profile picture selection dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Profile Picture'**
+  String get chooseProfilePicture;
+
+  /// Helper text for profile picture selection
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select picture'**
+  String get tapToSelectPicture;
+
+  /// Account name field label with required indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Account Name *'**
+  String get accountNameStar;
+
+  /// Helper text for required fields
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get required;
+
+  /// Validation message for account name minimum length
+  ///
+  /// In en, this message translates to:
+  /// **'Account name must be at least 2 characters'**
+  String get accountNameMinLength;
+
+  /// Description field label
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Helper text for optional description field
+  ///
+  /// In en, this message translates to:
+  /// **'Optional - Add a brief description'**
+  String get optionalDescription;
+
+  /// Create button text
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// Success message when account is created
+  ///
+  /// In en, this message translates to:
+  /// **'Account created successfully'**
+  String get accountCreatedSuccessfully;
+
+  /// Error message when account creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create account: {error}'**
+  String failedToCreateAccount(String error);
+
+  /// Error message when no user is logged in
+  ///
+  /// In en, this message translates to:
+  /// **'No user logged in'**
+  String get noUserLoggedIn;
+
+  /// Remove button text
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Done button text
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// Wallet profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet'**
+  String get wallet;
+
+  /// Home profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// Business profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get business;
+
+  /// Savings profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get savings;
+
+  /// Credit profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Credit'**
+  String get credit;
+
+  /// Bank profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get bank;
+
+  /// Shopping profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get shopping;
+
+  /// Vehicle profile picture option
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
+  String get vehicle;
+
+  /// Manage accounts screen title and menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Accounts'**
+  String get manageAccounts;
+
+  /// Error message when loading accounts fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load accounts: {error}'**
+  String failedToLoadAccounts(String error);
+
+  /// Success message when primary account is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Primary account updated'**
+  String get primaryAccountUpdated;
+
+  /// Error message when updating primary account fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update primary account: {error}'**
+  String failedToUpdatePrimaryAccount(String error);
+
+  /// Number of accounts display
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Account{plural}'**
+  String accountsCount(int count, String plural);
+
+  /// Helper text for account list
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an account to edit details'**
+  String get tapAccountToEdit;
+
+  /// Add account button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add Account'**
+  String get addAccount;
+
+  /// Empty state title when no accounts exist
+  ///
+  /// In en, this message translates to:
+  /// **'No Accounts'**
+  String get noAccounts;
+
+  /// Empty state description when no accounts exist
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first account to get started'**
+  String get createFirstAccount;
+
+  /// Primary account badge text
+  ///
+  /// In en, this message translates to:
+  /// **'PRIMARY'**
+  String get primary;
+
+  /// Number of members display
+  ///
+  /// In en, this message translates to:
+  /// **'{count} member{plural}'**
+  String membersCount(int count, String plural);
+
+  /// Set as primary account action text
+  ///
+  /// In en, this message translates to:
+  /// **'Set as primary'**
+  String get setAsPrimary;
+
+  /// Payment sources screen title and menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Sources'**
+  String get paymentSources;
+
+  /// Error message when loading payment sources fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load payment sources: {error}'**
+  String failedToLoadPaymentSources(String error);
+
+  /// Delete payment source dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Payment Source'**
+  String get deletePaymentSource;
+
+  /// Delete payment source confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{sourceName}\"?'**
+  String deletePaymentSourceConfirmation(String sourceName);
+
+  /// Empty state message when no payment sources exist
+  ///
+  /// In en, this message translates to:
+  /// **'No payment sources available'**
+  String get noPaymentSourcesAvailable;
+
+  /// Default payment source badge text
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultSource;
+
+  /// Add payment source tooltip and dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Payment Source'**
+  String get addPaymentSource;
+
+  /// Edit payment source dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Payment Source'**
+  String get editPaymentSource;
+
+  /// Name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// Name field hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., PayPal, Venmo'**
+  String get nameHint;
+
+  /// Description field hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Optional description'**
+  String get descriptionHint;
+
+  /// Validation message for empty name field
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name'**
+  String get pleaseEnterName;
+
+  /// Update button text
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// Add button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Coming soon message for account rename feature
+  ///
+  /// In en, this message translates to:
+  /// **'Account rename feature coming soon!'**
+  String get accountRenameComingSoon;
+
+  /// Default text when no account is selected
+  ///
+  /// In en, this message translates to:
+  /// **'No Account'**
+  String get noAccount;
+
+  /// Account selection dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Account'**
+  String get selectAccount;
+
+  /// Add new account action in account selector
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Account'**
+  String get addNewAccountAction;
+
+  /// Coming soon message for add account feature
+  ///
+  /// In en, this message translates to:
+  /// **'Add account feature coming soon!'**
+  String get addAccountComingSoon;
+
+  /// Manage accounts action in account selector
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Accounts'**
+  String get manageAccountsAction;
+
+  /// Coming soon message for manage accounts feature
+  ///
+  /// In en, this message translates to:
+  /// **'Manage accounts feature coming soon!'**
+  String get manageAccountsComingSoon;
+
+  /// Empty state title on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to track your finances!'**
+  String get readyToTrackFinances;
+
+  /// Empty state description on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding your first transaction'**
+  String get startByAddingTransaction;
+
+  /// Coming soon message for add transaction feature
+  ///
+  /// In en, this message translates to:
+  /// **'Add transaction feature coming soon!'**
+  String get addTransactionComingSoon;
+
+  /// Income tab label in categories screen
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get incomeTab;
+
+  /// Expenses tab label in categories screen
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expensesTab;
+
+  /// Error message when loading categories fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load categories: {error}'**
+  String failedToLoadCategories(String error);
+
+  /// Delete category dialog title and menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Category'**
+  String get deleteCategory;
+
+  /// Delete category confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{categoryName}\"?'**
+  String deleteCategoryConfirmation(String categoryName);
+
+  /// Coming soon message for edit category feature
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {categoryName} functionality coming soon!'**
+  String editCategoryComingSoon(String categoryName);
+
+  /// Coming soon message for delete category feature
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {categoryName} functionality coming soon!'**
+  String deleteCategoryComingSoon(String categoryName);
+
+  /// Appearance section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// Accounts section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// Manage accounts setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, and organize accounts'**
+  String get manageAccountsSubtitle;
+
+  /// Payment sources setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Manage sources'**
+  String get paymentSourcesSubtitle;
+
+  /// Data & Privacy section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Privacy'**
+  String get dataPrivacy;
+
+  /// Backup status when not connected
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected'**
+  String get notConnected;
+
+  /// Success message when currency is changed
+  ///
+  /// In en, this message translates to:
+  /// **'Currency changed to {currency}'**
+  String currencyChangedTo(String currency);
+
+  /// Error message when currency update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update currency: {error}'**
+  String failedToUpdateCurrency(String error);
+
+  /// Generic coming soon message
+  ///
+  /// In en, this message translates to:
+  /// **'{feature} is coming soon!'**
+  String comingSoon(String feature);
+
+  /// Implementation note for Google Sign-in
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-in will be implemented with Firebase Auth'**
+  String get googleSignInImplementation;
+
+  /// Implementation note for Apple Sign-in
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Sign-in will be implemented with Firebase Auth'**
+  String get appleSignInImplementation;
 }
 
 class _AppLocalizationsDelegate

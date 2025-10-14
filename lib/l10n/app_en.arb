@@ -243,5 +243,553 @@
         "description": "The name of the added category"
       }
     }
+  },
+  "accountUpdatedSuccessfully": "Account updated successfully",
+  "@accountUpdatedSuccessfully": {
+    "description": "Success message when account is updated"
+  },
+  "failedToUpdateAccount": "Failed to update account: {error}",
+  "@failedToUpdateAccount": {
+    "description": "Error message when account update fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Delete account dialog title and tooltip"
+  },
+  "deleteAccountConfirmation": "Are you sure you want to delete \"{accountName}\"? This action cannot be undone.",
+  "@deleteAccountConfirmation": {
+    "description": "Delete account confirmation message",
+    "placeholders": {
+      "accountName": {
+        "type": "String",
+        "description": "The name of the account to delete"
+      }
+    }
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "accountDeletedSuccessfully": "Account deleted successfully",
+  "@accountDeletedSuccessfully": {
+    "description": "Success message when account is deleted"
+  },
+  "failedToDeleteAccount": "Failed to delete account: {error}",
+  "@failedToDeleteAccount": {
+    "description": "Error message when account deletion fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "exitAccount": "Exit Account",
+  "@exitAccount": {
+    "description": "Exit account dialog title and tooltip"
+  },
+  "cannotExitAccount": "Cannot Exit Account",
+  "@cannotExitAccount": {
+    "description": "Cannot exit account dialog title"
+  },
+  "cannotExitAccountMessage": "You are the only admin of this account. Please make another member an admin before exiting.",
+  "@cannotExitAccountMessage": {
+    "description": "Cannot exit account dialog message"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "exitAccountConfirmation": "Are you sure you want to exit \"{accountName}\"? You will no longer have access to this account.",
+  "@exitAccountConfirmation": {
+    "description": "Exit account confirmation message",
+    "placeholders": {
+      "accountName": {
+        "type": "String",
+        "description": "The name of the account to exit"
+      }
+    }
+  },
+  "exit": "Exit",
+  "@exit": {
+    "description": "Exit button text"
+  },
+  "successfullyExitedAccount": "Successfully exited account",
+  "@successfullyExitedAccount": {
+    "description": "Success message when exiting account"
+  },
+  "failedToExitAccount": "Failed to exit account: {error}",
+  "@failedToExitAccount": {
+    "description": "Error message when exiting account fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button tooltip"
+  },
+  "accountName": "Account Name",
+  "@accountName": {
+    "description": "Account name input field label"
+  },
+  "accountNameRequired": "Account name is required",
+  "@accountNameRequired": {
+    "description": "Validation message for empty account name"
+  },
+  "descriptionOptional": "Description (Optional)",
+  "@descriptionOptional": {
+    "description": "Account description input field label"
+  },
+  "members": "Members ({count})",
+  "@members": {
+    "description": "Members section title",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of members"
+      }
+    }
+  },
+  "you": "You",
+  "@you": {
+    "description": "Label for current user in members list"
+  },
+  "member": "Member",
+  "@member": {
+    "description": "Label for other members in members list"
+  },
+  "creator": "CREATOR",
+  "@creator": {
+    "description": "Creator role badge text"
+  },
+  "admin": "ADMIN",
+  "@admin": {
+    "description": "Admin role badge text"
+  },
+  "addMember": "Add member",
+  "@addMember": {
+    "description": "Add member button text"
+  },
+  "addMemberComingSoon": "Add member functionality coming soon!",
+  "@addMemberComingSoon": {
+    "description": "Placeholder message for add member functionality"
+  },
+  "accountSettings": "Account Settings",
+  "@accountSettings": {
+    "description": "Account settings section title"
+  },
+  "actions": "Actions",
+  "@actions": {
+    "description": "Actions section title"
+  },
+  "exitAccountAction": "EXIT ACCOUNT",
+  "@exitAccountAction": {
+    "description": "Exit account action button text"
+  },
+  "addNewAccount": "Add New Account",
+  "@addNewAccount": {
+    "description": "Add account screen title and button text"
+  },
+  "chooseProfilePicture": "Choose Profile Picture",
+  "@chooseProfilePicture": {
+    "description": "Profile picture selection dialog title"
+  },
+  "tapToSelectPicture": "Tap to select picture",
+  "@tapToSelectPicture": {
+    "description": "Helper text for profile picture selection"
+  },
+  "accountNameStar": "Account Name *",
+  "@accountNameStar": {
+    "description": "Account name field label with required indicator"
+  },
+  "required": "Required",
+  "@required": {
+    "description": "Helper text for required fields"
+  },
+  "accountNameMinLength": "Account name must be at least 2 characters",
+  "@accountNameMinLength": {
+    "description": "Validation message for account name minimum length"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Description field label"
+  },
+  "optionalDescription": "Optional - Add a brief description",
+  "@optionalDescription": {
+    "description": "Helper text for optional description field"
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Create button text"
+  },
+  "accountCreatedSuccessfully": "Account created successfully",
+  "@accountCreatedSuccessfully": {
+    "description": "Success message when account is created"
+  },
+  "failedToCreateAccount": "Failed to create account: {error}",
+  "@failedToCreateAccount": {
+    "description": "Error message when account creation fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "noUserLoggedIn": "No user logged in",
+  "@noUserLoggedIn": {
+    "description": "Error message when no user is logged in"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Done button text"
+  },
+  "wallet": "Wallet",
+  "@wallet": {
+    "description": "Wallet profile picture option"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home profile picture option"
+  },
+  "business": "Business",
+  "@business": {
+    "description": "Business profile picture option"
+  },
+  "savings": "Savings",
+  "@savings": {
+    "description": "Savings profile picture option"
+  },
+  "credit": "Credit",
+  "@credit": {
+    "description": "Credit profile picture option"
+  },
+  "bank": "Bank",
+  "@bank": {
+    "description": "Bank profile picture option"
+  },
+  "shopping": "Shopping",
+  "@shopping": {
+    "description": "Shopping profile picture option"
+  },
+  "vehicle": "Vehicle",
+  "@vehicle": {
+    "description": "Vehicle profile picture option"
+  },
+  "manageAccounts": "Manage Accounts",
+  "@manageAccounts": {
+    "description": "Manage accounts screen title and menu item"
+  },
+  "failedToLoadAccounts": "Failed to load accounts: {error}",
+  "@failedToLoadAccounts": {
+    "description": "Error message when loading accounts fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "primaryAccountUpdated": "Primary account updated",
+  "@primaryAccountUpdated": {
+    "description": "Success message when primary account is updated"
+  },
+  "failedToUpdatePrimaryAccount": "Failed to update primary account: {error}",
+  "@failedToUpdatePrimaryAccount": {
+    "description": "Error message when updating primary account fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "accountsCount": "{count} Account{plural}",
+  "@accountsCount": {
+    "description": "Number of accounts display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of accounts"
+      },
+      "plural": {
+        "type": "String",
+        "description": "Plural suffix (s or empty)"
+      }
+    }
+  },
+  "tapAccountToEdit": "Tap an account to edit details",
+  "@tapAccountToEdit": {
+    "description": "Helper text for account list"
+  },
+  "addAccount": "Add Account",
+  "@addAccount": {
+    "description": "Add account button text"
+  },
+  "noAccounts": "No Accounts",
+  "@noAccounts": {
+    "description": "Empty state title when no accounts exist"
+  },
+  "createFirstAccount": "Create your first account to get started",
+  "@createFirstAccount": {
+    "description": "Empty state description when no accounts exist"
+  },
+  "primary": "PRIMARY",
+  "@primary": {
+    "description": "Primary account badge text"
+  },
+  "membersCount": "{count} member{plural}",
+  "@membersCount": {
+    "description": "Number of members display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of members"
+      },
+      "plural": {
+        "type": "String",
+        "description": "Plural suffix (s or empty)"
+      }
+    }
+  },
+  "setAsPrimary": "Set as primary",
+  "@setAsPrimary": {
+    "description": "Set as primary account action text"
+  },
+  "paymentSources": "Payment Sources",
+  "@paymentSources": {
+    "description": "Payment sources screen title and menu item"
+  },
+  "failedToLoadPaymentSources": "Failed to load payment sources: {error}",
+  "@failedToLoadPaymentSources": {
+    "description": "Error message when loading payment sources fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "deletePaymentSource": "Delete Payment Source",
+  "@deletePaymentSource": {
+    "description": "Delete payment source dialog title"
+  },
+  "deletePaymentSourceConfirmation": "Are you sure you want to delete \"{sourceName}\"?",
+  "@deletePaymentSourceConfirmation": {
+    "description": "Delete payment source confirmation message",
+    "placeholders": {
+      "sourceName": {
+        "type": "String",
+        "description": "The name of the payment source to delete"
+      }
+    }
+  },
+  "noPaymentSourcesAvailable": "No payment sources available",
+  "@noPaymentSourcesAvailable": {
+    "description": "Empty state message when no payment sources exist"
+  },
+  "defaultSource": "Default",
+  "@defaultSource": {
+    "description": "Default payment source badge text"
+  },
+  "addPaymentSource": "Add Payment Source",
+  "@addPaymentSource": {
+    "description": "Add payment source tooltip and dialog title"
+  },
+  "editPaymentSource": "Edit Payment Source",
+  "@editPaymentSource": {
+    "description": "Edit payment source dialog title"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Name field label"
+  },
+  "nameHint": "e.g., PayPal, Venmo",
+  "@nameHint": {
+    "description": "Name field hint text"
+  },
+  "descriptionHint": "Optional description",
+  "@descriptionHint": {
+    "description": "Description field hint text"
+  },
+  "pleaseEnterName": "Please enter a name",
+  "@pleaseEnterName": {
+    "description": "Validation message for empty name field"
+  },
+  "update": "Update",
+  "@update": {
+    "description": "Update button text"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Add button text"
+  },
+  "accountRenameComingSoon": "Account rename feature coming soon!",
+  "@accountRenameComingSoon": {
+    "description": "Coming soon message for account rename feature"
+  },
+  "noAccount": "No Account",
+  "@noAccount": {
+    "description": "Default text when no account is selected"
+  },
+  "selectAccount": "Select Account",
+  "@selectAccount": {
+    "description": "Account selection dialog title"
+  },
+  "addNewAccountAction": "Add New Account",
+  "@addNewAccountAction": {
+    "description": "Add new account action in account selector"
+  },
+  "addAccountComingSoon": "Add account feature coming soon!",
+  "@addAccountComingSoon": {
+    "description": "Coming soon message for add account feature"
+  },
+  "manageAccountsAction": "Manage Accounts",
+  "@manageAccountsAction": {
+    "description": "Manage accounts action in account selector"
+  },
+  "manageAccountsComingSoon": "Manage accounts feature coming soon!",
+  "@manageAccountsComingSoon": {
+    "description": "Coming soon message for manage accounts feature"
+  },
+  "readyToTrackFinances": "Ready to track your finances!",
+  "@readyToTrackFinances": {
+    "description": "Empty state title on home screen"
+  },
+  "startByAddingTransaction": "Start by adding your first transaction",
+  "@startByAddingTransaction": {
+    "description": "Empty state description on home screen"
+  },
+  "addTransactionComingSoon": "Add transaction feature coming soon!",
+  "@addTransactionComingSoon": {
+    "description": "Coming soon message for add transaction feature"
+  },
+  "incomeTab": "Income",
+  "@incomeTab": {
+    "description": "Income tab label in categories screen"
+  },
+  "expensesTab": "Expenses",
+  "@expensesTab": {
+    "description": "Expenses tab label in categories screen"
+  },
+  "failedToLoadCategories": "Failed to load categories: {error}",
+  "@failedToLoadCategories": {
+    "description": "Error message when loading categories fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "deleteCategory": "Delete Category",
+  "@deleteCategory": {
+    "description": "Delete category dialog title and menu item"
+  },
+  "deleteCategoryConfirmation": "Are you sure you want to delete \"{categoryName}\"?",
+  "@deleteCategoryConfirmation": {
+    "description": "Delete category confirmation message",
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "description": "The name of the category to delete"
+      }
+    }
+  },
+  "editCategoryComingSoon": "Edit {categoryName} functionality coming soon!",
+  "@editCategoryComingSoon": {
+    "description": "Coming soon message for edit category feature",
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "description": "The name of the category to edit"
+      }
+    }
+  },
+  "deleteCategoryComingSoon": "Delete {categoryName} functionality coming soon!",
+  "@deleteCategoryComingSoon": {
+    "description": "Coming soon message for delete category feature",
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "description": "The name of the category to delete"
+      }
+    }
+  },
+  "appearance": "Appearance",
+  "@appearance": {
+    "description": "Appearance section header in settings"
+  },
+  "accounts": "Accounts",
+  "@accounts": {
+    "description": "Accounts section header in settings"
+  },
+  "manageAccountsSubtitle": "Add, edit, and organize accounts",
+  "@manageAccountsSubtitle": {
+    "description": "Manage accounts setting subtitle"
+  },
+  "paymentSourcesSubtitle": "Manage sources",
+  "@paymentSourcesSubtitle": {
+    "description": "Payment sources setting subtitle"
+  },
+  "dataPrivacy": "Data & Privacy",
+  "@dataPrivacy": {
+    "description": "Data & Privacy section header in settings"
+  },
+  "notConnected": "Not connected",
+  "@notConnected": {
+    "description": "Backup status when not connected"
+  },
+  "currencyChangedTo": "Currency changed to {currency}",
+  "@currencyChangedTo": {
+    "description": "Success message when currency is changed",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "description": "The selected currency"
+      }
+    }
+  },
+  "failedToUpdateCurrency": "Failed to update currency: {error}",
+  "@failedToUpdateCurrency": {
+    "description": "Error message when currency update fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "comingSoon": "{feature} is coming soon!",
+  "@comingSoon": {
+    "description": "Generic coming soon message",
+    "placeholders": {
+      "feature": {
+        "type": "String",
+        "description": "The feature name"
+      }
+    }
+  },
+  "googleSignInImplementation": "Google Sign-in will be implemented with Firebase Auth",
+  "@googleSignInImplementation": {
+    "description": "Implementation note for Google Sign-in"
+  },
+  "appleSignInImplementation": "Apple Sign-in will be implemented with Firebase Auth",
+  "@appleSignInImplementation": {
+    "description": "Implementation note for Apple Sign-in"
   }
 }

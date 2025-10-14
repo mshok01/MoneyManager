@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:money_manager/main.dart';
+import 'package:money_manager/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -172,6 +173,57 @@ void main() {
           findsAtLeastNWidgets(1),
         ); // Can appear in both dialog and settings
         expect(find.text('Cancel'), findsOneWidget);
+      }
+    });
+
+    testWidgets('Currency setting displays user currency from user record', (
+      WidgetTester tester,
+    ) async {
+      // Build the app and navigate to home screen
+      await tester.pumpWidget(const MoneyManagerApp());
+      await tester.pumpAndSettle();
+
+      // Skip intro by tapping skip button
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+
+      // Skip auth choice by tapping "Get Started"
+      await tester.tap(find.text('Get Started'));
+      await tester.pumpAndSettle();
+
+      // Skip currency selection
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+
+      // Skip backup account
+      await tester.tap(find.text('Skip for now'));
+      await tester.pumpAndSettle();
+
+      // Navigate to settings
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pump();
+
+      // Wait for settings screen to load
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      // Check if user service has a user with currency
+      final userService = UserService.instance;
+      if (userService.hasUser && userService.currentUser != null) {
+        final user = userService.currentUser!;
+
+        // If user has a currency name, it should be displayed
+        if (user.currencyName.isNotEmpty) {
+          expect(
+            find.textContaining(user.currencyName),
+            findsAtLeastNWidgets(1),
+          );
+        } else if (user.currencyCode.isNotEmpty) {
+          // Otherwise, currency code should be displayed
+          expect(
+            find.textContaining(user.currencyCode),
+            findsAtLeastNWidgets(1),
+          );
+        }
       }
     });
   });

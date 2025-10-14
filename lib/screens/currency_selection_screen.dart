@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
+import '../services/user_service.dart';
 
 class CurrencySelectionScreen extends StatefulWidget {
   final bool isFromSettings;
@@ -388,16 +389,50 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
     });
   }
 
+  /// Update both preferences and user record with selected currency
+  Future<void> _updateCurrency(String currencyCode) async {
+    // Save to preferences for backward compatibility
+    await _preferencesService?.setSelectedCurrency(currencyCode);
+
+    // Update user record if user exists
+    try {
+      final currentUser = UserService.instance.currentUser;
+      if (currentUser != null) {
+        final selectedCurrencyObj = _currencies.firstWhere(
+          (currency) => currency.code == currencyCode,
+          orElse: () => Currency(currencyCode, currencyCode, '', ''),
+        );
+
+        await UserService.instance.updateUser(
+          currencyCode: selectedCurrencyObj.code,
+          currencyName: selectedCurrencyObj.name,
+        );
+      }
+    } catch (e) {
+      // Log error but don't fail the flow
+      debugPrint('Failed to update user currency: $e');
+    }
+  }
+
   void _onContinue() async {
     if (_selectedCurrency != null) {
-      // Save selected currency to preferences
-      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+      // Update both preferences and user record
+      await _updateCurrency(_selectedCurrency!);
 
       if (!mounted) return;
 
       if (widget.isFromSettings) {
-        // Return to settings with selected currency
-        Navigator.of(context).pop(_selectedCurrency);
+        // Return both currency code and name for settings
+        final selectedCurrencyObj = _currencies.firstWhere(
+          (currency) => currency.code == _selectedCurrency,
+          orElse: () =>
+              Currency(_selectedCurrency!, _selectedCurrency!, '', ''),
+        );
+
+        Navigator.of(context).pop({
+          'code': selectedCurrencyObj.code,
+          'name': selectedCurrencyObj.name,
+        });
       } else {
         // Continue to backup account screen
         Navigator.of(context).pushNamed('/backup-account');
@@ -408,7 +443,7 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
   void _onSkip() async {
     // Use the auto-detected currency as default
     if (_selectedCurrency != null) {
-      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+      await _updateCurrency(_selectedCurrency!);
     }
 
     if (!mounted) return;
@@ -417,11 +452,27 @@ class _CurrencySelectionScreenState extends State<CurrencySelectionScreen> {
 
   void _onSave() async {
     if (_selectedCurrency != null) {
-      // Save selected currency to preferences
-      await _preferencesService?.setSelectedCurrency(_selectedCurrency!);
+      // Update both preferences and user record
+      await _updateCurrency(_selectedCurrency!);
 
       if (!mounted) return;
-      Navigator.of(context).pop(_selectedCurrency);
+
+      if (widget.isFromSettings) {
+        // Return both currency code and name for settings
+        final selectedCurrencyObj = _currencies.firstWhere(
+          (currency) => currency.code == _selectedCurrency,
+          orElse: () =>
+              Currency(_selectedCurrency!, _selectedCurrency!, '', ''),
+        );
+
+        Navigator.of(context).pop({
+          'code': selectedCurrencyObj.code,
+          'name': selectedCurrencyObj.name,
+        });
+      } else {
+        // Return just the currency code for other flows
+        Navigator.of(context).pop(_selectedCurrency);
+      }
     }
   }
 

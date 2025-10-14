@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
 import '../services/theme_service.dart';
+import '../services/user_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   PreferencesService? _preferencesService;
   String? _currentCurrency;
+  String? _currentCurrencyName;
   bool _isLoading = true;
 
   @override
@@ -23,31 +25,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _initializePreferences() async {
     _preferencesService = await PreferencesService.getInstance();
-    _currentCurrency = _preferencesService!.getSelectedCurrency();
+
+    // Get currency from user record instead of preferences
+    final currentUser = UserService.instance.currentUser;
+    if (currentUser != null) {
+      _currentCurrency = currentUser.currencyCode.isNotEmpty
+          ? currentUser.currencyCode
+          : null;
+      _currentCurrencyName = currentUser.currencyName.isNotEmpty
+          ? currentUser.currencyName
+          : null;
+    }
+
+    // Fallback to preferences if user doesn't have currency set
+    _currentCurrency ??= _preferencesService!.getSelectedCurrency();
+
     setState(() {
       _isLoading = false;
     });
   }
 
   Future<void> _changeCurrency() async {
-    final selectedCurrency = await Navigator.of(context).pushNamed(
+    final result = await Navigator.of(context).pushNamed(
       '/currency-selection-settings',
       arguments: {'currentCurrency': _currentCurrency},
     );
 
-    if (selectedCurrency != null && selectedCurrency != _currentCurrency) {
-      setState(() {
-        _currentCurrency = selectedCurrency as String;
-      });
+    if (result != null && result is Map<String, String>) {
+      final selectedCurrencyCode = result['code'];
+      final selectedCurrencyName = result['name'];
 
-      // Show confirmation
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Currency changed to $_currentCurrency'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      if (selectedCurrencyCode != null &&
+          selectedCurrencyCode != _currentCurrency) {
+        try {
+          // Update user record with new currency
+          await UserService.instance.updateUser(
+            currencyCode: selectedCurrencyCode,
+            currencyName: selectedCurrencyName,
+          );
+
+          setState(() {
+            _currentCurrency = selectedCurrencyCode;
+            _currentCurrencyName = selectedCurrencyName;
+          });
+
+          // Show confirmation
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Currency changed to $_currentCurrency'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (e) {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to update currency: $e'),
+                duration: const Duration(seconds: 3),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        }
       }
     }
   }
@@ -165,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.attach_money),
             title: Text(l10n.currency),
-            subtitle: Text(_currentCurrency ?? 'USD'),
+            subtitle: Text(_currentCurrencyName ?? _currentCurrency ?? 'USD'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _changeCurrency,
           ),

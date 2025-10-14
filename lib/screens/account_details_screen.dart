@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/account_service.dart';
 import '../services/user_service.dart';
 import '../models/account.dart';
+import '../l10n/app_localizations.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   final Account account;
@@ -53,6 +54,24 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     }
   }
 
+  bool _hasAccountSettings() {
+    // Currently no account settings are implemented
+    return false;
+  }
+
+  bool _hasActions() {
+    if (_currentUserId == null) return false;
+
+    final hasMultipleMembers = widget.account.memberCount > 1;
+    final hasOtherAdmins =
+        widget.account.adminCount > 1 ||
+        (widget.account.adminCount == 1 &&
+            !widget.account.isAdmin(_currentUserId!));
+
+    // Only show actions if there are actions to display
+    return hasMultipleMembers && hasOtherAdmins;
+  }
+
   void _toggleEdit() {
     setState(() {
       _isEditing = !_isEditing;
@@ -87,7 +106,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account updated successfully')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.accountUpdatedSuccessfully,
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -96,9 +119,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update account: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.failedToUpdateAccount(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -107,21 +134,23 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
+        title: Text(AppLocalizations.of(context)!.deleteAccount),
         content: Text(
-          'Are you sure you want to delete "${widget.account.name}"? This action cannot be undone.',
+          AppLocalizations.of(
+            context,
+          )!.deleteAccountConfirmation(widget.account.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -138,7 +167,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         if (mounted) {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account deleted successfully')),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.accountDeletedSuccessfully,
+              ),
+            ),
           );
         }
       } catch (e) {
@@ -148,7 +181,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete account: $e')),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(
+                  context,
+                )!.failedToDeleteAccount(e.toString()),
+              ),
+            ),
           );
         }
       }
@@ -174,7 +213,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         IconButton(
           onPressed: _exitAccount,
           icon: const Icon(Icons.exit_to_app),
-          tooltip: 'Exit Account',
+          tooltip: AppLocalizations.of(context)!.exitAccount,
         ),
       );
     }
@@ -185,7 +224,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         IconButton(
           onPressed: _deleteAccount,
           icon: const Icon(Icons.delete),
-          tooltip: 'Delete Account',
+          tooltip: AppLocalizations.of(context)!.deleteAccount,
         ),
       );
     }
@@ -207,14 +246,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Cannot Exit Account'),
-          content: const Text(
-            'You are the only admin of this account. Please make another member an admin before exiting.',
-          ),
+          title: Text(AppLocalizations.of(context)!.cannotExitAccount),
+          content: Text(AppLocalizations.of(context)!.cannotExitAccountMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: Text(AppLocalizations.of(context)!.ok),
             ),
           ],
         ),
@@ -225,21 +262,23 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Exit Account'),
+        title: Text(AppLocalizations.of(context)!.exitAccount),
         content: Text(
-          'Are you sure you want to exit "${widget.account.name}"? You will no longer have access to this account.',
+          AppLocalizations.of(
+            context,
+          )!.exitAccountConfirmation(widget.account.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Exit'),
+            child: Text(AppLocalizations.of(context)!.exit),
           ),
         ],
       ),
@@ -258,7 +297,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Successfully exited account')),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.successfullyExitedAccount,
+              ),
+            ),
           );
           Navigator.of(context).pop(true);
         }
@@ -267,9 +310,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Failed to exit account: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.failedToExitAccount(e.toString()),
+              ),
+            ),
+          );
         }
       }
     }
@@ -333,18 +380,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       ),
                     )
                   : Icon(Icons.check, color: theme.colorScheme.primary),
-              tooltip: 'Save',
+              tooltip: AppLocalizations.of(context)!.save,
             ),
             IconButton(
               onPressed: _isLoading ? null : _toggleEdit,
               icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
-              tooltip: 'Cancel',
+              tooltip: AppLocalizations.of(context)!.cancel,
             ),
           ] else ...[
             IconButton(
               onPressed: _toggleEdit,
               icon: Icon(Icons.edit, color: theme.colorScheme.primary),
-              tooltip: 'Edit',
+              tooltip: AppLocalizations.of(context)!.edit,
             ),
             ..._buildActionButtons(),
           ],
@@ -366,7 +413,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           TextFormField(
             controller: _nameController,
             decoration: InputDecoration(
-              labelText: 'Account Name',
+              labelText: AppLocalizations.of(context)!.accountName,
               border: const OutlineInputBorder(),
               prefixIcon: Icon(
                 Icons.account_balance_wallet,
@@ -375,7 +422,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Account name is required';
+                return AppLocalizations.of(context)!.accountNameRequired;
               }
               return null;
             },
@@ -386,7 +433,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             controller: _descriptionController,
             maxLines: 3,
             decoration: InputDecoration(
-              labelText: 'Description (Optional)',
+              labelText: AppLocalizations.of(context)!.descriptionOptional,
               border: const OutlineInputBorder(),
               prefixIcon: Icon(
                 Icons.description,
@@ -412,11 +459,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         // Add Member Section
         _buildAddMemberSection(theme),
 
-        // Account Settings Section
-        _buildAccountSettingsSection(theme),
+        // Account Settings Section (only show if has content)
+        if (_hasAccountSettings()) _buildAccountSettingsSection(theme),
 
-        // Actions Section
-        _buildActionsSection(theme),
+        // Actions Section (only show if has content)
+        if (_hasActions()) _buildActionsSection(theme),
       ],
     );
   }
@@ -474,112 +521,106 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Members (${widget.account.memberCount})',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.primary,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            AppLocalizations.of(context)!.members(widget.account.memberCount),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: widget.account.members.map((memberId) {
-                final isCurrentUser = memberId == _currentUserId;
-                final isCreator = widget.account.isCreator(memberId);
-                final isAdmin = widget.account.isAdmin(memberId);
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: widget.account.members.map((memberId) {
+                  final isCurrentUser = memberId == _currentUserId;
+                  final isCreator = widget.account.isCreator(memberId);
+                  final isAdmin = widget.account.isAdmin(memberId);
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: theme.colorScheme.primary.withValues(
-                          alpha: 0.1,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            size: 16,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.person,
-                          size: 16,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  isCurrentUser ? 'You' : 'Member',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (isCreator) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      'CREATOR',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.onPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                if (isAdmin && !isCreator) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.secondary,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      'ADMIN',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            Text(
-                              memberId,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(
+                                isCurrentUser
+                                    ? AppLocalizations.of(context)!.you
+                                    : AppLocalizations.of(context)!.member,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
-                          ],
+                              if (isCreator) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.creator,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (isAdmin && !isCreator) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.secondary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.admin,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
@@ -602,7 +643,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
         ),
         title: Text(
-          'Add member',
+          AppLocalizations.of(context)!.addMember,
           style: TextStyle(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.w500,
@@ -612,8 +653,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         onTap: () {
           // TODO: Implement add member functionality
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Add member functionality coming soon!'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.addMemberComingSoon),
             ),
           );
         },
@@ -629,7 +670,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
-            'Account Settings',
+            AppLocalizations.of(context)!.accountSettings,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -660,7 +701,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
-            'Actions',
+            AppLocalizations.of(context)!.actions,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -684,7 +725,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 size: 24,
               ),
               title: Text(
-                'EXIT ACCOUNT',
+                AppLocalizations.of(context)!.exitAccountAction,
                 style: TextStyle(
                   color: theme.colorScheme.error,
                   fontWeight: FontWeight.w500,

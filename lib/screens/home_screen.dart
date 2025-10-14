@@ -261,10 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: const Text('Add New Account'),
       onTap: () {
         Navigator.of(context).pop();
-        // TODO: Navigate to add account screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Add account feature coming soon!')),
-        );
+        Navigator.of(context).pushNamed('/add-account');
       },
     );
   }
@@ -282,10 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: const Text('Manage Accounts'),
       onTap: () {
         Navigator.of(context).pop();
-        // TODO: Navigate to manage accounts screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Manage accounts feature coming soon!')),
-        );
+        Navigator.of(context).pushNamed('/manage-accounts');
       },
     );
   }
