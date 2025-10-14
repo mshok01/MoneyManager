@@ -29,9 +29,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
         await DataService.instance.initialize();
       }
 
+      final incomeCategories = await DataService.instance.getIncomeCategories();
+      final expenseCategories = await DataService.instance
+          .getExpenseCategories();
+
       setState(() {
-        _incomeCategories = DataService.instance.getIncomeCategories();
-        _expenseCategories = DataService.instance.getExpenseCategories();
+        _incomeCategories = incomeCategories;
+        _expenseCategories = expenseCategories;
         _isLoading = false;
       });
     } catch (e) {

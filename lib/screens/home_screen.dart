@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initializeSelectedAccount() async {
     final prefsService = await PreferencesService.getInstance();
     final savedAccountId = prefsService.getSelectedAccount();
-    final accounts = AccountService.instance.activeAccounts;
+    final accounts = await AccountService.instance.activeAccounts;
 
     String? accountIdToUse;
 
@@ -95,9 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Account? get _currentAccount {
+  Future<Account?> get _currentAccount async {
     if (_selectedAccountId == null) return null;
-    return AccountService.instance.getAccountById(_selectedAccountId!);
+    return await AccountService.instance.getAccountById(_selectedAccountId!);
   }
 
   Widget _buildAccountSelector(Account? account, ThemeData theme) {
@@ -147,8 +147,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAccountSelectorBottomSheet() {
     final theme = Theme.of(context);
-    final accounts = AccountService.instance.activeAccounts;
 
+    return FutureBuilder<List<Account>>(
+      future: AccountService.instance.activeAccounts,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final accounts = snapshot.data!;
+        return _buildAccountSelectorContent(theme, accounts);
+      },
+    );
+  }
+
+  Widget _buildAccountSelectorContent(ThemeData theme, List<Account> accounts) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
@@ -278,10 +294,47 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final accounts = AccountService.instance.activeAccounts;
-    final currentAccount =
-        _currentAccount ?? (accounts.isNotEmpty ? accounts.first : null);
 
+    return FutureBuilder<List<Account>>(
+      future: AccountService.instance.activeAccounts,
+      builder: (context, accountsSnapshot) {
+        if (!accountsSnapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.appTitle),
+              backgroundColor: theme.colorScheme.inversePrimary,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final accounts = accountsSnapshot.data!;
+
+        return FutureBuilder<Account?>(
+          future: _currentAccount,
+          builder: (context, currentAccountSnapshot) {
+            final currentAccount = currentAccountSnapshot.data;
+
+            return _buildScaffold(
+              context,
+              l10n,
+              theme,
+              accounts,
+              currentAccount,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeData theme,
+    List<Account> accounts,
+    Account? currentAccount,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: _buildAccountSelector(currentAccount, theme),

@@ -1,15 +1,18 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import '../models/category_item.dart';
 import '../models/payment_source.dart';
+import '../database/database_service.dart';
+import 'category_service.dart';
+import 'payment_source_service.dart';
 
 class DataService {
   static DataService? _instance;
-  
-  List<CategoryItem> _defaultIncomeCategories = [];
-  List<CategoryItem> _defaultExpenseCategories = [];
-  List<PaymentSource> _defaultPaymentSources = [];
-  
+
+  // Cache for default data
+  List<CategoryItem>? _cachedIncomeCategories;
+  List<CategoryItem>? _cachedExpenseCategories;
+  List<PaymentSource>? _cachedPaymentSources;
+
   bool _isInitialized = false;
 
   static DataService get instance {
@@ -19,119 +22,128 @@ class DataService {
 
   DataService._();
 
-  // Getters for default data
-  List<CategoryItem> get defaultIncomeCategories => List.unmodifiable(_defaultIncomeCategories);
-  List<CategoryItem> get defaultExpenseCategories => List.unmodifiable(_defaultExpenseCategories);
-  List<PaymentSource> get defaultPaymentSources => List.unmodifiable(_defaultPaymentSources);
-  
+  // Getters for default data (with caching)
+  Future<List<CategoryItem>> get defaultIncomeCategories async {
+    if (_cachedIncomeCategories == null) {
+      await _loadDefaultCategories();
+    }
+    return List.unmodifiable(_cachedIncomeCategories!);
+  }
+
+  Future<List<CategoryItem>> get defaultExpenseCategories async {
+    if (_cachedExpenseCategories == null) {
+      await _loadDefaultCategories();
+    }
+    return List.unmodifiable(_cachedExpenseCategories!);
+  }
+
+  Future<List<PaymentSource>> get defaultPaymentSources async {
+    if (_cachedPaymentSources == null) {
+      await _loadDefaultPaymentSources();
+    }
+    return List.unmodifiable(_cachedPaymentSources!);
+  }
+
   bool get isInitialized => _isInitialized;
 
-  /// Initialize the data service by loading default data from JSON files
+  /// Initialize the data service by ensuring database is ready
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      await _loadDefaultCategories();
-      await _loadDefaultPaymentSources();
+      // Initialize database service
+      await DatabaseService.instance.initialize();
+
+      // Initialize category and payment source services
+      await CategoryService.instance.initialize();
+      await PaymentSourceService.instance.initialize();
+
       _isInitialized = true;
     } catch (e) {
-      throw Exception('Failed to initialize DataService: $e');
+      debugPrint('Failed to initialize DataService: $e');
+      _isInitialized = true; // Mark as initialized to prevent retry loops
     }
   }
 
-  /// Load default categories from JSON file
+  /// Load default categories from database
   Future<void> _loadDefaultCategories() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/default_categories.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      // Load income categories from database
+      _cachedIncomeCategories = await CategoryService.instance
+          .getIncomeCategories();
 
-      // Load income categories
-      final List<dynamic> incomeData = jsonData['income_categories'] as List<dynamic>;
-      _defaultIncomeCategories = incomeData
-          .map((item) => CategoryItem.fromJson(item as Map<String, dynamic>))
-          .toList();
-
-      // Load expense categories
-      final List<dynamic> expenseData = jsonData['expense_categories'] as List<dynamic>;
-      _defaultExpenseCategories = expenseData
-          .map((item) => CategoryItem.fromJson(item as Map<String, dynamic>))
-          .toList();
-
+      // Load expense categories from database
+      _cachedExpenseCategories = await CategoryService.instance
+          .getExpenseCategories();
     } catch (e) {
-      throw Exception('Failed to load default categories: $e');
+      debugPrint('Failed to load default categories: $e');
+      _cachedIncomeCategories = [];
+      _cachedExpenseCategories = [];
     }
   }
 
-  /// Load default payment sources from JSON file
+  /// Load default payment sources from database
   Future<void> _loadDefaultPaymentSources() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/default_payment_sources.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-
-      // Load payment sources
-      final List<dynamic> paymentSourcesData = jsonData['payment_sources'] as List<dynamic>;
-      _defaultPaymentSources = paymentSourcesData
-          .map((item) => PaymentSource.fromJson(item as Map<String, dynamic>))
-          .toList();
-
+      // Load payment sources from database
+      _cachedPaymentSources = await PaymentSourceService.instance
+          .getAllPaymentSources();
     } catch (e) {
-      throw Exception('Failed to load default payment sources: $e');
+      debugPrint('Failed to load default payment sources: $e');
+      _cachedPaymentSources = [];
     }
   }
 
   /// Get a copy of default income categories (for modification)
-  List<CategoryItem> getIncomeCategories() {
-    return _defaultIncomeCategories.map((category) => category).toList();
+  Future<List<CategoryItem>> getIncomeCategories() async {
+    final categories = await defaultIncomeCategories;
+    return categories.map((category) => category).toList();
   }
 
   /// Get a copy of default expense categories (for modification)
-  List<CategoryItem> getExpenseCategories() {
-    return _defaultExpenseCategories.map((category) => category).toList();
+  Future<List<CategoryItem>> getExpenseCategories() async {
+    final categories = await defaultExpenseCategories;
+    return categories.map((category) => category).toList();
   }
 
   /// Get a copy of default payment sources (for modification)
-  List<PaymentSource> getPaymentSources() {
-    return _defaultPaymentSources.map((source) => source).toList();
+  Future<List<PaymentSource>> getPaymentSources() async {
+    final sources = await defaultPaymentSources;
+    return sources.map((source) => source).toList();
   }
 
   /// Find a category by ID
-  CategoryItem? findCategoryById(String id) {
-    // Search in income categories
-    for (final category in _defaultIncomeCategories) {
-      if (category.id == id) return category;
-    }
-    
-    // Search in expense categories
-    for (final category in _defaultExpenseCategories) {
-      if (category.id == id) return category;
-    }
-    
-    return null;
+  Future<CategoryItem?> findCategoryById(String id) async {
+    return await CategoryService.instance.findCategoryById(id);
   }
 
   /// Find a payment source by ID
-  PaymentSource? findPaymentSourceById(String id) {
-    for (final source in _defaultPaymentSources) {
-      if (source.id == id) return source;
-    }
-    return null;
+  Future<PaymentSource?> findPaymentSourceById(String id) async {
+    return await PaymentSourceService.instance.findPaymentSourceById(id);
   }
 
   /// Check if a category is a default category
-  bool isDefaultCategory(String id) {
-    return findCategoryById(id)?.isDefault ?? false;
+  Future<bool> isDefaultCategory(String id) async {
+    return await CategoryService.instance.isDefaultCategory(id);
   }
 
   /// Check if a payment source is a default payment source
-  bool isDefaultPaymentSource(String id) {
-    return findPaymentSourceById(id)?.isDefault ?? false;
+  Future<bool> isDefaultPaymentSource(String id) async {
+    return await PaymentSourceService.instance.isDefaultPaymentSource(id);
   }
 
   /// Reset the service (useful for testing)
   void reset() {
-    _defaultIncomeCategories.clear();
-    _defaultExpenseCategories.clear();
-    _defaultPaymentSources.clear();
+    _cachedIncomeCategories = null;
+    _cachedExpenseCategories = null;
+    _cachedPaymentSources = null;
     _isInitialized = false;
+  }
+
+  /// Clear cache to force reload from database
+  void clearCache() {
+    _cachedIncomeCategories = null;
+    _cachedExpenseCategories = null;
+    _cachedPaymentSources = null;
   }
 }

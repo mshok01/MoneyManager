@@ -19,16 +19,37 @@ import 'services/device_record_service.dart';
 import 'services/user_service.dart';
 import 'services/account_service.dart';
 import 'services/nudge_service.dart';
+import 'services/category_service.dart';
+import 'services/payment_source_service.dart';
+import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ThemeService.instance.initialize();
-  await DataService.instance.initialize();
-  await DeviceRecordService.instance.initialize();
-  await UserService.instance.initialize();
-  await AccountService.instance.initialize();
-  await NudgeService.instance.initialize();
-  runApp(const MoneyManagerApp());
+
+  try {
+    // Initialize core services first
+    await ThemeService.instance.initialize();
+
+    // Initialize database and wait for it to complete
+    await DatabaseService.instance.initialize();
+
+    // Initialize services that depend on database
+    await DataService.instance.initialize();
+    await CategoryService.instance.initialize();
+    await PaymentSourceService.instance.initialize();
+
+    // Initialize other services
+    await DeviceRecordService.instance.initialize();
+    await UserService.instance.initialize();
+    await AccountService.instance.initialize();
+    await NudgeService.instance.initialize();
+
+    runApp(const MoneyManagerApp());
+  } catch (e) {
+    debugPrint('Failed to initialize app: $e');
+    // Run app anyway with error handling
+    runApp(const MoneyManagerApp());
+  }
 }
 
 class MoneyManagerApp extends StatefulWidget {

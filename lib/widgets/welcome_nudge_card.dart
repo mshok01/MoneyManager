@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/account.dart';
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
 
@@ -82,142 +83,166 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
     if (!_isVisible) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final accounts = AccountService.instance.activeAccounts;
-    final mainAccount = accounts.isNotEmpty ? accounts.first : null;
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.1),
-                    theme.colorScheme.secondary.withValues(alpha: 0.05),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+    return FutureBuilder<List<Account>>(
+      future: AccountService.instance.activeAccounts,
+      builder: (context, snapshot) {
+        final accounts = snapshot.data ?? [];
+        final mainAccount = accounts.isNotEmpty ? accounts.first : null;
+
+        return AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.1),
+                        theme.colorScheme.secondary.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header with dismiss button
-                    Row(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.1,
+                        // Header with dismiss button
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.celebration,
+                                color: theme.colorScheme.primary,
+                                size: 24,
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.celebration,
-                            color: theme.colorScheme.primary,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '🎉 Welcome to Money Manager!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                '🎉 Welcome to Money Manager!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
                             ),
-                          ),
+                            IconButton(
+                              onPressed: _handleDismiss,
+                              icon: Icon(
+                                Icons.close,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          onPressed: _handleDismiss,
-                          icon: Icon(
-                            Icons.close,
+
+                        const SizedBox(height: 16),
+
+                        // Welcome message
+                        Text(
+                          'We\'ve created a "${mainAccount?.name ?? 'Main Account'}" for you to get started quickly.',
+                          style: TextStyle(
+                            fontSize: 14,
                             color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
+                              alpha: 0.8,
                             ),
-                            size: 20,
+                            height: 1.4,
                           ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          'Tap the account name in the header to switch between accounts, or visit Settings to customize your currency and preferences.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                            height: 1.4,
                           ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Action buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pushNamed('/settings');
+                              },
+                              child: Text(
+                                'Settings',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _handleDismiss,
+                              child: Text(
+                                'Got it, thanks!',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // Welcome message
-                    Text(
-                      'We\'ve created a "${mainAccount?.name ?? 'Main Account'}" for you to get started quickly.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.8,
-                        ),
-                        height: 1.4,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      'Tap the account name in the header to switch between accounts, or customize your currency below:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
-                        ),
-                        height: 1.4,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Dismiss button
-                    Center(
-                      child: TextButton(
-                        onPressed: _handleDismiss,
-                        child: Text(
-                          'Got it, thanks!',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.8,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

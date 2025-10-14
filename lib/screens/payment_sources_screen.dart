@@ -29,8 +29,10 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
         await DataService.instance.initialize();
       }
 
+      final defaultSources = await DataService.instance.getPaymentSources();
+
       setState(() {
-        _defaultSources = DataService.instance.getPaymentSources();
+        _defaultSources = defaultSources;
         _isLoading = false;
       });
     } catch (e) {

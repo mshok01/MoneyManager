@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user.dart';
 import 'preferences_service.dart';
 import 'account_service.dart';
+import '../database/database_service.dart';
 
 class UserService {
   static UserService? _instance;
@@ -35,6 +37,7 @@ class UserService {
     try {
       // Initialize dependencies
       _preferencesService = await PreferencesService.getInstance();
+      await DatabaseService.instance.initialize();
 
       // Load existing user if available
       await _loadExistingUser();
@@ -42,17 +45,32 @@ class UserService {
       _isInitialized = true;
     } catch (e) {
       // Log error but don't throw to prevent app crash
-      print('UserService initialization error: $e');
+      debugPrint('UserService initialization error: $e');
       _isInitialized = true; // Mark as initialized to prevent retry loops
     }
   }
 
-  /// Load existing user from preferences
+  /// Load existing user from database
   Future<void> _loadExistingUser() async {
     try {
-      _currentUser = _preferencesService!.getUserRecord();
+      // First try to load from database
+      final users = await DatabaseService.instance.userDao.getActiveUsers();
+      if (users.isNotEmpty) {
+        _currentUser = users.first; // Get the first active user
+
+        // Also update SharedPreferences for backward compatibility
+        await _preferencesService!.setUserRecord(_currentUser!);
+      } else {
+        // Fallback to SharedPreferences for migration
+        final userFromPrefs = _preferencesService!.getUserRecord();
+        if (userFromPrefs != null) {
+          // Migrate user from SharedPreferences to database
+          await DatabaseService.instance.userDao.insert(userFromPrefs);
+          _currentUser = userFromPrefs;
+        }
+      }
     } catch (e) {
-      print('Error loading existing user: $e');
+      debugPrint('Error loading existing user: $e');
       _currentUser = null;
     }
   }
@@ -197,16 +215,21 @@ class UserService {
       );
     } catch (e) {
       // Log error but don't fail user creation if account creation fails
-      print('Failed to create Main Account for user: $e');
+      debugPrint('Failed to create Main Account for user: $e');
     }
 
     return user;
   }
 
-  /// Save user to preferences and update current user
+  /// Save user to database and update current user
   Future<void> _saveUser(User user) async {
     try {
+      // Save to database
+      await DatabaseService.instance.userDao.upsert(user);
+
+      // Also save to SharedPreferences for backward compatibility
       await _preferencesService!.setUserRecord(user);
+
       _currentUser = user;
     } catch (e) {
       throw Exception('Failed to save user: $e');
@@ -258,8 +281,17 @@ class UserService {
       throw Exception('UserService not initialized. Call initialize() first.');
     }
 
+    if (_currentUser == null) {
+      return; // No user to delete
+    }
+
     try {
+      // Delete from database
+      await DatabaseService.instance.userDao.delete(_currentUser!.id);
+
+      // Also clear from SharedPreferences
       await _preferencesService!.clearUserRecord();
+
       _currentUser = null;
     } catch (e) {
       throw Exception('Failed to delete user: $e');
@@ -309,7 +341,14 @@ class UserService {
   /// Clear all user data (useful for testing or reset)
   Future<void> clearUserData() async {
     try {
+      // Clear from database
+      if (_isInitialized) {
+        await DatabaseService.instance.userDao.clear();
+      }
+
+      // Clear from SharedPreferences
       await _preferencesService?.clearUserRecord();
+
       _currentUser = null;
       _isInitialized = false;
     } catch (e) {
@@ -317,7 +356,7 @@ class UserService {
     }
   }
 
-  /// Refresh user data from preferences
+  /// Refresh user data from database
   Future<void> refreshUser() async {
     if (_isInitialized) {
       await _loadExistingUser();

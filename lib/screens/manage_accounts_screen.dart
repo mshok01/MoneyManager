@@ -23,7 +23,7 @@ class _ManageAccountsScreenState extends State<ManageAccountsScreen> {
 
   Future<void> _loadAccounts() async {
     try {
-      final accounts = AccountService.instance.activeAccounts;
+      final accounts = await AccountService.instance.activeAccounts;
       final prefsService = await PreferencesService.getInstance();
       final primaryAccountId = prefsService.getSelectedAccount();
 

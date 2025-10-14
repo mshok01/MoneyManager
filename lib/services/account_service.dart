@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/account.dart';
 import 'user_service.dart';
+import '../database/database_service.dart';
 
 class AccountService {
   static AccountService? _instance;
@@ -11,25 +13,27 @@ class AccountService {
 
   AccountService._();
 
-  List<Account> _accounts = [];
   bool _isInitialized = false;
   final Uuid _uuid = const Uuid();
 
   /// Get all accounts
-  List<Account> get accounts => List.unmodifiable(_accounts);
+  Future<List<Account>> get accounts async =>
+      await DatabaseService.instance.accountDao.getAll();
 
   /// Get active accounts only
-  List<Account> get activeAccounts =>
-      _accounts.where((account) => account.isAccountActive).toList();
+  Future<List<Account>> get activeAccounts async =>
+      await DatabaseService.instance.accountDao.getActiveAccounts();
 
   /// Check if the service is initialized
   bool get isInitialized => _isInitialized;
 
   /// Check if any accounts exist
-  bool get hasAccounts => _accounts.isNotEmpty;
+  Future<bool> get hasAccounts async =>
+      (await DatabaseService.instance.accountDao.count()) > 0;
 
   /// Get account count
-  int get accountCount => _accounts.length;
+  Future<int> get accountCount async =>
+      await DatabaseService.instance.accountDao.count();
 
   /// Initialize the account service
   /// This should be called when the app starts
@@ -37,26 +41,14 @@ class AccountService {
     if (_isInitialized) return;
 
     try {
-      // Load existing accounts if available
-      await _loadExistingAccounts();
+      // Initialize database service
+      await DatabaseService.instance.initialize();
 
       _isInitialized = true;
     } catch (e) {
       // Log error but don't throw to prevent app crash
-      print('AccountService initialization error: $e');
+      debugPrint('AccountService initialization error: $e');
       _isInitialized = true; // Mark as initialized to prevent retry loops
-    }
-  }
-
-  /// Load existing accounts from preferences
-  Future<void> _loadExistingAccounts() async {
-    try {
-      // TODO: Implement loading accounts from preferences
-      // This will be implemented when we add persistence
-      _accounts = [];
-    } catch (e) {
-      print('Error loading existing accounts: $e');
-      _accounts = [];
     }
   }
 
@@ -115,11 +107,8 @@ class AccountService {
       throw Exception('Invalid account data');
     }
 
-    // Add to local list
-    _accounts.add(account);
-
-    // TODO: Save to preferences
-    await _saveAccounts();
+    // Save to database
+    await DatabaseService.instance.accountDao.insert(account);
 
     return account;
   }
@@ -140,14 +129,13 @@ class AccountService {
       );
     }
 
-    final accountIndex = _accounts.indexWhere(
-      (account) => account.id == accountId,
+    final currentAccount = await DatabaseService.instance.accountDao.getById(
+      accountId,
     );
-    if (accountIndex == -1) {
+    if (currentAccount == null) {
       throw Exception('Account not found');
     }
 
-    final currentAccount = _accounts[accountIndex];
     final updatedAccount = currentAccount.copyWith(
       name: name,
       description: description,
@@ -163,11 +151,8 @@ class AccountService {
       throw Exception('Invalid account data');
     }
 
-    // Update in local list
-    _accounts[accountIndex] = updatedAccount;
-
-    // TODO: Save to preferences
-    await _saveAccounts();
+    // Update in database
+    await DatabaseService.instance.accountDao.update(updatedAccount, accountId);
 
     return updatedAccount;
   }
@@ -180,67 +165,50 @@ class AccountService {
       );
     }
 
-    final accountIndex = _accounts.indexWhere(
-      (account) => account.id == accountId,
-    );
-    if (accountIndex == -1) {
-      throw Exception('Account not found');
-    }
-
     // Mark as inactive instead of removing
-    _accounts[accountIndex] = _accounts[accountIndex].copyWith(
-      isActive: 0,
-      updatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
-    );
-
-    // TODO: Save to preferences
-    await _saveAccounts();
+    await DatabaseService.instance.accountDao.softDelete(accountId);
   }
 
   /// Get account by ID
-  Account? getAccountById(String accountId) {
-    try {
-      return _accounts.firstWhere((account) => account.id == accountId);
-    } catch (e) {
-      return null;
-    }
+  Future<Account?> getAccountById(String accountId) async {
+    return await DatabaseService.instance.accountDao.getById(accountId);
   }
 
   /// Get accounts where user is a member
-  List<Account> getAccountsForUser(String userId) {
-    return _accounts
-        .where((account) => account.isMember(userId) && account.isAccountActive)
-        .toList();
+  Future<List<Account>> getAccountsForUser(String userId) async {
+    return await DatabaseService.instance.accountDao.getAccountsForUser(userId);
   }
 
   /// Get accounts where user is an admin
-  List<Account> getAccountsWhereUserIsAdmin(String userId) {
-    return _accounts
-        .where((account) => account.isAdmin(userId) && account.isAccountActive)
-        .toList();
+  Future<List<Account>> getAccountsWhereUserIsAdmin(String userId) async {
+    return await DatabaseService.instance.accountDao
+        .getAccountsWhereUserIsAdmin(userId);
   }
 
   /// Check if user can access account
-  bool canUserAccessAccount(String userId, String accountId) {
-    final account = getAccountById(accountId);
-    return account?.isMember(userId) ?? false;
+  Future<bool> canUserAccessAccount(String userId, String accountId) async {
+    return await DatabaseService.instance.accountDao.canUserAccessAccount(
+      userId,
+      accountId,
+    );
   }
 
   /// Check if user can manage account
-  bool canUserManageAccount(String userId, String accountId) {
-    final account = getAccountById(accountId);
-    return account?.hasAdminPrivileges(userId) ?? false;
+  Future<bool> canUserManageAccount(String userId, String accountId) async {
+    return await DatabaseService.instance.accountDao.isUserAdmin(
+      userId,
+      accountId,
+    );
   }
 
   /// Add member to account
   Future<Account> addMemberToAccount(String accountId, String userId) async {
-    final account = getAccountById(accountId);
+    await DatabaseService.instance.accountDao.addMember(accountId, userId);
+    final account = await getAccountById(accountId);
     if (account == null) {
-      throw Exception('Account not found');
+      throw Exception('Account not found after update');
     }
-
-    final updatedAccount = account.addMember(userId);
-    return await updateAccount(accountId, members: updatedAccount.members);
+    return account;
   }
 
   /// Remove member from account
@@ -248,44 +216,28 @@ class AccountService {
     String accountId,
     String userId,
   ) async {
-    final account = getAccountById(accountId);
+    await DatabaseService.instance.accountDao.removeMember(accountId, userId);
+    final account = await getAccountById(accountId);
     if (account == null) {
-      throw Exception('Account not found');
+      throw Exception('Account not found after update');
     }
-
-    final updatedAccount = account.removeMember(userId);
-    return await updateAccount(
-      accountId,
-      members: updatedAccount.members,
-      admins: updatedAccount.admins,
-    );
-  }
-
-  /// Save accounts to preferences (placeholder)
-  Future<void> _saveAccounts() async {
-    try {
-      // TODO: Implement saving accounts to preferences
-      // This will be implemented when we add persistence
-    } catch (e) {
-      throw Exception('Failed to save accounts: $e');
-    }
+    return account;
   }
 
   /// Clear all account data (useful for testing or reset)
   Future<void> clearAccountData() async {
     try {
-      // TODO: Clear accounts from preferences
-      _accounts.clear();
+      if (_isInitialized) {
+        await DatabaseService.instance.accountDao.clear();
+      }
       _isInitialized = false;
     } catch (e) {
       throw Exception('Failed to clear account data: $e');
     }
   }
 
-  /// Refresh accounts from preferences
+  /// Refresh accounts (no-op since we always fetch from database)
   Future<void> refreshAccounts() async {
-    if (_isInitialized) {
-      await _loadExistingAccounts();
-    }
+    // No-op since we always fetch fresh data from database
   }
 }
