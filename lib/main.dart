@@ -13,6 +13,8 @@ import 'services/theme_service.dart';
 import 'services/data_service.dart';
 import 'services/device_record_service.dart';
 import 'services/user_service.dart';
+import 'services/account_service.dart';
+import 'services/nudge_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,8 @@ void main() async {
   await DataService.instance.initialize();
   await DeviceRecordService.instance.initialize();
   await UserService.instance.initialize();
+  await AccountService.instance.initialize();
+  await NudgeService.instance.initialize();
   runApp(const MoneyManagerApp());
 }
 

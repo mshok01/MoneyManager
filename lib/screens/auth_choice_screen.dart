@@ -28,8 +28,8 @@ class AuthChoiceScreen extends StatelessWidget {
       if (context.mounted) {
         Navigator.of(context).pop();
 
-        // Navigate to currency selection
-        Navigator.of(context).pushNamed('/currency-selection');
+        // Navigate directly to backup account screen (skip currency selection)
+        Navigator.of(context).pushNamed('/backup-account');
       }
     } catch (e) {
       // Close loading dialog if still open

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:uuid/uuid.dart';
 import '../models/user.dart';
 import 'preferences_service.dart';
+import 'account_service.dart';
 
 class UserService {
   static UserService? _instance;
@@ -55,20 +57,121 @@ class UserService {
     }
   }
 
+  /// Auto-detect currency from device locale
+  Map<String, String> _detectCurrencyFromLocale() {
+    try {
+      // Get device locale
+      final locale = Platform.localeName; // e.g., 'en_US'
+      final parts = locale.split('_');
+      final countryCode = parts.length > 1 ? parts[1].toUpperCase() : 'US';
+
+      // Map common country codes to currencies
+      final Map<String, Map<String, String>> countryToCurrency = {
+        'US': {'code': 'USD', 'name': 'US Dollar'},
+        'CA': {'code': 'CAD', 'name': 'Canadian Dollar'},
+        'GB': {'code': 'GBP', 'name': 'British Pound'},
+        'AU': {'code': 'AUD', 'name': 'Australian Dollar'},
+        'NZ': {'code': 'NZD', 'name': 'New Zealand Dollar'},
+        'IN': {'code': 'INR', 'name': 'Indian Rupee'},
+        'JP': {'code': 'JPY', 'name': 'Japanese Yen'},
+        'KR': {'code': 'KRW', 'name': 'South Korean Won'},
+        'CN': {'code': 'CNY', 'name': 'Chinese Yuan'},
+        'SG': {'code': 'SGD', 'name': 'Singapore Dollar'},
+        'TH': {'code': 'THB', 'name': 'Thai Baht'},
+        'ZA': {'code': 'ZAR', 'name': 'South African Rand'},
+        'CH': {'code': 'CHF', 'name': 'Swiss Franc'},
+        'SE': {'code': 'SEK', 'name': 'Swedish Krona'},
+        'NO': {'code': 'NOK', 'name': 'Norwegian Krone'},
+        'DK': {'code': 'DKK', 'name': 'Danish Krone'},
+        'PL': {'code': 'PLN', 'name': 'Polish Zloty'},
+        'CZ': {'code': 'CZK', 'name': 'Czech Koruna'},
+        'HU': {'code': 'HUF', 'name': 'Hungarian Forint'},
+        'RU': {'code': 'RUB', 'name': 'Russian Ruble'},
+        'BR': {'code': 'BRL', 'name': 'Brazilian Real'},
+        'MX': {'code': 'MXN', 'name': 'Mexican Peso'},
+        'AE': {'code': 'AED', 'name': 'UAE Dirham'},
+        'SA': {'code': 'SAR', 'name': 'Saudi Riyal'},
+        'EG': {'code': 'EGP', 'name': 'Egyptian Pound'},
+        'NG': {'code': 'NGN', 'name': 'Nigerian Naira'},
+        'KE': {'code': 'KES', 'name': 'Kenyan Shilling'},
+        'GH': {'code': 'GHS', 'name': 'Ghanaian Cedi'},
+        'TR': {'code': 'TRY', 'name': 'Turkish Lira'},
+        'AR': {'code': 'ARS', 'name': 'Argentine Peso'},
+        'CL': {'code': 'CLP', 'name': 'Chilean Peso'},
+        'CO': {'code': 'COP', 'name': 'Colombian Peso'},
+        'PE': {'code': 'PEN', 'name': 'Peruvian Sol'},
+        'HK': {'code': 'HKD', 'name': 'Hong Kong Dollar'},
+        'TW': {'code': 'TWD', 'name': 'Taiwan Dollar'},
+        'MY': {'code': 'MYR', 'name': 'Malaysian Ringgit'},
+        'ID': {'code': 'IDR', 'name': 'Indonesian Rupiah'},
+        'PH': {'code': 'PHP', 'name': 'Philippine Peso'},
+        'VN': {'code': 'VND', 'name': 'Vietnamese Dong'},
+        'PK': {'code': 'PKR', 'name': 'Pakistani Rupee'},
+        'BD': {'code': 'BDT', 'name': 'Bangladeshi Taka'},
+        'LK': {'code': 'LKR', 'name': 'Sri Lankan Rupee'},
+        'NP': {'code': 'NPR', 'name': 'Nepalese Rupee'},
+        'IL': {'code': 'ILS', 'name': 'Israeli Shekel'},
+        'RO': {'code': 'RON', 'name': 'Romanian Leu'},
+        'BG': {'code': 'BGN', 'name': 'Bulgarian Lev'},
+        'HR': {'code': 'HRK', 'name': 'Croatian Kuna'},
+        'IS': {'code': 'ISK', 'name': 'Icelandic Krona'},
+        'UA': {'code': 'UAH', 'name': 'Ukrainian Hryvnia'},
+      };
+
+      // For EU countries, default to EUR
+      final euCountries = [
+        'DE',
+        'FR',
+        'IT',
+        'ES',
+        'NL',
+        'BE',
+        'AT',
+        'PT',
+        'IE',
+        'FI',
+        'GR',
+        'LU',
+        'SI',
+        'SK',
+        'EE',
+        'LV',
+        'LT',
+        'CY',
+        'MT',
+      ];
+
+      if (euCountries.contains(countryCode)) {
+        return {'code': 'EUR', 'name': 'Euro'};
+      }
+
+      return countryToCurrency[countryCode] ??
+          {'code': 'USD', 'name': 'US Dollar'};
+    } catch (e) {
+      // Fallback to USD if detection fails
+      return {'code': 'USD', 'name': 'US Dollar'};
+    }
+  }
+
   /// Create a new user with default values
-  /// For now, we create an anonymous user that can be updated later
+  /// Auto-detects currency from device locale
   Future<User> createUser({
     String email = '',
     String name = 'User',
     String profilePic = '',
-    String currencyCode = '',
-    String currencyName = '',
+    String? currencyCode,
+    String? currencyName,
   }) async {
     if (!_isInitialized) {
       throw Exception('UserService not initialized. Call initialize() first.');
     }
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+
+    // Auto-detect currency if not provided
+    final detectedCurrency = _detectCurrencyFromLocale();
+    final finalCurrencyCode = currencyCode ?? detectedCurrency['code']!;
+    final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
 
     final user = User(
       id: _uuid.v4(),
@@ -78,12 +181,24 @@ class UserService {
       email: email,
       name: name,
       profilePic: profilePic,
-      currencyCode: currencyCode,
-      currencyName: currencyName,
+      currencyCode: finalCurrencyCode,
+      currencyName: finalCurrencyName,
     );
 
     // Save the user
     await _saveUser(user);
+
+    // Auto-create "Main Account" for the user
+    try {
+      await AccountService.instance.createAccount(
+        name: 'Main Account',
+        description: 'Your primary account for tracking expenses and income',
+        createdBy: user.id,
+      );
+    } catch (e) {
+      // Log error but don't fail user creation if account creation fails
+      print('Failed to create Main Account for user: $e');
+    }
 
     return user;
   }

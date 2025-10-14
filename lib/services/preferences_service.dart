@@ -66,6 +66,20 @@ class PreferencesService {
     await _preferences!.clear();
   }
 
+  // Generic boolean preferences
+  Future<void> setBool(String key, bool value) async {
+    await _preferences!.setBool(key, value);
+  }
+
+  bool getBool(String key) {
+    return _preferences!.getBool(key) ?? false;
+  }
+
+  // Generic remove method
+  Future<void> remove(String key) async {
+    await _preferences!.remove(key);
+  }
+
   // Check if currency is set
   bool hasCurrencySet() {
     return _preferences!.containsKey(_currencyKey);
