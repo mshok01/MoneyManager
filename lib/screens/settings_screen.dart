@@ -69,6 +69,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.of(context).pushNamed('/payment-sources');
   }
 
+  void _navigateToManageAccounts() {
+    Navigator.of(context).pushNamed('/manage-accounts');
+  }
+
   Future<void> _showThemeSelectionDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ThemeService.instance.currentTheme;
@@ -177,6 +181,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _showThemeSelectionDialog,
+          ),
+          const Divider(),
+
+          // Accounts Section
+          _buildSectionHeader('Accounts'),
+          ListTile(
+            leading: const Icon(Icons.account_balance_wallet),
+            title: const Text('Manage Accounts'),
+            subtitle: const Text('Add, edit, and organize accounts'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: _navigateToManageAccounts,
           ),
           const Divider(),
 

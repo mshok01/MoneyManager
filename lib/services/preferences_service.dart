@@ -9,6 +9,7 @@ class PreferencesService {
   static const String _themeKey = 'selected_theme';
   static const String _deviceRecordKey = 'device_record';
   static const String _userRecordKey = 'user_record';
+  static const String _selectedAccountKey = 'selected_account_id';
 
   static PreferencesService? _instance;
   static SharedPreferences? _preferences;
@@ -33,6 +34,23 @@ class PreferencesService {
 
   Future<void> clearSelectedCurrency() async {
     await _preferences!.remove(_currencyKey);
+  }
+
+  // Account selection preferences
+  Future<void> setSelectedAccount(String accountId) async {
+    await _preferences!.setString(_selectedAccountKey, accountId);
+  }
+
+  String? getSelectedAccount() {
+    return _preferences!.getString(_selectedAccountKey);
+  }
+
+  Future<void> clearSelectedAccount() async {
+    await _preferences!.remove(_selectedAccountKey);
+  }
+
+  bool hasSelectedAccount() {
+    return _preferences!.containsKey(_selectedAccountKey);
   }
 
   // Onboarding preferences

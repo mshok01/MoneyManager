@@ -9,6 +9,10 @@ import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/payment_sources_screen.dart';
+import 'screens/manage_accounts_screen.dart';
+import 'screens/account_details_screen.dart';
+import 'screens/add_account_screen.dart';
+import 'models/account.dart';
 import 'services/theme_service.dart';
 import 'services/data_service.dart';
 import 'services/device_record_service.dart';
@@ -83,6 +87,8 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
         '/settings': (context) => const SettingsScreen(),
         '/categories': (context) => const CategoryScreen(),
         '/payment-sources': (context) => const PaymentSourcesScreen(),
+        '/manage-accounts': (context) => const ManageAccountsScreen(),
+        '/add-account': (context) => const AddAccountScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/currency-selection-settings') {
@@ -94,6 +100,16 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
             ),
           );
         }
+
+        if (settings.name == '/account-details') {
+          final account = settings.arguments as Account?;
+          if (account != null) {
+            return MaterialPageRoute(
+              builder: (context) => AccountDetailsScreen(account: account),
+            );
+          }
+        }
+
         return null;
       },
     );

@@ -77,13 +77,6 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
     }
   }
 
-  void _handleAccountRename() async {
-    await NudgeService.instance.markNudgeAsShown(
-      NudgeService.accountRenameNudge,
-    );
-    widget.onAccountRename?.call();
-  }
-
   void _handleCurrencyChange() async {
     await NudgeService.instance.markNudgeAsShown(
       NudgeService.currencyChangeNudge,
@@ -205,7 +198,7 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                     const SizedBox(height: 8),
 
                     Text(
-                      'You can customize your account name and currency anytime:',
+                      'Tap the account name in the header to switch between accounts, or customize your currency below:',
                       style: TextStyle(
                         fontSize: 14,
                         color: theme.colorScheme.onSurface.withValues(
@@ -218,74 +211,38 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                     const SizedBox(height: 20),
 
                     // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _handleAccountRename,
-                            icon: Icon(
-                              Icons.edit,
-                              size: 18,
-                              color: theme.colorScheme.primary,
-                            ),
-                            label: Text(
-                              'Rename Account',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _handleCurrencyChange,
+                        icon: Icon(
+                          Icons.currency_exchange,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                        label: Text(
+                          'Set Currency',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _handleCurrencyChange,
-                            icon: Icon(
-                              Icons.currency_exchange,
-                              size: 18,
-                              color: theme.colorScheme.primary,
-                            ),
-                            label: Text(
-                              'Change Currency',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.5,
                             ),
                           ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
 
                     const SizedBox(height: 16),
