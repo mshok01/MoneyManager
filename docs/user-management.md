@@ -25,6 +25,8 @@ class User {
   final String email;       // user email address
   final String name;        // user display name
   final String profilePic;  // profile picture URL or path
+  final String currencyCode; // currency code (e.g., 'USD', 'EUR')
+  final String currencyName; // currency name (e.g., 'US Dollar', 'Euro')
 }
 ```
 
@@ -49,6 +51,8 @@ final user = User(
   email: 'user@example.com',
   name: 'John Doe',
   profilePic: '',
+  currencyCode: 'USD',
+  currencyName: 'US Dollar',
 );
 
 // Update user
@@ -85,6 +89,8 @@ final user = await UserService.instance.createUser(
   email: 'user@example.com',
   name: 'John Doe',
   profilePic: 'https://example.com/profile.jpg',
+  currencyCode: 'USD',
+  currencyName: 'US Dollar',
 );
 ```
 
@@ -105,7 +111,20 @@ final user = userService.currentUser;
 final updatedUser = await userService.updateUser(
   email: 'new@example.com',
   name: 'New Name',
+  currencyCode: 'EUR',
+  currencyName: 'Euro',
 );
+
+// Update only currency
+final userWithNewCurrency = await userService.updateUser(
+  currencyCode: 'GBP',
+  currencyName: 'British Pound',
+);
+
+// Get currency information
+String currencyCode = userService.getUserCurrencyCode();
+String currencyName = userService.getUserCurrencyName();
+bool hasCurrency = userService.hasUserCurrency();
 
 // Delete user
 await userService.deleteUser();
@@ -135,6 +154,11 @@ bool isAnonymous = UserUtils.isAnonymousUser();
 String name = UserUtils.getUserDisplayName(fallback: 'Guest');
 String email = UserUtils.getUserEmail(fallback: 'No email');
 
+// Get currency information with fallbacks
+String currencyCode = UserUtils.getUserCurrencyCode(fallback: 'USD');
+String currencyName = UserUtils.getUserCurrencyName(fallback: 'US Dollar');
+bool hasCurrency = UserUtils.hasUserCurrency();
+
 // Get user dates (automatically converted to local timezone for UI)
 DateTime? creationDate = UserUtils.getUserCreationDate(); // Local time
 DateTime? updateDate = UserUtils.getUserLastUpdateDate(); // Local time
@@ -163,6 +187,14 @@ final user = await UserUtils.createAnonymousUser();
 await UserUtils.updateUserInfo(
   email: 'new@example.com',
   name: 'New Name',
+  currencyCode: 'EUR',
+  currencyName: 'Euro',
+);
+
+// Update only currency
+await UserUtils.updateUserCurrency(
+  currencyCode: 'GBP',
+  currencyName: 'British Pound',
 );
 
 // User status management

@@ -29,12 +29,16 @@ void main() {
         email: 'test@example.com',
         name: 'Test User',
         profilePic: 'https://example.com/profile.jpg',
+        currencyCode: 'USD',
+        currencyName: 'US Dollar',
       );
 
       expect(user.id, isNotEmpty);
       expect(user.email, 'test@example.com');
       expect(user.name, 'Test User');
       expect(user.profilePic, 'https://example.com/profile.jpg');
+      expect(user.currencyCode, 'USD');
+      expect(user.currencyName, 'US Dollar');
       expect(user.isActive, 1);
       expect(user.createdAt, greaterThan(0));
       expect(user.updatedAt, greaterThan(0));
@@ -50,6 +54,8 @@ void main() {
       expect(user.email, '');
       expect(user.name, 'User');
       expect(user.profilePic, '');
+      expect(user.currencyCode, '');
+      expect(user.currencyName, '');
       expect(user.isActive, 1);
       expect(user.createdAt, greaterThan(0));
       expect(user.updatedAt, greaterThan(0));
@@ -80,6 +86,26 @@ void main() {
       expect(updatedUser.updatedAt, greaterThan(originalUpdatedAt));
 
       expect(userService.currentUser, equals(updatedUser));
+    });
+
+    test('should update user currency', () async {
+      // Create a user first
+      await userService.createUser(
+        email: 'test@example.com',
+        name: 'Test User',
+      );
+
+      // Update currency
+      final updatedUser = await userService.updateUser(
+        currencyCode: 'EUR',
+        currencyName: 'Euro',
+      );
+
+      expect(updatedUser.currencyCode, 'EUR');
+      expect(updatedUser.currencyName, 'Euro');
+      expect(userService.getUserCurrencyCode(), 'EUR');
+      expect(userService.getUserCurrencyName(), 'Euro');
+      expect(userService.hasUserCurrency(), true);
     });
 
     test('should update user timestamp', () async {

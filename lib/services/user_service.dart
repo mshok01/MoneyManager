@@ -61,6 +61,8 @@ class UserService {
     String email = '',
     String name = 'User',
     String profilePic = '',
+    String currencyCode = '',
+    String currencyName = '',
   }) async {
     if (!_isInitialized) {
       throw Exception('UserService not initialized. Call initialize() first.');
@@ -76,6 +78,8 @@ class UserService {
       email: email,
       name: name,
       profilePic: profilePic,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
     );
 
     // Save the user
@@ -100,6 +104,8 @@ class UserService {
     String? name,
     String? profilePic,
     int? isActive,
+    String? currencyCode,
+    String? currencyName,
   }) async {
     if (!_isInitialized) {
       throw Exception('UserService not initialized. Call initialize() first.');
@@ -114,6 +120,8 @@ class UserService {
       name: name,
       profilePic: profilePic,
       isActive: isActive,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
       updatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
 
@@ -166,6 +174,21 @@ class UserService {
   /// Validate current user
   bool isCurrentUserValid() {
     return _currentUser?.isValid ?? false;
+  }
+
+  /// Get user's currency code
+  String getUserCurrencyCode() {
+    return _currentUser?.currencyCode ?? '';
+  }
+
+  /// Get user's currency name
+  String getUserCurrencyName() {
+    return _currentUser?.currencyName ?? '';
+  }
+
+  /// Check if user has currency set
+  bool hasUserCurrency() {
+    return _currentUser?.currencyCode.isNotEmpty ?? false;
   }
 
   /// Clear all user data (useful for testing or reset)

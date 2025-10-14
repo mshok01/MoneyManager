@@ -6,6 +6,8 @@ class User {
   final String email; // user email address
   final String name; // user display name
   final String profilePic; // profile picture URL or path
+  final String currencyCode; // currency code (e.g., 'USD', 'EUR')
+  final String currencyName; // currency name (e.g., 'US Dollar', 'Euro')
 
   User({
     required this.id,
@@ -15,6 +17,8 @@ class User {
     required this.email,
     required this.name,
     required this.profilePic,
+    required this.currencyCode,
+    required this.currencyName,
   });
 
   /// Factory constructor to create User from JSON
@@ -27,6 +31,8 @@ class User {
       email: json['email'] as String,
       name: json['name'] as String,
       profilePic: json['profilePic'] as String,
+      currencyCode: json['currencyCode'] as String? ?? '',
+      currencyName: json['currencyName'] as String? ?? '',
     );
   }
 
@@ -40,6 +46,8 @@ class User {
       'email': email,
       'name': name,
       'profilePic': profilePic,
+      'currencyCode': currencyCode,
+      'currencyName': currencyName,
     };
   }
 
@@ -52,6 +60,8 @@ class User {
     String? email,
     String? name,
     String? profilePic,
+    String? currencyCode,
+    String? currencyName,
   }) {
     return User(
       id: id ?? this.id,
@@ -61,6 +71,8 @@ class User {
       email: email ?? this.email,
       name: name ?? this.name,
       profilePic: profilePic ?? this.profilePic,
+      currencyCode: currencyCode ?? this.currencyCode,
+      currencyName: currencyName ?? this.currencyName,
     );
   }
 

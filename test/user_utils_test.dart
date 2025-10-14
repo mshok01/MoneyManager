@@ -97,6 +97,31 @@ void main() {
       expect(UserUtils.getUserEmail(fallback: 'no-email'), 'no-email');
     });
 
+    test('should get user currency with fallback', () async {
+      // No user initially
+      expect(UserUtils.getUserCurrencyCode(), '');
+      expect(UserUtils.getUserCurrencyName(), '');
+      expect(UserUtils.getUserCurrencyCode(fallback: 'USD'), 'USD');
+      expect(UserUtils.getUserCurrencyName(fallback: 'US Dollar'), 'US Dollar');
+      expect(UserUtils.hasUserCurrency(), false);
+
+      // Create user and set currency
+      await userService.createUser();
+      await UserUtils.updateUserCurrency(
+        currencyCode: 'EUR',
+        currencyName: 'Euro',
+      );
+      expect(UserUtils.getUserCurrencyCode(), 'EUR');
+      expect(UserUtils.getUserCurrencyName(), 'Euro');
+      expect(UserUtils.hasUserCurrency(), true);
+
+      // Clear currency
+      await UserUtils.updateUserInfo(currencyCode: '', currencyName: '');
+      expect(UserUtils.getUserCurrencyCode(), '');
+      expect(UserUtils.getUserCurrencyName(), '');
+      expect(UserUtils.hasUserCurrency(), false);
+    });
+
     test('should create anonymous user', () async {
       expect(UserUtils.userExists(), false);
 

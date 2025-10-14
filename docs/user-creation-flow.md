@@ -150,6 +150,8 @@ User {
   email: "",                      // Empty for anonymous users
   name: "User",                   // Default name
   profilePic: "",                 // Empty initially
+  currencyCode: "",               // Empty initially (to be set later)
+  currencyName: "",               // Empty initially (to be set later)
 }
 ```
 

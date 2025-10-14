@@ -70,6 +70,30 @@ class UserUtils {
     return user.email;
   }
 
+  /// Get user currency code with fallback
+  static String getUserCurrencyCode({String fallback = ''}) {
+    final user = getCurrentUser();
+    if (user == null || user.currencyCode.isEmpty) {
+      return fallback;
+    }
+    return user.currencyCode;
+  }
+
+  /// Get user currency name with fallback
+  static String getUserCurrencyName({String fallback = ''}) {
+    final user = getCurrentUser();
+    if (user == null || user.currencyName.isEmpty) {
+      return fallback;
+    }
+    return user.currencyName;
+  }
+
+  /// Check if user has currency set
+  static bool hasUserCurrency() {
+    final user = getCurrentUser();
+    return user?.currencyCode.isNotEmpty ?? false;
+  }
+
   /// Create a new anonymous user
   static Future<User> createAnonymousUser() async {
     return await UserService.instance.createUser();
@@ -80,11 +104,26 @@ class UserUtils {
     String? email,
     String? name,
     String? profilePic,
+    String? currencyCode,
+    String? currencyName,
   }) async {
     return await UserService.instance.updateUser(
       email: email,
       name: name,
       profilePic: profilePic,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
+    );
+  }
+
+  /// Update user currency
+  static Future<User> updateUserCurrency({
+    required String currencyCode,
+    required String currencyName,
+  }) async {
+    return await UserService.instance.updateUser(
+      currencyCode: currencyCode,
+      currencyName: currencyName,
     );
   }
 
@@ -240,6 +279,9 @@ class UserUtils {
       'ageInDays': getUserAgeInDays(),
       'isAnonymous': isAnonymousUser(),
       'wasCreatedToday': wasUserCreatedToday(),
+      'currencyCode': user.currencyCode,
+      'currencyName': user.currencyName,
+      'hasCurrency': hasUserCurrency(),
     };
   }
 }

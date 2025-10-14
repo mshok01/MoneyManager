@@ -15,6 +15,8 @@ void main() {
         email: 'test@example.com',
         name: 'Test User',
         profilePic: 'https://example.com/profile.jpg',
+        currencyCode: 'USD',
+        currencyName: 'US Dollar',
       );
     });
 
@@ -26,11 +28,13 @@ void main() {
       expect(testUser.email, 'test@example.com');
       expect(testUser.name, 'Test User');
       expect(testUser.profilePic, 'https://example.com/profile.jpg');
+      expect(testUser.currencyCode, 'USD');
+      expect(testUser.currencyName, 'US Dollar');
     });
 
     test('should convert to JSON correctly', () {
       final json = testUser.toJson();
-      
+
       expect(json['id'], 'test-user-id');
       expect(json['createdAt'], now);
       expect(json['updatedAt'], now);
@@ -38,6 +42,8 @@ void main() {
       expect(json['email'], 'test@example.com');
       expect(json['name'], 'Test User');
       expect(json['profilePic'], 'https://example.com/profile.jpg');
+      expect(json['currencyCode'], 'USD');
+      expect(json['currencyName'], 'US Dollar');
     });
 
     test('should create from JSON correctly', () {
@@ -49,10 +55,12 @@ void main() {
         'email': 'json@example.com',
         'name': 'JSON User',
         'profilePic': 'https://example.com/json.jpg',
+        'currencyCode': 'EUR',
+        'currencyName': 'Euro',
       };
 
       final user = User.fromJson(json);
-      
+
       expect(user.id, 'json-user-id');
       expect(user.createdAt, now);
       expect(user.updatedAt, now);
@@ -60,6 +68,8 @@ void main() {
       expect(user.email, 'json@example.com');
       expect(user.name, 'JSON User');
       expect(user.profilePic, 'https://example.com/json.jpg');
+      expect(user.currencyCode, 'EUR');
+      expect(user.currencyName, 'Euro');
     });
 
     test('should create copy with updated fields', () {
@@ -79,12 +89,12 @@ void main() {
 
     test('should update timestamp correctly', () {
       final originalUpdatedAt = testUser.updatedAt;
-      
+
       // Wait a bit to ensure timestamp difference
       Future.delayed(const Duration(milliseconds: 1));
-      
+
       final updatedUser = testUser.updateTimestamp();
-      
+
       expect(updatedUser.updatedAt, greaterThan(originalUpdatedAt));
       expect(updatedUser.id, testUser.id);
       expect(updatedUser.createdAt, testUser.createdAt);
@@ -96,42 +106,74 @@ void main() {
 
     test('should correctly identify active user', () {
       expect(testUser.isUserActive, true);
-      
+
       final inactiveUser = testUser.copyWith(isActive: 0);
       expect(inactiveUser.isUserActive, false);
     });
 
     test('should validate email correctly', () {
       expect(testUser.hasValidEmail, true);
-      
+
       final userWithoutEmail = testUser.copyWith(email: '');
       expect(userWithoutEmail.hasValidEmail, false);
-      
+
       final userWithInvalidEmail = testUser.copyWith(email: 'invalid-email');
       expect(userWithInvalidEmail.hasValidEmail, false);
     });
 
     test('should check if user has name', () {
       expect(testUser.hasName, true);
-      
+
       final userWithoutName = testUser.copyWith(name: '');
       expect(userWithoutName.hasName, false);
     });
 
     test('should check if user has profile picture', () {
       expect(testUser.hasProfilePic, true);
-      
+
       final userWithoutProfilePic = testUser.copyWith(profilePic: '');
       expect(userWithoutProfilePic.hasProfilePic, false);
     });
 
+    test('should handle currency fields correctly', () {
+      expect(testUser.currencyCode, 'USD');
+      expect(testUser.currencyName, 'US Dollar');
+
+      // Test copyWith for currency fields
+      final updatedUser = testUser.copyWith(
+        currencyCode: 'EUR',
+        currencyName: 'Euro',
+      );
+      expect(updatedUser.currencyCode, 'EUR');
+      expect(updatedUser.currencyName, 'Euro');
+
+      // Test JSON with currency fields
+      final json = updatedUser.toJson();
+      expect(json['currencyCode'], 'EUR');
+      expect(json['currencyName'], 'Euro');
+
+      // Test fromJson with missing currency fields (should default to empty)
+      final jsonWithoutCurrency = {
+        'id': 'test-id',
+        'createdAt': now,
+        'updatedAt': now,
+        'isActive': 1,
+        'email': 'test@example.com',
+        'name': 'Test User',
+        'profilePic': '',
+      };
+      final userFromJson = User.fromJson(jsonWithoutCurrency);
+      expect(userFromJson.currencyCode, '');
+      expect(userFromJson.currencyName, '');
+    });
+
     test('should validate user data correctly', () {
       expect(testUser.isValid, true);
-      
+
       // Test invalid cases
       final userWithEmptyId = testUser.copyWith(id: '');
       expect(userWithEmptyId.isValid, false);
-      
+
       final userWithInvalidActive = User(
         id: 'test-id',
         createdAt: now,
@@ -140,12 +182,14 @@ void main() {
         email: 'test@example.com',
         name: 'Test User',
         profilePic: '',
+        currencyCode: 'USD',
+        currencyName: 'US Dollar',
       );
       expect(userWithInvalidActive.isValid, false);
-      
+
       final userWithInvalidEmail = testUser.copyWith(email: 'invalid');
       expect(userWithInvalidEmail.isValid, false);
-      
+
       final userWithoutName = testUser.copyWith(name: '');
       expect(userWithoutName.isValid, false);
     });
@@ -167,11 +211,13 @@ void main() {
         email: 'test@example.com',
         name: 'Test User',
         profilePic: 'https://example.com/profile.jpg',
+        currencyCode: 'USD',
+        currencyName: 'US Dollar',
       );
-      
+
       expect(testUser, equals(sameUser));
       expect(testUser.hashCode, equals(sameUser.hashCode));
-      
+
       final differentUser = testUser.copyWith(name: 'Different Name');
       expect(testUser, isNot(equals(differentUser)));
       expect(testUser.hashCode, isNot(equals(differentUser.hashCode)));
@@ -184,7 +230,7 @@ void main() {
         updatedAt: 0,
       );
       expect(userWithZeroTimestamps.isValid, false);
-      
+
       // Test with negative timestamps
       final userWithNegativeTimestamps = testUser.copyWith(
         createdAt: -1,
