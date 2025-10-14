@@ -3,9 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
-import '../services/user_service.dart';
 import '../services/preferences_service.dart';
-import '../screens/currency_selection_screen.dart';
 import '../models/account.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,30 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Account rename feature coming soon!')),
     );
-  }
-
-  void _handleCurrencyChange() async {
-    final currentUser = UserService.instance.currentUser;
-    if (currentUser == null) return;
-
-    final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (context) => CurrencySelectionScreen(
-          isFromSettings: true,
-          currentCurrency: currentUser.currencyCode,
-        ),
-      ),
-    );
-
-    if (result != null && mounted) {
-      // Update user currency
-      await UserService.instance.updateUser(currencyCode: result);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Currency updated to $result')));
-      }
-    }
   }
 
   void _handleWelcomeNudgeDismiss() {
@@ -304,7 +278,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final user = UserService.instance.currentUser;
     final accounts = AccountService.instance.activeAccounts;
     final currentAccount =
         _currentAccount ?? (accounts.isNotEmpty ? accounts.first : null);
@@ -329,140 +302,35 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_showWelcomeNudge)
             WelcomeNudgeCard(
               onAccountRename: _handleAccountRename,
-              onCurrencyChange: _handleCurrencyChange,
               onDismiss: _handleWelcomeNudgeDismiss,
             ),
 
           // Main content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+            child: Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Currency section (tappable)
-                  if (user != null && user.currencyCode.isNotEmpty) ...[
-                    Card(
-                      child: InkWell(
-                        onTap: _handleCurrencyChange,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.secondary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Icon(
-                                  Icons.currency_exchange,
-                                  color: theme.colorScheme.secondary,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Currency: ${user.currencyCode}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.secondary
-                                                .withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'TAP TO CHANGE',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                              color:
-                                                  theme.colorScheme.secondary,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (user.currencyName.isNotEmpty)
-                                      Text(
-                                        user.currencyName,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: theme.colorScheme.onSurface
-                                              .withValues(alpha: 0.6),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                color: theme.colorScheme.secondary.withValues(
-                                  alpha: 0.7,
-                                ),
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                  Icon(
+                    Icons.trending_up,
+                    size: 64,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Ready to track your finances!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // Quick stats or placeholder content
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.trending_up,
-                          size: 64,
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Ready to track your finances!',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Start by adding your first transaction',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.7,
-                            ),
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Start by adding your first transaction',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

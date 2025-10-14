@@ -3,18 +3,12 @@ import '../services/nudge_service.dart';
 import '../services/account_service.dart';
 
 /// Welcome nudge card that appears on first home screen visit
-/// Provides quick actions for account rename and currency change
+/// Provides quick actions for account rename
 class WelcomeNudgeCard extends StatefulWidget {
   final VoidCallback? onAccountRename;
-  final VoidCallback? onCurrencyChange;
   final VoidCallback? onDismiss;
 
-  const WelcomeNudgeCard({
-    super.key,
-    this.onAccountRename,
-    this.onCurrencyChange,
-    this.onDismiss,
-  });
+  const WelcomeNudgeCard({super.key, this.onAccountRename, this.onDismiss});
 
   @override
   State<WelcomeNudgeCard> createState() => _WelcomeNudgeCardState();
@@ -75,13 +69,6 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
         widget.onDismiss?.call();
       });
     }
-  }
-
-  void _handleCurrencyChange() async {
-    await NudgeService.instance.markNudgeAsShown(
-      NudgeService.currencyChangeNudge,
-    );
-    widget.onCurrencyChange?.call();
   }
 
   @override
@@ -209,43 +196,6 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                     ),
 
                     const SizedBox(height: 20),
-
-                    // Action buttons
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _handleCurrencyChange,
-                        icon: Icon(
-                          Icons.currency_exchange,
-                          size: 18,
-                          color: theme.colorScheme.primary,
-                        ),
-                        label: Text(
-                          'Set Currency',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
 
                     // Dismiss button
                     Center(
