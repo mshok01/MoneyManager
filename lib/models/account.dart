@@ -9,6 +9,10 @@ class Account {
   final String createdBy; // userId who created this account
   final List<String> members; // list of user ids part of this account
   final List<String> admins; // list of user ids as admin of this account
+  final String
+  baseCurrency; // Account's base currency code (e.g., 'USD', 'EUR')
+  final String
+  baseCurrencyName; // Account's base currency name (e.g., 'US Dollar', 'Euro')
 
   Account({
     required this.id,
@@ -21,6 +25,8 @@ class Account {
     required this.createdBy,
     required this.members,
     required this.admins,
+    required this.baseCurrency,
+    required this.baseCurrencyName,
   });
 
   /// Factory constructor to create Account from JSON
@@ -36,6 +42,8 @@ class Account {
       createdBy: json['createdBy'] as String,
       members: List<String>.from(json['members'] as List? ?? []),
       admins: List<String>.from(json['admins'] as List? ?? []),
+      baseCurrency: json['baseCurrency'] as String? ?? '',
+      baseCurrencyName: json['baseCurrencyName'] as String? ?? '',
     );
   }
 
@@ -52,6 +60,8 @@ class Account {
       'createdBy': createdBy,
       'members': members,
       'admins': admins,
+      'baseCurrency': baseCurrency,
+      'baseCurrencyName': baseCurrencyName,
     };
   }
 
@@ -67,6 +77,8 @@ class Account {
     String? createdBy,
     List<String>? members,
     List<String>? admins,
+    String? baseCurrency,
+    String? baseCurrencyName,
   }) {
     return Account(
       id: id ?? this.id,
@@ -79,6 +91,8 @@ class Account {
       createdBy: createdBy ?? this.createdBy,
       members: members ?? this.members,
       admins: admins ?? this.admins,
+      baseCurrency: baseCurrency ?? this.baseCurrency,
+      baseCurrencyName: baseCurrencyName ?? this.baseCurrencyName,
     );
   }
 

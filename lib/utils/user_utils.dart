@@ -238,6 +238,73 @@ class UserUtils {
     return nowUtc.difference(creationDateUtc).inDays;
   }
 
+  /// Get today's date range in UTC milliseconds (start and end of day)
+  static Map<String, int> getTodayDateRange() {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day).toUtc();
+    final endOfDay = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
+
+    return {
+      'start': startOfDay.millisecondsSinceEpoch,
+      'end': endOfDay.millisecondsSinceEpoch,
+    };
+  }
+
+  /// Get this week's date range in UTC milliseconds (Monday to Sunday)
+  static Map<String, int> getThisWeekDateRange() {
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+    final startOfWeekUtc = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    ).toUtc();
+    final endOfWeekUtc = DateTime(
+      endOfWeek.year,
+      endOfWeek.month,
+      endOfWeek.day,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
+
+    return {
+      'start': startOfWeekUtc.millisecondsSinceEpoch,
+      'end': endOfWeekUtc.millisecondsSinceEpoch,
+    };
+  }
+
+  /// Get this month's date range in UTC milliseconds (first to last day of month)
+  static Map<String, int> getThisMonthDateRange() {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1).toUtc();
+    final endOfMonth = DateTime(
+      now.year,
+      now.month + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
+
+    return {
+      'start': startOfMonth.millisecondsSinceEpoch,
+      'end': endOfMonth.millisecondsSinceEpoch,
+    };
+  }
+
   /// Validate email format
   static bool isValidEmail(String email) {
     if (email.isEmpty) return false;

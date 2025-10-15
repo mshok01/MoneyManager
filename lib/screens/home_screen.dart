@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
+import '../widgets/transaction_summary_card.dart';
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
 import '../services/preferences_service.dart';
+import '../services/transaction_service.dart';
 import '../models/account.dart';
+import 'add_edit_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,6 +71,36 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _showWelcomeNudge = false;
     });
+  }
+
+  Future<void> _addTransaction(Account? currentAccount) async {
+    if (currentAccount == null) {
+      // Show message to select an account first
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select an account first'),
+          action: SnackBarAction(
+            label: 'Select',
+            onPressed: _showAccountSelector,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Navigate to add transaction screen
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => AddEditTransactionScreen(account: currentAccount),
+      ),
+    );
+
+    // Refresh data if transaction was added
+    if (result == true) {
+      setState(() {
+        // This will trigger a rebuild and refresh the transaction summary
+      });
+    }
   }
 
   void _showAccountSelector() {
@@ -354,47 +387,103 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Main content
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.trending_up,
-                    size: 64,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Ready to track your finances!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
+            child: currentAccount != null
+                ? FutureBuilder<bool>(
+                    future: TransactionService.instance.hasTransactions(
+                      currentAccount.id,
+                    ),
+                    builder: (context, hasTransactionsSnapshot) {
+                      if (hasTransactionsSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final hasTransactions =
+                          hasTransactionsSnapshot.data ?? false;
+
+                      if (hasTransactions) {
+                        // Show transaction summary
+                        return SingleChildScrollView(
+                          child: TransactionSummaryCard(
+                            account: currentAccount,
+                          ),
+                        );
+                      } else {
+                        // Show empty state
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.trending_up,
+                                size: 64,
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Ready to track your finances!',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Start by adding your first transaction',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 64,
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No account selected',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Please select an account to continue',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Start by adding your first transaction',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Add transaction functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Add transaction feature coming soon!'),
-            ),
-          );
-        },
+        onPressed: () => _addTransaction(currentAccount),
         tooltip: l10n.addTransaction,
         child: const Icon(Icons.add),
       ),

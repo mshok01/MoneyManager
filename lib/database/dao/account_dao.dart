@@ -21,6 +21,9 @@ class AccountDao extends BaseDao<Account> {
       createdBy: map[DatabaseSchema.accountsCreatedBy] as String,
       members: _parseStringList(map[DatabaseSchema.accountsMembers] as String),
       admins: _parseStringList(map[DatabaseSchema.accountsAdmins] as String),
+      baseCurrency: map[DatabaseSchema.accountsBaseCurrency] as String? ?? '',
+      baseCurrencyName:
+          map[DatabaseSchema.accountsBaseCurrencyName] as String? ?? '',
     );
   }
 
@@ -37,6 +40,8 @@ class AccountDao extends BaseDao<Account> {
       DatabaseSchema.accountsCreatedBy: account.createdBy,
       DatabaseSchema.accountsMembers: _stringifyList(account.members),
       DatabaseSchema.accountsAdmins: _stringifyList(account.admins),
+      DatabaseSchema.accountsBaseCurrency: account.baseCurrency,
+      DatabaseSchema.accountsBaseCurrencyName: account.baseCurrencyName,
     };
   }
 
@@ -58,7 +63,8 @@ class AccountDao extends BaseDao<Account> {
   /// Get accounts created by user
   Future<List<Account>> getAccountsCreatedBy(String userId) async {
     return await getWhere(
-      where: '${DatabaseSchema.accountsCreatedBy} = ? AND ${DatabaseSchema.accountsIsActive} = ?',
+      where:
+          '${DatabaseSchema.accountsCreatedBy} = ? AND ${DatabaseSchema.accountsIsActive} = ?',
       whereArgs: [userId, 1],
       orderBy: '${DatabaseSchema.accountsName} ASC',
     );
@@ -67,7 +73,8 @@ class AccountDao extends BaseDao<Account> {
   /// Get accounts where user is a member
   Future<List<Account>> getAccountsForUser(String userId) async {
     return await getWhere(
-      where: '${DatabaseSchema.accountsMembers} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
+      where:
+          '${DatabaseSchema.accountsMembers} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
       whereArgs: ['%"$userId"%', 1],
       orderBy: '${DatabaseSchema.accountsName} ASC',
     );
@@ -76,7 +83,8 @@ class AccountDao extends BaseDao<Account> {
   /// Get accounts where user is an admin
   Future<List<Account>> getAccountsWhereUserIsAdmin(String userId) async {
     return await getWhere(
-      where: '${DatabaseSchema.accountsAdmins} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
+      where:
+          '${DatabaseSchema.accountsAdmins} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
       whereArgs: ['%"$userId"%', 1],
       orderBy: '${DatabaseSchema.accountsName} ASC',
     );
@@ -95,7 +103,8 @@ class AccountDao extends BaseDao<Account> {
   Future<List<Account>> searchAccountsByName(String query) async {
     final searchQuery = '%$query%';
     return await getWhere(
-      where: '${DatabaseSchema.accountsName} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
+      where:
+          '${DatabaseSchema.accountsName} LIKE ? AND ${DatabaseSchema.accountsIsActive} = ?',
       whereArgs: [searchQuery, 1],
       orderBy: '${DatabaseSchema.accountsName} ASC',
     );
@@ -108,7 +117,9 @@ class AccountDao extends BaseDao<Account> {
       tableName,
       {
         DatabaseSchema.accountsIsActive: isActive ? 1 : 0,
-        DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+        DatabaseSchema.accountsUpdatedAt: DateTime.now()
+            .toUtc()
+            .millisecondsSinceEpoch,
       },
       where: '${DatabaseSchema.accountsId} = ?',
       whereArgs: [accountId],
@@ -116,17 +127,21 @@ class AccountDao extends BaseDao<Account> {
   }
 
   /// Update account details
-  Future<int> updateAccountDetails(String accountId, {
+  Future<int> updateAccountDetails(
+    String accountId, {
     String? name,
     String? description,
     String? pic,
   }) async {
     final Map<String, dynamic> updates = {
-      DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+      DatabaseSchema.accountsUpdatedAt: DateTime.now()
+          .toUtc()
+          .millisecondsSinceEpoch,
     };
 
     if (name != null) updates[DatabaseSchema.accountsName] = name;
-    if (description != null) updates[DatabaseSchema.accountsDescription] = description;
+    if (description != null)
+      updates[DatabaseSchema.accountsDescription] = description;
     if (pic != null) updates[DatabaseSchema.accountsPic] = pic;
 
     if (updates.length == 1) return 0; // Only timestamp was added
@@ -148,13 +163,15 @@ class AccountDao extends BaseDao<Account> {
     final members = List<String>.from(account.members);
     if (!members.contains(userId)) {
       members.add(userId);
-      
+
       final db = await database;
       return await db.update(
         tableName,
         {
           DatabaseSchema.accountsMembers: _stringifyList(members),
-          DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+          DatabaseSchema.accountsUpdatedAt: DateTime.now()
+              .toUtc()
+              .millisecondsSinceEpoch,
         },
         where: '${DatabaseSchema.accountsId} = ?',
         whereArgs: [accountId],
@@ -170,7 +187,7 @@ class AccountDao extends BaseDao<Account> {
 
     final members = List<String>.from(account.members);
     final admins = List<String>.from(account.admins);
-    
+
     members.remove(userId);
     admins.remove(userId); // Also remove from admins if present
 
@@ -180,7 +197,9 @@ class AccountDao extends BaseDao<Account> {
       {
         DatabaseSchema.accountsMembers: _stringifyList(members),
         DatabaseSchema.accountsAdmins: _stringifyList(admins),
-        DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+        DatabaseSchema.accountsUpdatedAt: DateTime.now()
+            .toUtc()
+            .millisecondsSinceEpoch,
       },
       where: '${DatabaseSchema.accountsId} = ?',
       whereArgs: [accountId],
@@ -194,23 +213,25 @@ class AccountDao extends BaseDao<Account> {
 
     final members = List<String>.from(account.members);
     final admins = List<String>.from(account.admins);
-    
+
     // Ensure user is a member first
     if (!members.contains(userId)) {
       members.add(userId);
     }
-    
+
     // Add to admins if not already
     if (!admins.contains(userId)) {
       admins.add(userId);
-      
+
       final db = await database;
       return await db.update(
         tableName,
         {
           DatabaseSchema.accountsMembers: _stringifyList(members),
           DatabaseSchema.accountsAdmins: _stringifyList(admins),
-          DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+          DatabaseSchema.accountsUpdatedAt: DateTime.now()
+              .toUtc()
+              .millisecondsSinceEpoch,
         },
         where: '${DatabaseSchema.accountsId} = ?',
         whereArgs: [accountId],
@@ -227,13 +248,15 @@ class AccountDao extends BaseDao<Account> {
     final admins = List<String>.from(account.admins);
     if (admins.contains(userId)) {
       admins.remove(userId);
-      
+
       final db = await database;
       return await db.update(
         tableName,
         {
           DatabaseSchema.accountsAdmins: _stringifyList(admins),
-          DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+          DatabaseSchema.accountsUpdatedAt: DateTime.now()
+              .toUtc()
+              .millisecondsSinceEpoch,
         },
         where: '${DatabaseSchema.accountsId} = ?',
         whereArgs: [accountId],
@@ -257,16 +280,20 @@ class AccountDao extends BaseDao<Account> {
   /// Get account statistics
   Future<Map<String, dynamic>> getAccountStats() async {
     final db = await database;
-    
-    final totalResult = await db.rawQuery('SELECT COUNT(*) as total FROM $tableName');
+
+    final totalResult = await db.rawQuery(
+      'SELECT COUNT(*) as total FROM $tableName',
+    );
     final activeResult = await db.rawQuery(
-      'SELECT COUNT(*) as active FROM $tableName WHERE ${DatabaseSchema.accountsIsActive} = 1'
+      'SELECT COUNT(*) as active FROM $tableName WHERE ${DatabaseSchema.accountsIsActive} = 1',
     );
 
     return {
       'total': totalResult.first['total'] as int,
       'active': activeResult.first['active'] as int,
-      'inactive': (totalResult.first['total'] as int) - (activeResult.first['active'] as int),
+      'inactive':
+          (totalResult.first['total'] as int) -
+          (activeResult.first['active'] as int),
     };
   }
 
@@ -285,7 +312,11 @@ class AccountDao extends BaseDao<Account> {
     final db = await database;
     return await db.update(
       tableName,
-      {DatabaseSchema.accountsUpdatedAt: DateTime.now().toUtc().millisecondsSinceEpoch},
+      {
+        DatabaseSchema.accountsUpdatedAt: DateTime.now()
+            .toUtc()
+            .millisecondsSinceEpoch,
+      },
       where: '${DatabaseSchema.accountsId} = ?',
       whereArgs: [accountId],
     );

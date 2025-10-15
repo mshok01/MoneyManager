@@ -60,6 +60,8 @@ class AccountService {
     String? createdBy,
     List<String>? members,
     List<String>? admins,
+    String? baseCurrency,
+    String? baseCurrencyName,
   }) async {
     if (!_isInitialized) {
       throw Exception(
@@ -74,6 +76,13 @@ class AccountService {
         'No user found. User must be logged in to create account.',
       );
     }
+
+    // Get creator's currency as default for account
+    final currentUser = UserService.instance.currentUser;
+    final accountBaseCurrency =
+        baseCurrency ?? currentUser?.currencyCode ?? 'USD';
+    final accountBaseCurrencyName =
+        baseCurrencyName ?? currentUser?.currencyName ?? 'US Dollar';
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
 
@@ -100,6 +109,8 @@ class AccountService {
       createdBy: currentUserId,
       members: accountMembers,
       admins: accountAdmins,
+      baseCurrency: accountBaseCurrency,
+      baseCurrencyName: accountBaseCurrencyName,
     );
 
     // Validate account before saving
@@ -122,6 +133,8 @@ class AccountService {
     int? isActive,
     List<String>? members,
     List<String>? admins,
+    String? baseCurrency,
+    String? baseCurrencyName,
   }) async {
     if (!_isInitialized) {
       throw Exception(
@@ -143,6 +156,8 @@ class AccountService {
       isActive: isActive,
       members: members,
       admins: admins,
+      baseCurrency: baseCurrency,
+      baseCurrencyName: baseCurrencyName,
       updatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
 

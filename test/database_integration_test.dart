@@ -98,6 +98,8 @@ void main() {
         createdBy: userId,
         members: [userId],
         admins: [userId],
+        baseCurrency: 'USD',
+        baseCurrencyName: 'US Dollar',
       );
 
       // Test insert
@@ -234,6 +236,8 @@ void main() {
         createdBy: userId,
         members: [userId],
         admins: [userId],
+        baseCurrency: 'USD',
+        baseCurrencyName: 'US Dollar',
       );
       await databaseService.accountDao.insert(account);
 

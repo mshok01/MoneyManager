@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'database_schema.dart';
+import 'migrations/add_account_currency_migration.dart';
+import 'migrations/add_transactions_table_migration.dart';
 
 class DatabaseHelper {
   static const String _databaseName = DatabaseSchema.databaseName;
@@ -56,6 +58,7 @@ class DatabaseHelper {
     await _createAccountsTable(db);
     await _createCategoriesTable(db);
     await _createPaymentSourcesTable(db);
+    await _createTransactionsTable(db);
     await _createIndexes(db);
 
     // Note: Default data migration will be handled by DatabaseService after initialization
@@ -63,12 +66,18 @@ class DatabaseHelper {
 
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle database migrations here
-    // For now, we'll just recreate all tables
-    if (oldVersion < newVersion) {
-      await _dropAllTables(db);
-      await _onCreate(db, newVersion);
+    // Handle database migrations step by step
+    if (oldVersion < 2 && newVersion >= 2) {
+      // Add currency fields to accounts table
+      await AddAccountCurrencyMigration.migrate(db);
     }
+
+    if (oldVersion < 3 && newVersion >= 3) {
+      // Add transactions table
+      await AddTransactionsTableMigration.migrate(db);
+    }
+
+    // Add future migrations here as needed
   }
 
   /// Create users table
@@ -89,6 +98,11 @@ class DatabaseHelper {
   /// Create payment_sources table
   Future<void> _createPaymentSourcesTable(Database db) async {
     await db.execute(DatabaseSchema.createPaymentSourcesTable);
+  }
+
+  /// Create transactions table
+  Future<void> _createTransactionsTable(Database db) async {
+    await db.execute(DatabaseSchema.createTransactionsTable);
   }
 
   /// Create database indexes for better performance

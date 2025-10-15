@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/account_service.dart';
 import '../services/user_service.dart';
+import '../services/transaction_service.dart';
 import '../models/account.dart';
+import '../models/transaction.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/currency_utils.dart';
+import 'transaction_list_screen.dart';
+import 'add_edit_transaction_screen.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   final Account account;
@@ -23,6 +28,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   String? _currentUserId;
   bool _hasChanges = false;
 
+  // Transaction-related state
+  double _accountBalance = 0.0;
+  double _totalIncome = 0.0;
+  double _totalExpenses = 0.0;
+  List<Transaction> _recentTransactions = [];
+  bool _isLoadingTransactions = true;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +45,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     // Listen for changes
     _nameController.addListener(_onFieldChanged);
     _descriptionController.addListener(_onFieldChanged);
+
+    // Load transaction data
+    _loadTransactionData();
   }
 
   @override
@@ -40,6 +55,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  /// Format amount with user's preferred currency symbol
+  String _formatAmount(double amount) {
+    final currentUser = UserService.instance.currentUser;
+    final userCurrency =
+        currentUser?.currencyCode ?? widget.account.baseCurrency;
+    final currencySymbol = CurrencyUtils.getCurrencySymbol(userCurrency);
+
+    // For now, we're storing amounts in account currency, so we show them as-is
+    // In the future, this would convert from account currency to user currency
+    return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
   void _onFieldChanged() {
@@ -453,6 +480,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         // Account Profile Section
         _buildAccountProfileSection(theme),
 
+        // Transaction Summary Section
+        _buildTransactionSummarySection(theme),
+
+        // Quick Actions Section
+        _buildQuickActionsSection(theme),
+
+        // Recent Transactions Section
+        _buildRecentTransactionsSection(theme),
+
         // Members Section
         _buildMembersSection(theme, currentUser),
 
@@ -737,5 +773,354 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
       ],
     );
+  }
+
+  // Transaction-related methods
+  Future<void> _loadTransactionData() async {
+    if (!mounted) return;
+
+    try {
+      await TransactionService.instance.initialize();
+
+      final balance = await TransactionService.instance.getAccountBalance(
+        widget.account.id,
+      );
+      final income = await TransactionService.instance.getAccountIncome(
+        widget.account.id,
+      );
+      final expenses = await TransactionService.instance.getAccountExpenses(
+        widget.account.id,
+      );
+      final recentTransactions = await TransactionService.instance
+          .getRecentAccountTransactions(widget.account.id, limit: 5);
+
+      if (mounted) {
+        setState(() {
+          _accountBalance = balance;
+          _totalIncome = income;
+          _totalExpenses = expenses;
+          _recentTransactions = recentTransactions;
+          _isLoadingTransactions = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingTransactions = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildTransactionSummarySection(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.account_balance, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Account Balance',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_isLoadingTransactions)
+                const Center(child: CircularProgressIndicator())
+              else
+                Column(
+                  children: [
+                    // Balance
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _accountBalance >= 0
+                            ? Colors.green.withValues(alpha: 0.1)
+                            : Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Current Balance',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatAmount(_accountBalance),
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: _accountBalance >= 0
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Income and Expenses
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.trending_up, color: Colors.green),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Income',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                Text(
+                                  _formatAmount(_totalIncome),
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.trending_down, color: Colors.red),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Expenses',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                Text(
+                                  _formatAmount(_totalExpenses),
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick Actions',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _addTransaction(),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Transaction'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _viewAllTransactions(),
+                      icon: const Icon(Icons.list),
+                      label: const Text('View All'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactionsSection(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Recent Transactions',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (_recentTransactions.isNotEmpty)
+                    TextButton(
+                      onPressed: () => _viewAllTransactions(),
+                      child: const Text('View All'),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_isLoadingTransactions)
+                const Center(child: CircularProgressIndicator())
+              else if (_recentTransactions.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.receipt_long,
+                        size: 48,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No transactions yet',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Add your first transaction to get started',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Column(
+                  children: _recentTransactions.map((transaction) {
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: transaction.isIncome
+                            ? Colors.green.withValues(alpha: 0.2)
+                            : Colors.red.withValues(alpha: 0.2),
+                        child: Icon(
+                          transaction.isIncome
+                              ? Icons.trending_up
+                              : Icons.trending_down,
+                          size: 16,
+                          color: transaction.isIncome
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                      title: Text(
+                        transaction.description.isNotEmpty
+                            ? transaction.description
+                            : 'Transaction',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Text(
+                        '${transaction.transactionDateTime.day}/${transaction.transactionDateTime.month}/${transaction.transactionDateTime.year}',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                      trailing: Text(
+                        '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: transaction.isIncome
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addTransaction() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => AddEditTransactionScreen(account: widget.account),
+      ),
+    );
+
+    if (result == true) {
+      _loadTransactionData(); // Reload transaction data
+    }
+  }
+
+  Future<void> _viewAllTransactions() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TransactionListScreen(account: widget.account),
+      ),
+    );
+    _loadTransactionData(); // Reload transaction data when returning
   }
 }
