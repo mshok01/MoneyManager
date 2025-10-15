@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
 import '../models/category_item.dart';
@@ -13,6 +12,7 @@ import '../utils/currency_utils.dart';
 
 import 'add_edit_transaction_screen.dart';
 import 'transaction_list_screen.dart';
+import 'transaction_details_screen.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   final Account account;
@@ -45,6 +45,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   bool _isLoading = true;
   String _searchQuery = '';
   String _filterType = 'all'; // 'all', 'income', 'expense'
+  bool _hasChanges = false; // Track if any transactions were modified
 
   @override
   void initState() {
@@ -160,8 +161,58 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
 
     if (result == true) {
+      _hasChanges = true; // Mark that changes were made
       _loadData(); // Reload data if transaction was added
     }
+  }
+
+  Future<void> _navigateToTransactionDetails(Transaction transaction) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => TransactionDetailsScreen(
+          transaction: transaction,
+          account: widget.account,
+        ),
+      ),
+    );
+
+    // If transaction was edited or deleted, reload the data
+    if (result == true) {
+      _hasChanges = true; // Mark that changes were made
+      _loadData();
+    }
+  }
+
+  void _showTransactionOptions(Transaction transaction) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Transaction'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _editTransaction(transaction);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text(
+                'Delete Transaction',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _deleteTransaction(transaction);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _editTransaction(Transaction transaction) async {
@@ -175,6 +226,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
 
     if (result == true) {
+      _hasChanges = true; // Mark that changes were made
       _loadData(); // Reload data if transaction was updated
     }
   }
@@ -207,6 +259,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     if (confirmed == true) {
       try {
         await TransactionService.instance.deleteTransaction(transaction.id);
+        _hasChanges = true; // Mark that changes were made
         _loadData(); // Reload data after deletion
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -265,300 +318,484 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     }
   }
 
+  bool _canNavigateToNext() {
+    final now = DateTime.now();
+    final currentDate = DateTime.fromMillisecondsSinceEpoch(
+      widget.dateRange['start']!,
+      isUtc: true,
+    ).toLocal();
+
+    if (widget.periodType == 'today') {
+      // Can navigate to next day only if current date is before today
+      return currentDate.isBefore(DateTime(now.year, now.month, now.day));
+    } else if (widget.periodType == 'month') {
+      // Can navigate to next month only if current month is before this month
+      return currentDate.isBefore(DateTime(now.year, now.month, 1));
+    } else if (widget.periodType == 'year') {
+      // Can navigate to next year only if current year is before this year
+      return currentDate.year < now.year;
+    }
+    return false;
+  }
+
+  void _navigateToPreviousDate() {
+    final currentDate = DateTime.fromMillisecondsSinceEpoch(
+      widget.dateRange['start']!,
+      isUtc: true,
+    ).toLocal();
+
+    DateTime newDate;
+    if (widget.periodType == 'today') {
+      newDate = currentDate.subtract(const Duration(days: 1));
+    } else if (widget.periodType == 'month') {
+      newDate = DateTime(currentDate.year, currentDate.month - 1, 1);
+    } else if (widget.periodType == 'year') {
+      newDate = DateTime(currentDate.year - 1, 1, 1);
+    } else {
+      return;
+    }
+
+    _navigateToDate(newDate);
+  }
+
+  void _navigateToNextDate() {
+    if (!_canNavigateToNext()) return;
+
+    final currentDate = DateTime.fromMillisecondsSinceEpoch(
+      widget.dateRange['start']!,
+      isUtc: true,
+    ).toLocal();
+
+    DateTime newDate;
+    if (widget.periodType == 'today') {
+      newDate = currentDate.add(const Duration(days: 1));
+    } else if (widget.periodType == 'month') {
+      newDate = DateTime(currentDate.year, currentDate.month + 1, 1);
+    } else if (widget.periodType == 'year') {
+      newDate = DateTime(currentDate.year + 1, 1, 1);
+    } else {
+      return;
+    }
+
+    _navigateToDate(newDate);
+  }
+
+  void _navigateToDate(DateTime date) {
+    Map<String, int> newDateRange;
+    String newPeriodTitle;
+
+    if (widget.periodType == 'today') {
+      newDateRange = _getDateRangeForDate(date);
+      newPeriodTitle = 'Today';
+    } else if (widget.periodType == 'month') {
+      newDateRange = _getMonthRangeForDate(date);
+      newPeriodTitle = 'This Month';
+    } else if (widget.periodType == 'year') {
+      newDateRange = _getYearRangeForDate(date);
+      newPeriodTitle = 'This Year';
+    } else {
+      return;
+    }
+
+    // Navigate to new TransactionHistoryScreen with the new date range
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => TransactionHistoryScreen(
+          account: widget.account,
+          periodType: widget.periodType,
+          periodTitle: newPeriodTitle,
+          dateRange: newDateRange,
+        ),
+      ),
+    );
+  }
+
+  Map<String, int> _getDateRangeForDate(DateTime date) {
+    final startOfDay = DateTime(date.year, date.month, date.day).toUtc();
+    final endOfDay = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
+
+    return {
+      'start': startOfDay.millisecondsSinceEpoch,
+      'end': endOfDay.millisecondsSinceEpoch,
+    };
+  }
+
+  Map<String, int> _getMonthRangeForDate(DateTime date) {
+    final startOfMonth = DateTime(date.year, date.month, 1).toUtc();
+    final endOfMonth = DateTime(
+      date.year,
+      date.month + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
+
+    return {
+      'start': startOfMonth.millisecondsSinceEpoch,
+      'end': endOfMonth.millisecondsSinceEpoch,
+    };
+  }
+
+  Map<String, int> _getYearRangeForDate(DateTime date) {
+    final startOfYear = DateTime(date.year, 1, 1).toUtc();
+    final endOfYear = DateTime(date.year, 12, 31, 23, 59, 59, 999).toUtc();
+
+    return {
+      'start': startOfYear.millisecondsSinceEpoch,
+      'end': endOfYear.millisecondsSinceEpoch,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${widget.periodTitle} Transactions'),
-            Text(
-              _getDateRangeText(),
-              style: TextStyle(
-                fontSize: 12,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          // Pop with the result indicating if changes were made
+          Navigator.of(context).pop(_hasChanges);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Transactions'),
+              Text(
+                widget.account.name,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: theme.colorScheme.inversePrimary,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.list_alt),
+              onPressed: _viewAllTransactions,
+              tooltip: 'View All Transactions',
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                setState(() {
+                  _filterType = value;
+                  _applyFilters();
+                });
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'all',
+                  child: Text('All Transactions'),
+                ),
+                const PopupMenuItem(
+                  value: 'income',
+                  child: Text('Income Only'),
+                ),
+                const PopupMenuItem(
+                  value: 'expense',
+                  child: Text('Expenses Only'),
+                ),
+              ],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.filter_list, color: theme.colorScheme.onSurface),
+                    const SizedBox(width: 4),
+                    Text(
+                      _filterType == 'all'
+                          ? 'All'
+                          : _filterType == 'income'
+                          ? 'Income'
+                          : 'Expenses',
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        backgroundColor: theme.colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.list_alt),
-            onPressed: _viewAllTransactions,
-            tooltip: 'View All Transactions',
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                _filterType = value;
-                _applyFilters();
-              });
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'all',
-                child: Text('All Transactions'),
-              ),
-              const PopupMenuItem(value: 'income', child: Text('Income Only')),
-              const PopupMenuItem(
-                value: 'expense',
-                child: Text('Expenses Only'),
-              ),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.filter_list, color: theme.colorScheme.onSurface),
-                  const SizedBox(width: 4),
-                  Text(
-                    _filterType == 'all'
-                        ? 'All'
-                        : _filterType == 'income'
-                        ? 'Income'
-                        : 'Expenses',
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Summary card for the period
-          if (_summary != null && _summary!.hasTransactions)
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Income
-                  Expanded(
-                    child: _buildSummaryColumn(
-                      context,
-                      'Income',
-                      _summary!.totalIncome,
-                      Colors.green,
-                      Icons.trending_up,
-                    ),
-                  ),
-                  // Expenses
-                  Expanded(
-                    child: _buildSummaryColumn(
-                      context,
-                      'Expenses',
-                      _summary!.totalExpenses,
-                      Colors.red,
-                      Icons.trending_down,
-                    ),
-                  ),
-                  // Balance
-                  Expanded(
-                    child: _buildSummaryColumn(
-                      context,
-                      'Balance',
-                      _summary!.balance,
-                      _summary!.isPositiveBalance
-                          ? Colors.green
-                          : _summary!.isNegativeBalance
-                          ? Colors.red
-                          : theme.colorScheme.onSurface,
-                      _summary!.isPositiveBalance
-                          ? Icons.arrow_upward
-                          : _summary!.isNegativeBalance
-                          ? Icons.arrow_downward
-                          : Icons.remove,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search transactions...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
+        body: Column(
+          children: [
+            // Summary card for the period
+            if (_summary != null)
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  ),
                 ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Transaction list
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredTransactions.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Date header with navigation
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.receipt_long,
-                          size: 64,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.3,
+                        // Previous date button
+                        IconButton(
+                          onPressed: _navigateToPreviousDate,
+                          icon: Icon(
+                            Icons.chevron_left,
+                            color: theme.colorScheme.primary,
                           ),
+                          tooltip: 'Previous ${widget.periodType}',
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchQuery.isNotEmpty || _filterType != 'all'
-                              ? 'No transactions found'
-                              : 'No transactions for ${widget.periodTitle.toLowerCase()}',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
+                        // Date display
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: theme.colorScheme.primary,
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _getDateRangeText(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _searchQuery.isNotEmpty || _filterType != 'all'
-                              ? 'Try adjusting your search or filters'
-                              : 'Add a transaction to get started',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.5,
-                            ),
+                        // Next date button (only show if not today for 'today' period)
+                        IconButton(
+                          onPressed: _canNavigateToNext()
+                              ? _navigateToNextDate
+                              : null,
+                          icon: Icon(
+                            Icons.chevron_right,
+                            color: _canNavigateToNext()
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.3,
+                                  ),
                           ),
+                          tooltip: _canNavigateToNext()
+                              ? 'Next ${widget.periodType}'
+                              : null,
                         ),
                       ],
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadData,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _filteredTransactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = _filteredTransactions[index];
-                        final category = _categoriesMap[transaction.categoryId];
-                        final paymentSource =
-                            _paymentSourcesMap[transaction.paymentSourceId];
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  category?.color.withValues(alpha: 0.2) ??
-                                  Colors.grey.withValues(alpha: 0.2),
-                              child: Icon(
-                                category?.icon ?? Icons.help_outline,
-                                color: category?.color ?? Colors.grey,
-                                size: 20,
-                              ),
-                            ),
-                            title: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    transaction.description.isNotEmpty
-                                        ? transaction.description
-                                        : category?.name ?? 'Unknown Category',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: transaction.isIncome
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.7),
-                                  ),
-                                ),
-                                Text(
-                                  _formatDate(transaction.transactionDateTime),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.5),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _editTransaction(transaction);
-                                } else if (value == 'delete') {
-                                  _deleteTransaction(transaction);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.delete, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                    // Summary row (only show if there are transactions)
+                    if (_summary!.hasTransactions) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          // Income
+                          Expanded(
+                            child: _buildSummaryColumn(
+                              context,
+                              'Income',
+                              _summary!.totalIncome,
+                              Colors.green,
+                              Icons.trending_up,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                          // Expenses
+                          Expanded(
+                            child: _buildSummaryColumn(
+                              context,
+                              'Expenses',
+                              _summary!.totalExpenses,
+                              Colors.red,
+                              Icons.trending_down,
+                            ),
+                          ),
+                          // Balance
+                          Expanded(
+                            child: _buildSummaryColumn(
+                              context,
+                              'Balance',
+                              _summary!.balance,
+                              _summary!.isPositiveBalance
+                                  ? Colors.green
+                                  : _summary!.isNegativeBalance
+                                  ? Colors.red
+                                  : theme.colorScheme.onSurface,
+                              _summary!.isPositiveBalance
+                                  ? Icons.arrow_upward
+                                  : _summary!.isNegativeBalance
+                                  ? Icons.arrow_downward
+                                  : Icons.remove,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search transactions...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTransaction,
-        child: const Icon(Icons.add),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Transaction list
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredTransactions.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.receipt_long,
+                            size: 64,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _searchQuery.isNotEmpty || _filterType != 'all'
+                                ? 'No transactions found'
+                                : 'No transactions for ${widget.periodTitle.toLowerCase()}',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _searchQuery.isNotEmpty || _filterType != 'all'
+                                ? 'Try adjusting your search or filters'
+                                : 'Add a transaction to get started',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadData,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _filteredTransactions.length,
+                        itemBuilder: (context, index) {
+                          final transaction = _filteredTransactions[index];
+                          final category =
+                              _categoriesMap[transaction.categoryId];
+                          final paymentSource =
+                              _paymentSourcesMap[transaction.paymentSourceId];
+
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              onTap: () =>
+                                  _navigateToTransactionDetails(transaction),
+                              onLongPress: () =>
+                                  _showTransactionOptions(transaction),
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    category?.color.withValues(alpha: 0.2) ??
+                                    Colors.grey.withValues(alpha: 0.2),
+                                child: Icon(
+                                  category?.icon ?? Icons.help_outline,
+                                  color: category?.color ?? Colors.grey,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      transaction.description.isNotEmpty
+                                          ? transaction.description
+                                          : category?.name ??
+                                                'Unknown Category',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: transaction.isIncome
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                  Text(
+                                    _formatDate(
+                                      transaction.transactionDateTime,
+                                    ),
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _addTransaction,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

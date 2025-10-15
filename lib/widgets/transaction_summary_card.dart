@@ -276,11 +276,11 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     );
   }
 
-  void _navigateToTransactionHistory(
+  Future<void> _navigateToTransactionHistory(
     BuildContext context,
     String title,
     String periodType,
-  ) {
+  ) async {
     Map<String, int> dateRange;
 
     switch (periodType) {
@@ -297,7 +297,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
         return;
     }
 
-    Navigator.of(context).push(
+    final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => TransactionHistoryScreen(
           account: widget.account,
@@ -307,6 +307,17 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
         ),
       ),
     );
+
+    // If transaction was edited or deleted, refresh the summary data
+    if (result == true) {
+      _refreshSummaries();
+    }
+  }
+
+  void _refreshSummaries() {
+    setState(() {
+      _loadSummaries();
+    });
   }
 
   Widget _buildAmountColumn(

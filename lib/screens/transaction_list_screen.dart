@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
 import '../models/category_item.dart';
@@ -10,6 +9,7 @@ import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import 'add_edit_transaction_screen.dart';
+import 'transaction_details_screen.dart';
 
 class TransactionListScreen extends StatefulWidget {
   final Account account;
@@ -138,6 +138,54 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     }
   }
 
+  Future<void> _navigateToTransactionDetails(Transaction transaction) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => TransactionDetailsScreen(
+          transaction: transaction,
+          account: widget.account,
+        ),
+      ),
+    );
+
+    // If transaction was edited or deleted, reload the data
+    if (result == true) {
+      _loadData();
+    }
+  }
+
+  void _showTransactionOptions(Transaction transaction) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Transaction'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _editTransaction(transaction);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text(
+                'Delete Transaction',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _deleteTransaction(transaction);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _editTransaction(Transaction transaction) async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -214,7 +262,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -333,6 +380,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
+                            onTap: () =>
+                                _navigateToTransactionDetails(transaction),
+                            onLongPress: () =>
+                                _showTransactionOptions(transaction),
                             leading: CircleAvatar(
                               backgroundColor:
                                   category?.color.withValues(alpha: 0.2) ??
@@ -382,40 +433,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.5),
                                     fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _editTransaction(transaction);
-                                } else if (value == 'delete') {
-                                  _deleteTransaction(transaction);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.delete, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ],
