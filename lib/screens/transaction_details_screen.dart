@@ -202,49 +202,6 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Amount Card
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          Icon(
-                            widget.transaction.isIncome
-                                ? Icons.trending_up
-                                : Icons.trending_down,
-                            size: 48,
-                            color: widget.transaction.isIncome
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '${widget.transaction.isIncome ? '+' : '-'}${_formatAmount(widget.transaction.amount)}',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: widget.transaction.isIncome
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            widget.transaction.isIncome
-                                ? l10n.income
-                                : l10n.expense,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.7,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
                   // Details Card
                   Card(
                     child: Padding(
@@ -257,6 +214,25 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Amount
+                          _buildDetailRow(
+                            context,
+                            widget.transaction.isIncome
+                                ? l10n.income
+                                : l10n.expense,
+                            '${widget.transaction.isIncome ? '+' : '-'}${_formatAmount(widget.transaction.amount)}',
+                            widget.transaction.isIncome
+                                ? Icons.trending_up
+                                : Icons.trending_down,
+                            iconColor: widget.transaction.isIncome
+                                ? Colors.green
+                                : Colors.red,
+                            valueColor: widget.transaction.isIncome
+                                ? Colors.green
+                                : Colors.red,
                           ),
                           const SizedBox(height: 16),
 
@@ -322,6 +298,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     String value,
     IconData icon, {
     Color? iconColor,
+    Color? valueColor,
   }) {
     final theme = Theme.of(context);
 
@@ -346,6 +323,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                 value,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
+                  color: valueColor,
                 ),
               ),
             ],
