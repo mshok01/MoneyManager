@@ -4,8 +4,10 @@ import '../models/transaction_summary.dart';
 import '../services/transaction_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../utils/user_utils.dart';
+import '../screens/transaction_history_screen.dart';
 
-/// Widget that displays transaction summaries for today, this week, and this month
+/// Widget that displays transaction summaries for today, this month, and this year
 class TransactionSummaryCard extends StatefulWidget {
   final Account account;
 
@@ -34,14 +36,14 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     final todaySummary = await transactionService.getTodaySummary(
       widget.account.id,
     );
-    final weekSummary = await transactionService.getThisWeekSummary(
-      widget.account.id,
-    );
     final monthSummary = await transactionService.getThisMonthSummary(
       widget.account.id,
     );
+    final yearSummary = await transactionService.getThisYearSummary(
+      widget.account.id,
+    );
 
-    return {'today': todaySummary, 'week': weekSummary, 'month': monthSummary};
+    return {'today': todaySummary, 'month': monthSummary, 'year': yearSummary};
   }
 
   /// Format amount with user's preferred currency symbol
@@ -102,8 +104,8 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
 
         final summaries = snapshot.data!;
         final todaySummary = summaries['today']!;
-        final weekSummary = summaries['week']!;
         final monthSummary = summaries['month']!;
+        final yearSummary = summaries['year']!;
 
         return Card(
           margin: const EdgeInsets.all(16),
@@ -140,13 +142,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                   'Today',
                   todaySummary,
                   Icons.today,
-                ),
-                const SizedBox(height: 16),
-                _buildSummaryPeriod(
-                  context,
-                  'This Week',
-                  weekSummary,
-                  Icons.date_range,
+                  'today',
                 ),
                 const SizedBox(height: 16),
                 _buildSummaryPeriod(
@@ -154,6 +150,15 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                   'This Month',
                   monthSummary,
                   Icons.calendar_month,
+                  'month',
+                ),
+                const SizedBox(height: 16),
+                _buildSummaryPeriod(
+                  context,
+                  'This Year',
+                  yearSummary,
+                  Icons.event_note,
+                  'year',
                 ),
               ],
             ),
@@ -168,98 +173,138 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     String title,
     TransactionSummary summary,
     IconData icon,
+    String periodType,
   ) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Period header
-          Row(
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const Spacer(),
-            ],
+    return InkWell(
+      onTap: summary.hasTransactions
+          ? () => _navigateToTransactionHistory(context, title, periodType)
+          : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
-
-          if (summary.hasTransactions) ...[
-            const SizedBox(height: 12),
-            // Financial summary
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Period header
             Row(
               children: [
-                // Income
-                Expanded(
-                  child: _buildAmountColumn(
-                    context,
-                    'Income',
-                    summary.totalIncome,
-                    Colors.green,
-                    Icons.trending_up,
+                Icon(
+                  icon,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
-                // Expenses
-                Expanded(
-                  child: _buildAmountColumn(
-                    context,
-                    'Expenses',
-                    summary.totalExpenses,
-                    Colors.red,
-                    Icons.trending_down,
-                  ),
-                ),
-                // Balance
-                Expanded(
-                  child: _buildAmountColumn(
-                    context,
-                    'Balance',
-                    summary.balance,
-                    summary.isPositiveBalance
-                        ? Colors.green
-                        : summary.isNegativeBalance
-                        ? Colors.red
-                        : theme.colorScheme.onSurface,
-                    summary.isPositiveBalance
-                        ? Icons.arrow_upward
-                        : summary.isNegativeBalance
-                        ? Icons.arrow_downward
-                        : Icons.remove,
-                  ),
-                ),
+                const Spacer(),
               ],
             ),
-          ] else ...[
-            const SizedBox(height: 8),
-            Text(
-              'No transactions',
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+
+            if (summary.hasTransactions) ...[
+              const SizedBox(height: 12),
+              // Financial summary
+              Row(
+                children: [
+                  // Income
+                  Expanded(
+                    child: _buildAmountColumn(
+                      context,
+                      'Income',
+                      summary.totalIncome,
+                      Colors.green,
+                      Icons.trending_up,
+                    ),
+                  ),
+                  // Expenses
+                  Expanded(
+                    child: _buildAmountColumn(
+                      context,
+                      'Expenses',
+                      summary.totalExpenses,
+                      Colors.red,
+                      Icons.trending_down,
+                    ),
+                  ),
+                  // Balance
+                  Expanded(
+                    child: _buildAmountColumn(
+                      context,
+                      'Balance',
+                      summary.balance,
+                      summary.isPositiveBalance
+                          ? Colors.green
+                          : summary.isNegativeBalance
+                          ? Colors.red
+                          : theme.colorScheme.onSurface,
+                      summary.isPositiveBalance
+                          ? Icons.arrow_upward
+                          : summary.isNegativeBalance
+                          ? Icons.arrow_downward
+                          : Icons.remove,
+                    ),
+                  ),
+                ],
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(
+                'No transactions',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToTransactionHistory(
+    BuildContext context,
+    String title,
+    String periodType,
+  ) {
+    Map<String, int> dateRange;
+
+    switch (periodType) {
+      case 'today':
+        dateRange = UserUtils.getTodayDateRange();
+        break;
+      case 'month':
+        dateRange = UserUtils.getThisMonthDateRange();
+        break;
+      case 'year':
+        dateRange = UserUtils.getThisYearDateRange();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TransactionHistoryScreen(
+          account: widget.account,
+          periodType: periodType,
+          periodTitle: title,
+          dateRange: dateRange,
+        ),
       ),
     );
   }

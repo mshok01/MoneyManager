@@ -377,6 +377,26 @@ class TransactionService {
     );
   }
 
+  /// Get transaction summary for this year
+  Future<TransactionSummary> getThisYearSummary(String accountId) async {
+    final dateRange = UserUtils.getThisYearDateRange();
+    return await getTransactionSummary(
+      accountId,
+      dateRange['start']!,
+      dateRange['end']!,
+    );
+  }
+
+  /// Get transactions by account and date range
+  Future<List<Transaction>> getAccountTransactionsByDateRange(
+    String accountId,
+    int startDate,
+    int endDate,
+  ) async {
+    return await DatabaseService.instance.transactionDao
+        .getByAccountAndDateRange(accountId, startDate, endDate);
+  }
+
   /// Check if account has any transactions
   Future<bool> hasTransactions(String accountId) async {
     final transactions = await getRecentAccountTransactions(

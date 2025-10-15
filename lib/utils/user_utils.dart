@@ -305,6 +305,18 @@ class UserUtils {
     };
   }
 
+  /// Get this year's date range in UTC milliseconds (first to last day of year)
+  static Map<String, int> getThisYearDateRange() {
+    final now = DateTime.now();
+    final startOfYear = DateTime(now.year, 1, 1).toUtc();
+    final endOfYear = DateTime(now.year, 12, 31, 23, 59, 59, 999).toUtc();
+
+    return {
+      'start': startOfYear.millisecondsSinceEpoch,
+      'end': endOfYear.millisecondsSinceEpoch,
+    };
+  }
+
   /// Validate email format
   static bool isValidEmail(String email) {
     if (email.isEmpty) return false;
