@@ -5,6 +5,21 @@ import '../models/payment_source.dart';
 import 'database_service.dart';
 import 'database_schema.dart';
 
+/// Error message constants for default data migration
+/// These are English strings used for debugging and logging purposes
+class DefaultDataMigrationErrors {
+  static const String failedToPerformMigration =
+      'Failed to perform default data migration';
+  static const String failedToLoadCategories =
+      'Failed to load default categories';
+  static const String failedToLoadPaymentSources =
+      'Failed to load default payment sources';
+  static const String missingIncomeCategory = 'Missing default income category';
+  static const String missingExpenseCategory =
+      'Missing default expense category';
+  static const String missingPaymentSource = 'Missing default payment source';
+}
+
 /// Service to handle migration of default data from JSON files to SQLite database
 class DefaultDataMigration {
   static DefaultDataMigration? _instance;
@@ -70,7 +85,9 @@ class DefaultDataMigration {
       // Load and insert default payment sources
       await _loadDefaultPaymentSources();
     } catch (e) {
-      throw Exception('Failed to perform default data migration: $e');
+      throw Exception(
+        '${DefaultDataMigrationErrors.failedToPerformMigration}: $e',
+      );
     }
   }
 
@@ -136,7 +153,9 @@ class DefaultDataMigration {
         );
       }
     } catch (e) {
-      throw Exception('Failed to load default categories: $e');
+      throw Exception(
+        '${DefaultDataMigrationErrors.failedToLoadCategories}: $e',
+      );
     }
   }
 
@@ -164,7 +183,9 @@ class DefaultDataMigration {
         paymentSources,
       );
     } catch (e) {
-      throw Exception('Failed to load default payment sources: $e');
+      throw Exception(
+        '${DefaultDataMigrationErrors.failedToLoadPaymentSources}: $e',
+      );
     }
   }
 
@@ -238,7 +259,9 @@ class DefaultDataMigration {
 
       for (final expectedId in expectedIncomeIds) {
         if (!defaultIncomeCategories.any((c) => c.id == expectedId)) {
-          issues.add('Missing default income category: $expectedId');
+          issues.add(
+            '${DefaultDataMigrationErrors.missingIncomeCategory}: $expectedId',
+          );
         }
       }
 
@@ -263,7 +286,9 @@ class DefaultDataMigration {
 
       for (final expectedId in expectedExpenseIds) {
         if (!defaultExpenseCategories.any((c) => c.id == expectedId)) {
-          issues.add('Missing default expense category: $expectedId');
+          issues.add(
+            '${DefaultDataMigrationErrors.missingExpenseCategory}: $expectedId',
+          );
         }
       }
 
@@ -283,7 +308,9 @@ class DefaultDataMigration {
 
       for (final expectedId in expectedPaymentSourceIds) {
         if (!paymentSources.any((p) => p.id == expectedId)) {
-          issues.add('Missing default payment source: $expectedId');
+          issues.add(
+            '${DefaultDataMigrationErrors.missingPaymentSource}: $expectedId',
+          );
         }
       }
 

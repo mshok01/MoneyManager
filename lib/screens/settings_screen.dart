@@ -71,9 +71,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Show confirmation
           if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Currency changed to $_currentCurrency'),
+                content: Text(l10n.currencyChangedTo(_currentCurrency!)),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -81,9 +82,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         } catch (e) {
           // Show error message
           if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Failed to update currency: $e'),
+                content: Text(l10n.failedToUpdateCurrency(e.toString())),
                 duration: const Duration(seconds: 3),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
@@ -95,9 +97,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showComingSoonSnackBar(String feature) {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature is coming soon!'),
+        content: Text(l10n.comingSoon(feature)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -207,14 +210,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.attach_money),
             title: Text(l10n.currency),
-            subtitle: Text(_currentCurrencyName ?? _currentCurrency ?? 'USD'),
+            subtitle: Text(
+              _currentCurrencyName ?? _currentCurrency ?? l10n.usd,
+            ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _changeCurrency,
           ),
           const Divider(),
 
           // Appearance Section
-          _buildSectionHeader('Appearance'),
+          _buildSectionHeader(l10n.appearance),
           ListTile(
             leading: const Icon(Icons.palette),
             title: Text(l10n.theme),
@@ -227,11 +232,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
 
           // Accounts Section
-          _buildSectionHeader('Accounts'),
+          _buildSectionHeader(l10n.accounts),
           ListTile(
             leading: const Icon(Icons.account_balance_wallet),
-            title: const Text('Manage Accounts'),
-            subtitle: const Text('Add, edit, and organize accounts'),
+            title: Text(l10n.manageAccounts),
+            subtitle: Text(l10n.manageAccountsSubtitle),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _navigateToManageAccounts,
           ),
@@ -249,22 +254,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
 
           // Payment Sources Section
-          _buildSectionHeader('Payment Sources'),
+          _buildSectionHeader(l10n.paymentSources),
           ListTile(
             leading: const Icon(Icons.payment),
-            title: const Text('Payment Sources'),
-            subtitle: const Text('Manage sources'),
+            title: Text(l10n.paymentSourcesTitle),
+            subtitle: Text(l10n.paymentSourcesSubtitle),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _navigateToPaymentSources,
           ),
           const Divider(),
 
           // Data & Privacy Section
-          _buildSectionHeader('Data & Privacy'),
+          _buildSectionHeader(l10n.dataPrivacy),
           ListTile(
             leading: const Icon(Icons.backup),
             title: Text(l10n.backup),
-            subtitle: const Text('Not connected'),
+            subtitle: Text(l10n.notConnected),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => _showComingSoonSnackBar(l10n.backup),
           ),
@@ -275,7 +280,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // ListTile(
           //   leading: const Icon(Icons.notifications),
           //   title: Text(l10n.notifications),
-          //   subtitle: const Text('Enabled'),
+          //   subtitle: Text(l10n.enabled),
           //   trailing: const Icon(Icons.arrow_forward_ios),
           //   onTap: () => _showComingSoonSnackBar(l10n.notifications),
           // ),

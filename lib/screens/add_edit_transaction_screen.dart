@@ -117,9 +117,10 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToLoadData(e.toString()))),
+        );
       }
     }
   }
@@ -132,18 +133,20 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
   Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectCategory)));
       return;
     }
     // Only validate payment source for expenses
     if (_selectedType == TransactionType.expense &&
         _selectedPaymentSource == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a payment source')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectPaymentSource)));
       return;
     }
 
@@ -187,8 +190,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           SnackBar(
             content: Text(
               _isEditing
-                  ? 'Transaction updated successfully'
-                  : 'Transaction created successfully',
+                  ? l10n.transactionUpdatedSuccessfully
+                  : l10n.transactionCreatedSuccessfully,
             ),
           ),
         );
@@ -197,7 +200,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save transaction: $e')),
+          SnackBar(content: Text(l10n.failedToSaveTransaction(e.toString()))),
         );
       }
     }
@@ -227,13 +230,15 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Transaction' : 'Add Transaction'),
+        title: Text(
+          _isEditing ? l10n.editTransactionTitle : l10n.addTransaction,
+        ),
         backgroundColor: theme.colorScheme.inversePrimary,
         actions: [
           if (_isLoading)
@@ -248,7 +253,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           else
             TextButton(
               onPressed: _saveTransaction,
-              child: Text(_isEditing ? 'Update' : 'Save'),
+              child: Text(_isEditing ? l10n.update : l10n.save),
             ),
         ],
       ),
@@ -269,7 +274,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                     children: [
                       // Transaction type selection
                       Text(
-                        'Transaction Type',
+                        l10n.transactionType,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -279,7 +284,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                         children: [
                           Expanded(
                             child: RadioListTile<String>(
-                              title: const Text('Income'),
+                              title: Text(l10n.income),
                               value: TransactionType.income,
                               groupValue: _selectedType,
                               onChanged: (value) {
@@ -295,7 +300,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                           ),
                           Expanded(
                             child: RadioListTile<String>(
-                              title: const Text('Expense'),
+                              title: Text(l10n.expense),
                               value: TransactionType.expense,
                               groupValue: _selectedType,
                               onChanged: (value) {
@@ -315,7 +320,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
                       // Amount input
                       Text(
-                        'Amount ($_userCurrencySymbol)',
+                        l10n.amount(_userCurrencySymbol),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -332,17 +337,17 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                           ),
                         ],
                         decoration: InputDecoration(
-                          hintText: '0.00',
+                          hintText: l10n.amountHint,
                           prefixText: '$_userCurrencySymbol ',
                           border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Please enter an amount';
+                            return l10n.pleaseEnterAmount;
                           }
                           final amount = double.tryParse(value);
                           if (amount == null || amount <= 0) {
-                            return 'Please enter a valid amount greater than 0';
+                            return l10n.pleaseEnterValidAmount;
                           }
                           return null;
                         },
@@ -351,7 +356,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
                       // Category selection
                       Text(
-                        'Category',
+                        l10n.category,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -363,7 +368,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                       // Payment source selection (only for expenses)
                       if (_selectedType == TransactionType.expense) ...[
                         Text(
-                          'Payment Source',
+                          l10n.paymentSource,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -375,7 +380,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
                       // Date selection
                       Text(
-                        'Date',
+                        l10n.date,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -410,7 +415,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
                       // Notes input
                       Text(
-                        'Notes',
+                        l10n.notes,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -418,9 +423,9 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          hintText: 'Milk, Eggs etc',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: l10n.notesHint,
+                          border: const OutlineInputBorder(),
                         ),
                         maxLines: 3,
                       ),
@@ -438,6 +443,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
   Widget _buildCategorySelector() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final categories = _availableCategories;
 
     if (categories.isEmpty) {
@@ -448,7 +454,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
-          'No categories available for ${_selectedType}',
+          l10n.noCategoriesAvailable(_selectedType),
           style: TextStyle(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
@@ -493,7 +499,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Select a category',
+                  l10n.selectCategory,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -532,6 +538,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
   Widget _buildPaymentSourceSelector() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (_paymentSources.isEmpty) {
       return Container(
@@ -541,7 +548,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
-          'No payment sources available',
+          l10n.noPaymentSourcesAvailable,
           style: TextStyle(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
@@ -586,7 +593,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Select a payment source',
+                  l10n.selectPaymentSource,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),

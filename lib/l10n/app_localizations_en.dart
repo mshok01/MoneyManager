@@ -551,4 +551,140 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appleSignInImplementation =>
       'Apple Sign-in will be implemented with Firebase Auth';
+
+  @override
+  String get welcomeToMoneyManagerEmoji => '🎉 Welcome to Money Manager!';
+
+  @override
+  String accountCreatedMessage(String accountName) {
+    return 'We\'ve created a \"$accountName\" for you to get started quickly.';
+  }
+
+  @override
+  String get mainAccount => 'Main Account';
+
+  @override
+  String get accountSwitchInstructions =>
+      'Tap the account name in the header to switch between accounts, or visit Settings to customize your currency and preferences.';
+
+  @override
+  String get gotItThanks => 'Got it, thanks!';
+
+  @override
+  String get mainAccountDescription =>
+      'Your primary account for tracking expenses and income';
+
+  @override
+  String get transactionDetails => 'Transaction Details';
+
+  @override
+  String get deleteTransaction => 'Delete Transaction';
+
+  @override
+  String get deleteTransactionConfirmation =>
+      'Are you sure you want to delete this transaction? This action cannot be undone.';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get editTransaction => 'Edit Transaction';
+
+  @override
+  String get deleteTransactionTooltip => 'Delete Transaction';
+
+  @override
+  String get transactionDeletedSuccessfully =>
+      'Transaction deleted successfully';
+
+  @override
+  String failedToDeleteTransaction(String error) {
+    return 'Failed to delete transaction: $error';
+  }
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get paymentSource => 'Payment Source';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get unknownCategory => 'Unknown Category';
+
+  @override
+  String get unknownSource => 'Unknown Source';
+
+  @override
+  String get editTransactionTitle => 'Edit Transaction';
+
+  @override
+  String get transactionType => 'Transaction Type';
+
+  @override
+  String amount(String currencySymbol) {
+    return 'Amount ($currencySymbol)';
+  }
+
+  @override
+  String get amountHint => '0.00';
+
+  @override
+  String get pleaseEnterAmount => 'Please enter an amount';
+
+  @override
+  String get pleaseEnterValidAmount =>
+      'Please enter a valid amount greater than 0';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get notesHint => 'Milk, Eggs etc';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseSelectPaymentSource => 'Please select a payment source';
+
+  @override
+  String get transactionCreatedSuccessfully =>
+      'Transaction created successfully';
+
+  @override
+  String get transactionUpdatedSuccessfully =>
+      'Transaction updated successfully';
+
+  @override
+  String failedToSaveTransaction(String error) {
+    return 'Failed to save transaction: $error';
+  }
+
+  @override
+  String failedToLoadData(String error) {
+    return 'Failed to load data: $error';
+  }
+
+  @override
+  String noCategoriesAvailable(String transactionType) {
+    return 'No categories available for $transactionType';
+  }
+
+  @override
+  String get selectCategory => 'Select a category';
+
+  @override
+  String get selectPaymentSource => 'Select a payment source';
+
+  @override
+  String get usd => 'USD';
+
+  @override
+  String get paymentSourcesTitle => 'Payment Sources';
 }

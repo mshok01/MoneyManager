@@ -20,6 +20,11 @@ class UserService {
   bool _isInitialized = false;
   final Uuid _uuid = const Uuid();
 
+  // Default account constants - these will be replaced with localized strings
+  static const String defaultAccountName = 'Main Account';
+  static const String defaultAccountDescription =
+      'Your primary account for tracking expenses and income';
+
   /// Get the current user
   User? get currentUser => _currentUser;
 
@@ -209,8 +214,8 @@ class UserService {
     // Auto-create "Main Account" for the user
     try {
       await AccountService.instance.createAccount(
-        name: 'Main Account',
-        description: 'Your primary account for tracking expenses and income',
+        name: defaultAccountName,
+        description: defaultAccountDescription,
         createdBy: user.id,
       );
     } catch (e) {

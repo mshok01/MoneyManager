@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/account.dart';
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
@@ -147,7 +148,9 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '🎉 Welcome to Money Manager!',
+                                AppLocalizations.of(
+                                  context,
+                                )!.welcomeToMoneyManagerEmoji,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -177,7 +180,10 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
 
                         // Welcome message
                         Text(
-                          'We\'ve created a "${mainAccount?.name ?? 'Main Account'}" for you to get started quickly.',
+                          AppLocalizations.of(context)!.accountCreatedMessage(
+                            mainAccount?.name ??
+                                AppLocalizations.of(context)!.mainAccount,
+                          ),
                           style: TextStyle(
                             fontSize: 14,
                             color: theme.colorScheme.onSurface.withValues(
@@ -190,7 +196,9 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                         const SizedBox(height: 8),
 
                         Text(
-                          'Tap the account name in the header to switch between accounts, or visit Settings to customize your currency and preferences.',
+                          AppLocalizations.of(
+                            context,
+                          )!.accountSwitchInstructions,
                           style: TextStyle(
                             fontSize: 14,
                             color: theme.colorScheme.onSurface.withValues(
@@ -211,7 +219,7 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                                 Navigator.of(context).pushNamed('/settings');
                               },
                               child: Text(
-                                'Settings',
+                                AppLocalizations.of(context)!.settings,
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -224,7 +232,7 @@ class _WelcomeNudgeCardState extends State<WelcomeNudgeCard>
                             TextButton(
                               onPressed: _handleDismiss,
                               child: Text(
-                                'Got it, thanks!',
+                                AppLocalizations.of(context)!.gotItThanks,
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,

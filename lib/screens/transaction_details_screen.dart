@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
 import '../models/category_item.dart';
@@ -49,8 +50,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         (cat) => cat.id == widget.transaction.categoryId,
         orElse: () => CategoryItem(
           id: 'unknown',
-          name: 'Unknown Category',
-          description: 'Category not found',
+          name: 'Unknown Category', // This will be replaced in UI
+          description: 'Category not found', // This will be replaced in UI
           icon: Icons.help_outline,
           color: Colors.grey,
           isDefault: false,
@@ -68,8 +69,9 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
         (source) => source.id == widget.transaction.paymentSourceId,
         orElse: () => PaymentSource(
           id: 'unknown',
-          name: 'Unknown Source',
-          description: 'Payment source not found',
+          name: 'Unknown Source', // This will be replaced in UI
+          description:
+              'Payment source not found', // This will be replaced in UI
           icon: Icons.payment,
           color: Colors.grey,
           isDefault: false,
@@ -123,17 +125,16 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   }
 
   Future<void> _deleteTransaction() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: const Text(
-          'Are you sure you want to delete this transaction? This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteTransaction),
+        content: Text(l10n.deleteTransactionConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -141,7 +142,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -153,15 +154,19 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           widget.transaction.id,
         );
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Transaction deleted successfully')),
+            SnackBar(content: Text(l10n.transactionDeletedSuccessfully)),
           );
           Navigator.of(context).pop(true); // Return true to indicate deletion
         }
       } catch (e) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete transaction: $e')),
+            SnackBar(
+              content: Text(l10n.failedToDeleteTransaction(e.toString())),
+            ),
           );
         }
       }
@@ -171,21 +176,22 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaction Details'),
+        title: Text(l10n.transactionDetails),
         backgroundColor: theme.colorScheme.inversePrimary,
         actions: [
           IconButton(
             onPressed: _editTransaction,
             icon: const Icon(Icons.edit),
-            tooltip: 'Edit Transaction',
+            tooltip: l10n.editTransaction,
           ),
           IconButton(
             onPressed: _deleteTransaction,
             icon: const Icon(Icons.delete),
-            tooltip: 'Delete Transaction',
+            tooltip: l10n.deleteTransactionTooltip,
           ),
         ],
       ),
@@ -223,7 +229,9 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            widget.transaction.isIncome ? 'Income' : 'Expense',
+                            widget.transaction.isIncome
+                                ? l10n.income
+                                : l10n.expense,
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.7,
@@ -245,7 +253,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Transaction Details',
+                            l10n.transactionDetails,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -256,7 +264,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           if (widget.transaction.description.isNotEmpty) ...[
                             _buildDetailRow(
                               context,
-                              'Description',
+                              l10n.description,
                               widget.transaction.description,
                               Icons.description,
                             ),
@@ -266,8 +274,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           // Category
                           _buildDetailRow(
                             context,
-                            'Category',
-                            _category?.name ?? 'Unknown Category',
+                            l10n.category,
+                            _category?.name ?? l10n.unknownCategory,
                             _category?.icon ?? Icons.help_outline,
                             iconColor: _category?.color,
                           ),
@@ -276,8 +284,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           // Payment Source
                           _buildDetailRow(
                             context,
-                            'Payment Source',
-                            _paymentSource?.name ?? 'Unknown Source',
+                            l10n.paymentSource,
+                            _paymentSource?.name ?? l10n.unknownSource,
                             Icons.payment,
                           ),
                           const SizedBox(height: 16),
@@ -285,7 +293,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           // Date
                           _buildDetailRow(
                             context,
-                            'Date',
+                            l10n.date,
                             _formatDate(widget.transaction.transactionDateTime),
                             Icons.calendar_today,
                           ),
@@ -294,7 +302,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           // Time
                           _buildDetailRow(
                             context,
-                            'Time',
+                            l10n.time,
                             _formatTime(widget.transaction.transactionDateTime),
                             Icons.access_time,
                           ),

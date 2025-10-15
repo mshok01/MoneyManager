@@ -1071,6 +1071,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apple Sign-in will be implemented with Firebase Auth'**
   String get appleSignInImplementation;
+
+  /// Welcome message with emoji in welcome nudge card
+  ///
+  /// In en, this message translates to:
+  /// **'🎉 Welcome to Money Manager!'**
+  String get welcomeToMoneyManagerEmoji;
+
+  /// Message explaining the auto-created account
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve created a \"{accountName}\" for you to get started quickly.'**
+  String accountCreatedMessage(String accountName);
+
+  /// Default account name
+  ///
+  /// In en, this message translates to:
+  /// **'Main Account'**
+  String get mainAccount;
+
+  /// Instructions for switching accounts and accessing settings
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the account name in the header to switch between accounts, or visit Settings to customize your currency and preferences.'**
+  String get accountSwitchInstructions;
+
+  /// Dismissal button text in welcome nudge
+  ///
+  /// In en, this message translates to:
+  /// **'Got it, thanks!'**
+  String get gotItThanks;
+
+  /// Default description for the main account
+  ///
+  /// In en, this message translates to:
+  /// **'Your primary account for tracking expenses and income'**
+  String get mainAccountDescription;
+
+  /// Screen title and section header for transaction details
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Details'**
+  String get transactionDetails;
+
+  /// Delete transaction dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transaction'**
+  String get deleteTransaction;
+
+  /// Delete transaction confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this transaction? This action cannot be undone.'**
+  String get deleteTransactionConfirmation;
+
+  /// Enabled status text
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// Edit transaction tooltip and screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Transaction'**
+  String get editTransaction;
+
+  /// Delete transaction tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transaction'**
+  String get deleteTransactionTooltip;
+
+  /// Success message when transaction is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction deleted successfully'**
+  String get transactionDeletedSuccessfully;
+
+  /// Error message when transaction deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete transaction: {error}'**
+  String failedToDeleteTransaction(String error);
+
+  /// Category field label
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// Payment source field label
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Source'**
+  String get paymentSource;
+
+  /// Date field label
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// Time field label
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// Fallback text for unknown category
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Category'**
+  String get unknownCategory;
+
+  /// Fallback text for unknown payment source
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Source'**
+  String get unknownSource;
+
+  /// Edit transaction screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Transaction'**
+  String get editTransactionTitle;
+
+  /// Transaction type field label
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Type'**
+  String get transactionType;
+
+  /// Amount field label with currency symbol
+  ///
+  /// In en, this message translates to:
+  /// **'Amount ({currencySymbol})'**
+  String amount(String currencySymbol);
+
+  /// Amount field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get amountHint;
+
+  /// Amount field validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an amount'**
+  String get pleaseEnterAmount;
+
+  /// Amount field validation message for invalid values
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount greater than 0'**
+  String get pleaseEnterValidAmount;
+
+  /// Notes field label
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// Notes field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Milk, Eggs etc'**
+  String get notesHint;
+
+  /// Category selection validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// Payment source selection validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment source'**
+  String get pleaseSelectPaymentSource;
+
+  /// Success message when transaction is created
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction created successfully'**
+  String get transactionCreatedSuccessfully;
+
+  /// Success message when transaction is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction updated successfully'**
+  String get transactionUpdatedSuccessfully;
+
+  /// Error message when transaction save fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save transaction: {error}'**
+  String failedToSaveTransaction(String error);
+
+  /// Error message when data loading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load data: {error}'**
+  String failedToLoadData(String error);
+
+  /// Message when no categories are available
+  ///
+  /// In en, this message translates to:
+  /// **'No categories available for {transactionType}'**
+  String noCategoriesAvailable(String transactionType);
+
+  /// Category selection placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get selectCategory;
+
+  /// Payment source selection placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select a payment source'**
+  String get selectPaymentSource;
+
+  /// USD currency fallback
+  ///
+  /// In en, this message translates to:
+  /// **'USD'**
+  String get usd;
+
+  /// Payment sources screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Sources'**
+  String get paymentSourcesTitle;
 }
 
 class _AppLocalizationsDelegate

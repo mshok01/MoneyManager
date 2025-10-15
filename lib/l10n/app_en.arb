@@ -791,5 +791,197 @@
   "appleSignInImplementation": "Apple Sign-in will be implemented with Firebase Auth",
   "@appleSignInImplementation": {
     "description": "Implementation note for Apple Sign-in"
+  },
+  "welcomeToMoneyManagerEmoji": "🎉 Welcome to Money Manager!",
+  "@welcomeToMoneyManagerEmoji": {
+    "description": "Welcome message with emoji in welcome nudge card"
+  },
+  "accountCreatedMessage": "We've created a \"{accountName}\" for you to get started quickly.",
+  "@accountCreatedMessage": {
+    "description": "Message explaining the auto-created account",
+    "placeholders": {
+      "accountName": {
+        "type": "String",
+        "description": "The name of the created account"
+      }
+    }
+  },
+  "mainAccount": "Main Account",
+  "@mainAccount": {
+    "description": "Default account name"
+  },
+  "accountSwitchInstructions": "Tap the account name in the header to switch between accounts, or visit Settings to customize your currency and preferences.",
+  "@accountSwitchInstructions": {
+    "description": "Instructions for switching accounts and accessing settings"
+  },
+  "gotItThanks": "Got it, thanks!",
+  "@gotItThanks": {
+    "description": "Dismissal button text in welcome nudge"
+  },
+  "mainAccountDescription": "Your primary account for tracking expenses and income",
+  "@mainAccountDescription": {
+    "description": "Default description for the main account"
+  },
+  "transactionDetails": "Transaction Details",
+  "@transactionDetails": {
+    "description": "Screen title and section header for transaction details"
+  },
+  "deleteTransaction": "Delete Transaction",
+  "@deleteTransaction": {
+    "description": "Delete transaction dialog title"
+  },
+  "deleteTransactionConfirmation": "Are you sure you want to delete this transaction? This action cannot be undone.",
+  "@deleteTransactionConfirmation": {
+    "description": "Delete transaction confirmation message"
+  },
+  "enabled": "Enabled",
+  "@enabled": {
+    "description": "Enabled status text"
+  },
+  "editTransaction": "Edit Transaction",
+  "@editTransaction": {
+    "description": "Edit transaction tooltip and screen title"
+  },
+  "deleteTransactionTooltip": "Delete Transaction",
+  "@deleteTransactionTooltip": {
+    "description": "Delete transaction tooltip"
+  },
+  "transactionDeletedSuccessfully": "Transaction deleted successfully",
+  "@transactionDeletedSuccessfully": {
+    "description": "Success message when transaction is deleted"
+  },
+  "failedToDeleteTransaction": "Failed to delete transaction: {error}",
+  "@failedToDeleteTransaction": {
+    "description": "Error message when transaction deletion fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Category field label"
+  },
+  "paymentSource": "Payment Source",
+  "@paymentSource": {
+    "description": "Payment source field label"
+  },
+  "date": "Date",
+  "@date": {
+    "description": "Date field label"
+  },
+  "time": "Time",
+  "@time": {
+    "description": "Time field label"
+  },
+  "unknownCategory": "Unknown Category",
+  "@unknownCategory": {
+    "description": "Fallback text for unknown category"
+  },
+  "unknownSource": "Unknown Source",
+  "@unknownSource": {
+    "description": "Fallback text for unknown payment source"
+  },
+  "editTransactionTitle": "Edit Transaction",
+  "@editTransactionTitle": {
+    "description": "Edit transaction screen title"
+  },
+  "transactionType": "Transaction Type",
+  "@transactionType": {
+    "description": "Transaction type field label"
+  },
+  "amount": "Amount ({currencySymbol})",
+  "@amount": {
+    "description": "Amount field label with currency symbol",
+    "placeholders": {
+      "currencySymbol": {
+        "type": "String",
+        "description": "Currency symbol"
+      }
+    }
+  },
+  "amountHint": "0.00",
+  "@amountHint": {
+    "description": "Amount field placeholder"
+  },
+  "pleaseEnterAmount": "Please enter an amount",
+  "@pleaseEnterAmount": {
+    "description": "Amount field validation message"
+  },
+  "pleaseEnterValidAmount": "Please enter a valid amount greater than 0",
+  "@pleaseEnterValidAmount": {
+    "description": "Amount field validation message for invalid values"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes field label"
+  },
+  "notesHint": "Milk, Eggs etc",
+  "@notesHint": {
+    "description": "Notes field placeholder"
+  },
+  "pleaseSelectCategory": "Please select a category",
+  "@pleaseSelectCategory": {
+    "description": "Category selection validation message"
+  },
+  "pleaseSelectPaymentSource": "Please select a payment source",
+  "@pleaseSelectPaymentSource": {
+    "description": "Payment source selection validation message"
+  },
+  "transactionCreatedSuccessfully": "Transaction created successfully",
+  "@transactionCreatedSuccessfully": {
+    "description": "Success message when transaction is created"
+  },
+  "transactionUpdatedSuccessfully": "Transaction updated successfully",
+  "@transactionUpdatedSuccessfully": {
+    "description": "Success message when transaction is updated"
+  },
+  "failedToSaveTransaction": "Failed to save transaction: {error}",
+  "@failedToSaveTransaction": {
+    "description": "Error message when transaction save fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "failedToLoadData": "Failed to load data: {error}",
+  "@failedToLoadData": {
+    "description": "Error message when data loading fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "noCategoriesAvailable": "No categories available for {transactionType}",
+  "@noCategoriesAvailable": {
+    "description": "Message when no categories are available",
+    "placeholders": {
+      "transactionType": {
+        "type": "String",
+        "description": "The transaction type (income/expense)"
+      }
+    }
+  },
+  "selectCategory": "Select a category",
+  "@selectCategory": {
+    "description": "Category selection placeholder"
+  },
+  "selectPaymentSource": "Select a payment source",
+  "@selectPaymentSource": {
+    "description": "Payment source selection placeholder"
+  },
+  "usd": "USD",
+  "@usd": {
+    "description": "USD currency fallback"
+  },
+  "paymentSourcesTitle": "Payment Sources",
+  "@paymentSourcesTitle": {
+    "description": "Payment sources screen title"
   }
 }
