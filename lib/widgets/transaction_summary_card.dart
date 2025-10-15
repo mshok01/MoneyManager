@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/account.dart';
 import '../models/transaction_summary.dart';
 import '../services/transaction_service.dart';
+import '../services/user_service.dart';
+import '../utils/currency_utils.dart';
 
 /// Widget that displays transaction summaries for today, this week, and this month
 class TransactionSummaryCard extends StatefulWidget {
@@ -40,6 +42,16 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     );
 
     return {'today': todaySummary, 'week': weekSummary, 'month': monthSummary};
+  }
+
+  /// Format amount with user's preferred currency symbol
+  String _formatAmount(double amount) {
+    final currentUser = UserService.instance.currentUser;
+    final userCurrency =
+        currentUser?.currencyCode ?? widget.account.baseCurrency;
+    final currencySymbol = CurrencyUtils.getCurrencySymbol(userCurrency);
+
+    return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
   @override
@@ -189,25 +201,6 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                 ),
               ),
               const Spacer(),
-              if (summary.hasTransactions)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${summary.transactionCount} transaction${summary.transactionCount == 1 ? '' : 's'}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
             ],
           ),
 
@@ -293,7 +286,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
         ),
         const SizedBox(height: 2),
         Text(
-          '\$${amount.toStringAsFixed(2)}',
+          _formatAmount(amount),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
