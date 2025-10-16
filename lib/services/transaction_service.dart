@@ -2,6 +2,8 @@ import 'package:uuid/uuid.dart';
 import '../database/database_service.dart';
 import '../models/transaction.dart';
 import '../models/transaction_summary.dart';
+import '../models/monthly_summary.dart';
+import '../models/daily_summary.dart';
 import '../models/user.dart';
 import '../utils/user_utils.dart';
 import 'user_service.dart';
@@ -404,5 +406,190 @@ class TransactionService {
       limit: 1,
     );
     return transactions.isNotEmpty;
+  }
+
+  /// Get monthly summaries for a specific year
+  Future<List<MonthlySummary>> getYearlyMonthlySummaries(
+    String accountId,
+    int year,
+  ) async {
+    final monthlySummaries = <MonthlySummary>[];
+
+    // Generate summaries for all 12 months
+    for (int month = 1; month <= 12; month++) {
+      final monthSummary = await getMonthlySummary(accountId, year, month);
+      monthlySummaries.add(monthSummary);
+    }
+
+    return monthlySummaries;
+  }
+
+  /// Get monthly summary for a specific month and year
+  Future<MonthlySummary> getMonthlySummary(
+    String accountId,
+    int year,
+    int month,
+  ) async {
+    final dateRange = _getMonthDateRange(year, month);
+    final transactions = await DatabaseService.instance.transactionDao
+        .getByAccountAndDateRange(
+          accountId,
+          dateRange['start']!,
+          dateRange['end']!,
+        );
+
+    double totalIncome = 0.0;
+    double totalExpenses = 0.0;
+
+    for (final transaction in transactions) {
+      if (transaction.isIncome) {
+        totalIncome += transaction.amount;
+      } else if (transaction.isExpense) {
+        totalExpenses += transaction.amount;
+      }
+    }
+
+    final balance = totalIncome - totalExpenses;
+
+    return MonthlySummary(
+      year: year,
+      month: month,
+      totalIncome: totalIncome,
+      totalExpenses: totalExpenses,
+      balance: balance,
+      transactionCount: transactions.length,
+    );
+  }
+
+  /// Get date range for a specific month in UTC milliseconds
+  Map<String, int> _getMonthDateRange(int year, int month) {
+    final startOfMonth = DateTime(year, month, 1).toUtc();
+    final endOfMonth = DateTime(year, month + 1, 0, 23, 59, 59, 999).toUtc();
+
+    return {
+      'start': startOfMonth.millisecondsSinceEpoch,
+      'end': endOfMonth.millisecondsSinceEpoch,
+    };
+  }
+
+  /// Get transactions for a specific month
+  Future<List<Transaction>> getMonthTransactions(
+    String accountId,
+    int year,
+    int month,
+  ) async {
+    final dateRange = _getMonthDateRange(year, month);
+    return await DatabaseService.instance.transactionDao
+        .getByAccountAndDateRange(
+          accountId,
+          dateRange['start']!,
+          dateRange['end']!,
+        );
+  }
+
+  /// Get available years that have transactions for an account
+  Future<List<int>> getAvailableYears(String accountId) async {
+    final transactions = await getAccountTransactions(accountId);
+
+    if (transactions.isEmpty) {
+      return [DateTime.now().year]; // Return current year if no transactions
+    }
+
+    final years = <int>{};
+    for (final transaction in transactions) {
+      final transactionDate = transaction.transactionDateTime;
+      years.add(transactionDate.year);
+    }
+
+    final sortedYears = years.toList()
+      ..sort((a, b) => b.compareTo(a)); // Newest first
+    return sortedYears;
+  }
+
+  /// Get daily summaries for a specific month
+  Future<List<DailySummary>> getMonthlyDailySummaries(
+    String accountId,
+    int year,
+    int month,
+  ) async {
+    final dailySummaries = <DailySummary>[];
+
+    // Get the number of days in the month
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+
+    // Generate summaries for all days in the month
+    for (int day = 1; day <= daysInMonth; day++) {
+      final dailySummary = await getDailySummary(accountId, year, month, day);
+      dailySummaries.add(dailySummary);
+    }
+
+    return dailySummaries;
+  }
+
+  /// Get daily summary for a specific day
+  Future<DailySummary> getDailySummary(
+    String accountId,
+    int year,
+    int month,
+    int day,
+  ) async {
+    final dateRange = _getDayDateRange(year, month, day);
+
+    final transactions = await DatabaseService.instance.transactionDao
+        .getByAccountAndDateRange(
+          accountId,
+          dateRange['start']!,
+          dateRange['end']!,
+        );
+
+    double totalIncome = 0;
+    double totalExpenses = 0;
+
+    for (final transaction in transactions) {
+      if (transaction.isIncome) {
+        totalIncome += transaction.amount;
+      } else {
+        totalExpenses += transaction.amount;
+      }
+    }
+
+    final balance = totalIncome - totalExpenses;
+
+    return DailySummary(
+      year: year,
+      month: month,
+      day: day,
+      totalIncome: totalIncome,
+      totalExpenses: totalExpenses,
+      balance: balance,
+      transactionCount: transactions.length,
+    );
+  }
+
+  /// Helper method to get date range for a specific day
+  Map<String, int> _getDayDateRange(int year, int month, int day) {
+    final startOfDay = DateTime(year, month, day).toUtc();
+    final endOfDay = DateTime(year, month, day, 23, 59, 59, 999).toUtc();
+
+    return {
+      'start': startOfDay.millisecondsSinceEpoch,
+      'end': endOfDay.millisecondsSinceEpoch,
+    };
+  }
+
+  /// Get transactions for a specific day
+  Future<List<Transaction>> getDayTransactions(
+    String accountId,
+    int year,
+    int month,
+    int day,
+  ) async {
+    final dateRange = _getDayDateRange(year, month, day);
+    return await DatabaseService.instance.transactionDao
+        .getByAccountAndDateRange(
+          accountId,
+          dateRange['start']!,
+          dateRange['end']!,
+        );
   }
 }

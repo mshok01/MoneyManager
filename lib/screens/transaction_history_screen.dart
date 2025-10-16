@@ -4,6 +4,8 @@ import '../models/account.dart';
 import '../models/category_item.dart';
 import '../models/payment_source.dart';
 import '../models/transaction_summary.dart';
+import '../models/monthly_summary.dart';
+import '../models/daily_summary.dart';
 import '../services/transaction_service.dart';
 import '../services/category_service.dart';
 import '../services/payment_source_service.dart';
@@ -13,6 +15,9 @@ import '../utils/currency_utils.dart';
 import 'add_edit_transaction_screen.dart';
 import 'transaction_list_screen.dart';
 import 'transaction_details_screen.dart';
+import 'monthly_transactions_screen.dart';
+import 'daily_transactions_screen.dart';
+import 'search_screen.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   final Account account;
@@ -34,123 +39,194 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  final _searchController = TextEditingController();
-
   List<Transaction> _transactions = [];
   List<Transaction> _filteredTransactions = [];
+  List<MonthlySummary> _monthlySummaries = [];
+  List<MonthlySummary> _filteredMonthlySummaries = [];
+  List<DailySummary> _dailySummaries = [];
+  List<DailySummary> _filteredDailySummaries = [];
   Map<String, CategoryItem> _categoriesMap = {};
   Map<String, PaymentSource> _paymentSourcesMap = {};
   TransactionSummary? _summary;
 
   bool _isLoading = true;
-  String _searchQuery = '';
   String _filterType = 'all'; // 'all', 'income', 'expense'
   bool _hasChanges = false; // Track if any transactions were modified
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchChanged);
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text.toLowerCase();
-      _applyFilters();
-    });
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
     try {
-      // Load transactions for the date range
-      final transactions = await TransactionService.instance
-          .getAccountTransactionsByDateRange(
-            widget.account.id,
-            widget.dateRange['start']!,
-            widget.dateRange['end']!,
-          );
+      if (widget.periodType == 'year') {
+        // For yearly view, load monthly summaries
+        final year = DateTime.fromMillisecondsSinceEpoch(
+          widget.dateRange['start']!,
+        ).year;
+        final monthlySummaries = await TransactionService.instance
+            .getYearlyMonthlySummaries(widget.account.id, year);
 
-      // Load summary for the period
-      final summary = await TransactionService.instance.getTransactionSummary(
-        widget.account.id,
-        widget.dateRange['start']!,
-        widget.dateRange['end']!,
-      );
+        // Load summary for the year
+        final summary = await TransactionService.instance.getTransactionSummary(
+          widget.account.id,
+          widget.dateRange['start']!,
+          widget.dateRange['end']!,
+        );
 
-      // Load categories and payment sources for display
-      final incomeCategories = await CategoryService.instance
-          .getIncomeCategories();
-      final expenseCategories = await CategoryService.instance
-          .getExpenseCategories();
-      final paymentSources = await PaymentSourceService.instance
-          .getAllPaymentSources();
+        setState(() {
+          _monthlySummaries = monthlySummaries;
+          _summary = summary;
+          _isLoading = false;
+          _applyFilters();
+        });
+      } else if (widget.periodType == 'month') {
+        // For monthly view, load daily summaries
+        final startDate = DateTime.fromMillisecondsSinceEpoch(
+          widget.dateRange['start']!,
+        );
+        final dailySummaries = await TransactionService.instance
+            .getMonthlyDailySummaries(
+              widget.account.id,
+              startDate.year,
+              startDate.month,
+            );
 
-      // Create lookup maps
-      final categoriesMap = <String, CategoryItem>{};
-      for (final category in [...incomeCategories, ...expenseCategories]) {
-        categoriesMap[category.id] = category;
+        // Load summary for the month
+        final summary = await TransactionService.instance.getTransactionSummary(
+          widget.account.id,
+          widget.dateRange['start']!,
+          widget.dateRange['end']!,
+        );
+
+        setState(() {
+          _dailySummaries = dailySummaries;
+          _summary = summary;
+          _isLoading = false;
+          _applyFilters();
+        });
+      } else {
+        // For daily/monthly view, load individual transactions
+        final transactions = await TransactionService.instance
+            .getAccountTransactionsByDateRange(
+              widget.account.id,
+              widget.dateRange['start']!,
+              widget.dateRange['end']!,
+            );
+
+        // Load summary for the period
+        final summary = await TransactionService.instance.getTransactionSummary(
+          widget.account.id,
+          widget.dateRange['start']!,
+          widget.dateRange['end']!,
+        );
+
+        // Load categories and payment sources for display
+        final incomeCategories = await CategoryService.instance
+            .getIncomeCategories();
+        final expenseCategories = await CategoryService.instance
+            .getExpenseCategories();
+        final paymentSources = await PaymentSourceService.instance
+            .getAllPaymentSources();
+
+        // Create lookup maps
+        final categoriesMap = <String, CategoryItem>{};
+        for (final category in [...incomeCategories, ...expenseCategories]) {
+          categoriesMap[category.id] = category;
+        }
+
+        final paymentSourcesMap = <String, PaymentSource>{};
+        for (final source in paymentSources) {
+          paymentSourcesMap[source.id] = source;
+        }
+
+        setState(() {
+          _transactions = transactions;
+          _summary = summary;
+          _categoriesMap = categoriesMap;
+          _paymentSourcesMap = paymentSourcesMap;
+          _isLoading = false;
+          _applyFilters();
+        });
       }
-
-      final paymentSourcesMap = <String, PaymentSource>{};
-      for (final source in paymentSources) {
-        paymentSourcesMap[source.id] = source;
-      }
-
-      setState(() {
-        _transactions = transactions;
-        _summary = summary;
-        _categoriesMap = categoriesMap;
-        _paymentSourcesMap = paymentSourcesMap;
-        _isLoading = false;
-        _applyFilters();
-      });
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load transactions: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
       }
     }
   }
 
   void _applyFilters() {
-    List<Transaction> filtered = _transactions;
+    if (widget.periodType == 'year') {
+      // Filter monthly summaries
+      List<MonthlySummary> filteredSummaries = _monthlySummaries;
 
-    // Apply type filter
-    if (_filterType != 'all') {
-      filtered = filtered.where((t) => t.type == _filterType).toList();
+      // Apply type filter for monthly summaries
+      if (_filterType == 'income') {
+        filteredSummaries = filteredSummaries
+            .where((s) => s.totalIncome > 0)
+            .toList();
+      } else if (_filterType == 'expense') {
+        filteredSummaries = filteredSummaries
+            .where((s) => s.totalExpenses > 0)
+            .toList();
+      }
+
+      setState(() {
+        _filteredMonthlySummaries = filteredSummaries;
+      });
+    } else if (widget.periodType == 'month') {
+      // Filter daily summaries
+      List<DailySummary> filteredSummaries = _dailySummaries;
+
+      // Apply type filter for daily summaries
+      if (_filterType == 'income') {
+        filteredSummaries = filteredSummaries
+            .where((s) => s.totalIncome > 0)
+            .toList();
+      } else if (_filterType == 'expense') {
+        filteredSummaries = filteredSummaries
+            .where((s) => s.totalExpenses > 0)
+            .toList();
+      }
+
+      // Sort by day (newest first)
+      filteredSummaries.sort((a, b) => b.day.compareTo(a.day));
+
+      setState(() {
+        _filteredDailySummaries = filteredSummaries;
+      });
+    } else {
+      // Filter individual transactions
+      List<Transaction> filtered = _transactions;
+
+      // Apply type filter
+      if (_filterType != 'all') {
+        filtered = filtered.where((t) => t.type == _filterType).toList();
+      }
+
+      // Sort by date (newest first)
+      filtered.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+
+      setState(() {
+        _filteredTransactions = filtered;
+      });
     }
+  }
 
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((t) {
-        final description = t.description.toLowerCase();
-        final category = _categoriesMap[t.categoryId]?.name.toLowerCase() ?? '';
-        final paymentSource =
-            _paymentSourcesMap[t.paymentSourceId]?.name.toLowerCase() ?? '';
-
-        return description.contains(_searchQuery) ||
-            category.contains(_searchQuery) ||
-            paymentSource.contains(_searchQuery);
-      }).toList();
-    }
-
-    // Sort by date (newest first)
-    filtered.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
-
-    setState(() {
-      _filteredTransactions = filtered;
-    });
+  Future<void> _openSearchScreen() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SearchScreen(account: widget.account),
+      ),
+    );
   }
 
   Future<void> _addTransaction() async {
@@ -486,6 +562,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           backgroundColor: theme.colorScheme.inversePrimary,
           actions: [
             IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: _openSearchScreen,
+              tooltip: 'Search',
+            ),
+            IconButton(
               icon: const Icon(Icons.list_alt),
               onPressed: _viewAllTransactions,
               tooltip: 'View All Transactions',
@@ -532,265 +613,139 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            // Summary card for the period
-            if (_summary != null)
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        body: SafeArea(
+          top: false, // Don't apply to top since AppBar handles it
+          child: Column(
+            children: [
+              // Summary card for the period
+              if (_summary != null)
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date header with navigation
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Previous date button
-                        IconButton(
-                          onPressed: _navigateToPreviousDate,
-                          icon: Icon(
-                            Icons.chevron_left,
-                            color: theme.colorScheme.primary,
-                          ),
-                          tooltip: 'Previous ${widget.periodType}',
-                        ),
-                        // Date display
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              size: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Date header with navigation
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Previous date button
+                          IconButton(
+                            onPressed: _navigateToPreviousDate,
+                            icon: Icon(
+                              Icons.chevron_left,
                               color: theme.colorScheme.primary,
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _getDateRangeText(),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            tooltip: 'Previous ${widget.periodType}',
+                          ),
+                          // Date display
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                size: 16,
                                 color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _getDateRangeText(),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Next date button (only show if not today for 'today' period)
+                          IconButton(
+                            onPressed: _canNavigateToNext()
+                                ? _navigateToNextDate
+                                : null,
+                            icon: Icon(
+                              Icons.chevron_right,
+                              color: _canNavigateToNext()
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.3,
+                                    ),
+                            ),
+                            tooltip: _canNavigateToNext()
+                                ? 'Next ${widget.periodType}'
+                                : null,
+                          ),
+                        ],
+                      ),
+                      // Summary row (only show if there are transactions)
+                      if (_summary!.hasTransactions) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            // Income
+                            Expanded(
+                              child: _buildSummaryColumn(
+                                context,
+                                'Income',
+                                _summary!.totalIncome,
+                                Colors.green,
+                                Icons.trending_up,
+                              ),
+                            ),
+                            // Expenses
+                            Expanded(
+                              child: _buildSummaryColumn(
+                                context,
+                                'Expenses',
+                                _summary!.totalExpenses,
+                                Colors.red,
+                                Icons.trending_down,
+                              ),
+                            ),
+                            // Balance
+                            Expanded(
+                              child: _buildSummaryColumn(
+                                context,
+                                'Balance',
+                                _summary!.balance,
+                                _summary!.isPositiveBalance
+                                    ? Colors.green
+                                    : _summary!.isNegativeBalance
+                                    ? Colors.red
+                                    : theme.colorScheme.onSurface,
+                                _summary!.isPositiveBalance
+                                    ? Icons.arrow_upward
+                                    : _summary!.isNegativeBalance
+                                    ? Icons.arrow_downward
+                                    : Icons.remove,
                               ),
                             ),
                           ],
                         ),
-                        // Next date button (only show if not today for 'today' period)
-                        IconButton(
-                          onPressed: _canNavigateToNext()
-                              ? _navigateToNextDate
-                              : null,
-                          icon: Icon(
-                            Icons.chevron_right,
-                            color: _canNavigateToNext()
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.3,
-                                  ),
-                          ),
-                          tooltip: _canNavigateToNext()
-                              ? 'Next ${widget.periodType}'
-                              : null,
-                        ),
                       ],
-                    ),
-                    // Summary row (only show if there are transactions)
-                    if (_summary!.hasTransactions) ...[
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          // Income
-                          Expanded(
-                            child: _buildSummaryColumn(
-                              context,
-                              'Income',
-                              _summary!.totalIncome,
-                              Colors.green,
-                              Icons.trending_up,
-                            ),
-                          ),
-                          // Expenses
-                          Expanded(
-                            child: _buildSummaryColumn(
-                              context,
-                              'Expenses',
-                              _summary!.totalExpenses,
-                              Colors.red,
-                              Icons.trending_down,
-                            ),
-                          ),
-                          // Balance
-                          Expanded(
-                            child: _buildSummaryColumn(
-                              context,
-                              'Balance',
-                              _summary!.balance,
-                              _summary!.isPositiveBalance
-                                  ? Colors.green
-                                  : _summary!.isNegativeBalance
-                                  ? Colors.red
-                                  : theme.colorScheme.onSurface,
-                              _summary!.isPositiveBalance
-                                  ? Icons.arrow_upward
-                                  : _summary!.isNegativeBalance
-                                  ? Icons.arrow_downward
-                                  : Icons.remove,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
-                  ],
-                ),
-              ),
-
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search transactions...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+
+              // Transaction/Monthly list
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : widget.periodType == 'year'
+                    ? _buildMonthlyList(theme)
+                    : widget.periodType == 'month'
+                    ? _buildDailyList(theme)
+                    : _buildTransactionList(theme),
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Transaction list
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _filteredTransactions.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long,
-                            size: 64,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _searchQuery.isNotEmpty || _filterType != 'all'
-                                ? 'No transactions found'
-                                : 'No transactions for ${widget.periodTitle.toLowerCase()}',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _searchQuery.isNotEmpty || _filterType != 'all'
-                                ? 'Try adjusting your search or filters'
-                                : 'Add a transaction to get started',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadData,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _filteredTransactions.length,
-                        itemBuilder: (context, index) {
-                          final transaction = _filteredTransactions[index];
-                          final category =
-                              _categoriesMap[transaction.categoryId];
-                          final paymentSource =
-                              _paymentSourcesMap[transaction.paymentSourceId];
-
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              onTap: () =>
-                                  _navigateToTransactionDetails(transaction),
-                              onLongPress: () =>
-                                  _showTransactionOptions(transaction),
-                              leading: CircleAvatar(
-                                backgroundColor:
-                                    category?.color.withValues(alpha: 0.2) ??
-                                    Colors.grey.withValues(alpha: 0.2),
-                                child: Icon(
-                                  category?.icon ?? Icons.help_outline,
-                                  color: category?.color ?? Colors.grey,
-                                  size: 20,
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      transaction.description.isNotEmpty
-                                          ? transaction.description
-                                          : category?.name ??
-                                                'Unknown Category',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: transaction.isIncome
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                                  Text(
-                                    _formatDate(
-                                      transaction.transactionDateTime,
-                                    ),
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _addTransaction,
@@ -798,6 +753,387 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildMonthlyList(ThemeData theme) {
+    return _filteredMonthlySummaries.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_month,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _filterType != 'all'
+                      ? 'No months found'
+                      : 'No transactions this year',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _filterType != 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Add transactions to see monthly summaries',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _loadData,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filteredMonthlySummaries.length,
+              itemBuilder: (context, index) {
+                final monthlySummary = _filteredMonthlySummaries[index];
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    onTap: monthlySummary.hasTransactions
+                        ? () => _navigateToMonthlyTransactions(monthlySummary)
+                        : null,
+                    leading: CircleAvatar(
+                      backgroundColor: monthlySummary.isPositiveBalance
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : monthlySummary.isNegativeBalance
+                          ? Colors.red.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.2),
+                      child: Icon(
+                        Icons.calendar_month,
+                        color: monthlySummary.isPositiveBalance
+                            ? Colors.green
+                            : monthlySummary.isNegativeBalance
+                            ? Colors.red
+                            : Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      monthlySummary.monthName,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: monthlySummary.hasTransactions
+                        ? Text(
+                            '${monthlySummary.transactionCount} transactions',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'No transactions',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
+                    trailing: monthlySummary.hasTransactions
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                _formatAmount(monthlySummary.balance),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: monthlySummary.isPositiveBalance
+                                      ? Colors.green
+                                      : monthlySummary.isNegativeBalance
+                                      ? Colors.red
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                'Balance',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                  ),
+                );
+              },
+            ),
+          );
+  }
+
+  Widget _buildDailyList(ThemeData theme) {
+    return _filteredDailySummaries.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _filterType != 'all'
+                      ? 'No days found'
+                      : 'No transactions this month',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _filterType != 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Add transactions to see daily summaries',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _loadData,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filteredDailySummaries.length,
+              itemBuilder: (context, index) {
+                final dailySummary = _filteredDailySummaries[index];
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    onTap: dailySummary.hasTransactions
+                        ? () => _navigateToDailyTransactions(dailySummary)
+                        : null,
+                    leading: CircleAvatar(
+                      backgroundColor: dailySummary.isPositiveBalance
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : dailySummary.isNegativeBalance
+                          ? Colors.red.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.2),
+                      child: Icon(
+                        Icons.calendar_today,
+                        color: dailySummary.isPositiveBalance
+                            ? Colors.green
+                            : dailySummary.isNegativeBalance
+                            ? Colors.red
+                            : Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      dailySummary.formattedDayDate,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: dailySummary.hasTransactions
+                        ? Text(
+                            '${dailySummary.transactionCount} transactions',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'No transactions',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
+                    trailing: dailySummary.hasTransactions
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                _formatAmount(dailySummary.balance),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: dailySummary.isPositiveBalance
+                                      ? Colors.green
+                                      : dailySummary.isNegativeBalance
+                                      ? Colors.red
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                'Balance',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                  ),
+                );
+              },
+            ),
+          );
+  }
+
+  Widget _buildTransactionList(ThemeData theme) {
+    return _filteredTransactions.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.receipt_long,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _filterType != 'all'
+                      ? 'No transactions found'
+                      : 'No transactions for ${widget.periodTitle.toLowerCase()}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _filterType != 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Add a transaction to get started',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _loadData,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filteredTransactions.length,
+              itemBuilder: (context, index) {
+                final transaction = _filteredTransactions[index];
+                final category = _categoriesMap[transaction.categoryId];
+                final paymentSource =
+                    _paymentSourcesMap[transaction.paymentSourceId];
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    onTap: () => _navigateToTransactionDetails(transaction),
+                    onLongPress: () => _showTransactionOptions(transaction),
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          category?.color.withValues(alpha: 0.2) ??
+                          Colors.grey.withValues(alpha: 0.2),
+                      child: Icon(
+                        category?.icon ?? Icons.help_outline,
+                        color: category?.color ?? Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            transaction.description.isNotEmpty
+                                ? transaction.description
+                                : category?.name ?? 'Unknown Category',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        Text(
+                          '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: transaction.isIncome
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          _formatDate(transaction.transactionDateTime),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+  }
+
+  Future<void> _navigateToMonthlyTransactions(
+    MonthlySummary monthlySummary,
+  ) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => MonthlyTransactionsScreen(
+          account: widget.account,
+          year: monthlySummary.year,
+          month: monthlySummary.month,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _hasChanges = true;
+      _loadData(); // Reload data if transactions were modified
+    }
+  }
+
+  Future<void> _navigateToDailyTransactions(DailySummary dailySummary) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => DailyTransactionsScreen(
+          account: widget.account,
+          year: dailySummary.year,
+          month: dailySummary.month,
+          day: dailySummary.day,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _hasChanges = true;
+      _loadData(); // Reload data if transactions were modified
+    }
   }
 
   Widget _buildSummaryColumn(
