@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/payment_source.dart';
 import '../services/data_service.dart';
+import '../l10n/app_localizations.dart';
 
 class PaymentSourcesScreen extends StatefulWidget {
   const PaymentSourcesScreen({super.key});
@@ -42,7 +43,13 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load payment sources: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToLoadPaymentSources(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -90,13 +97,14 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('Delete Payment Source'),
-          content: Text('Are you sure you want to delete "${source.name}"?'),
+          title: Text(l10n.deletePaymentSource),
+          content: Text(l10n.deletePaymentSourceConfirmation(source.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -105,7 +113,7 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Delete'),
+              child: Text(l10n.delete),
             ),
           ],
         );
@@ -116,17 +124,18 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final allSources = [..._defaultSources, ..._customSources];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment Sources'),
+        title: Text(l10n.paymentSources),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : allSources.isEmpty
-          ? const Center(child: Text('No payment sources available'))
+          ? Center(child: Text(l10n.noPaymentSourcesAvailable))
           : ListView.builder(
               itemCount: allSources.length,
               itemBuilder: (context, index) {
@@ -145,7 +154,7 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
                     subtitle: Text(source.description),
                     trailing: source.isDefault
                         ? Chip(
-                            label: const Text('Default'),
+                            label: Text(l10n.defaultSource),
                             backgroundColor:
                                 theme.colorScheme.surfaceContainerHighest,
                           )
@@ -158,13 +167,13 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
                               }
                             },
                             itemBuilder: (BuildContext context) => [
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'edit',
-                                child: Text('Edit'),
+                                child: Text(l10n.edit),
                               ),
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'delete',
-                                child: Text('Delete'),
+                                child: Text(l10n.delete),
                               ),
                             ],
                           ),
@@ -174,7 +183,7 @@ class _PaymentSourcesScreenState extends State<PaymentSourcesScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewPaymentSource,
-        tooltip: 'Add Payment Source',
+        tooltip: l10n.addPaymentSource,
         child: const Icon(Icons.add),
       ),
     );
@@ -214,9 +223,9 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
 
   void _savePaymentSource() {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter a name')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.pleaseEnterName)),
+      );
       return;
     }
 
@@ -247,26 +256,27 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingSource != null;
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Payment Source' : 'Add Payment Source'),
+      title: Text(isEditing ? l10n.editPaymentSource : l10n.addPaymentSource),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                hintText: 'e.g., PayPal, Venmo',
+              decoration: InputDecoration(
+                labelText: l10n.name,
+                hintText: l10n.nameHint,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Optional description',
+              decoration: InputDecoration(
+                labelText: l10n.description,
+                hintText: l10n.descriptionHint,
               ),
             ),
           ],
@@ -275,11 +285,11 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         ElevatedButton(
           onPressed: _savePaymentSource,
-          child: Text(isEditing ? 'Update' : 'Add'),
+          child: Text(isEditing ? l10n.update : l10n.add),
         ),
       ],
     );
