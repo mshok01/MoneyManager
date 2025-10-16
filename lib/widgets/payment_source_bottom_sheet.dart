@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/payment_source.dart';
+import '../l10n/app_localizations.dart';
 
 class PaymentSourceBottomSheet extends StatelessWidget {
   final List<PaymentSource> paymentSources;
@@ -16,6 +17,7 @@ class PaymentSourceBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       constraints: BoxConstraints(
@@ -34,14 +36,14 @@ class PaymentSourceBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Text(
-                  'Select Payment Source',
+                  l10n.selectPaymentSource,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -66,13 +68,17 @@ class PaymentSourceBottomSheet extends StatelessWidget {
                         Icon(
                           Icons.payment_outlined,
                           size: 48,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No payment sources available',
+                          l10n.noPaymentSourcesAvailable,
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                       ],
@@ -83,11 +89,14 @@ class PaymentSourceBottomSheet extends StatelessWidget {
                     itemCount: paymentSources.length,
                     itemBuilder: (context, index) {
                       final paymentSource = paymentSources[index];
-                      final isSelected = paymentSource.id == selectedPaymentSource?.id;
+                      final isSelected =
+                          paymentSource.id == selectedPaymentSource?.id;
 
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: paymentSource.color.withValues(alpha: 0.2),
+                          backgroundColor: paymentSource.color.withValues(
+                            alpha: 0.2,
+                          ),
                           child: Icon(
                             paymentSource.icon,
                             color: paymentSource.color,
@@ -104,7 +113,9 @@ class PaymentSourceBottomSheet extends StatelessWidget {
                             ? Text(
                                 paymentSource.description,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               )
                             : null,
