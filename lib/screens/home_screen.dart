@@ -3,6 +3,7 @@ import 'package:money_manager/screens/home/home_bottom_bar.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
 import '../widgets/transaction_summary_card.dart';
+
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
 import '../services/preferences_service.dart';
@@ -336,15 +337,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: _buildAccountSelector(currentAccount, theme),
         backgroundColor: theme.colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/settings');
-            },
-            tooltip: l10n.settings,
-          ),
-        ],
       ),
       body: Column(
         children: [

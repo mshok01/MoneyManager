@@ -8,6 +8,7 @@ import '../services/category_service.dart';
 import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../widgets/highlighted_text.dart';
 import 'transaction_details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -30,6 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isLoading = false;
   bool _hasSearched = false;
   String _filterType = 'all'; // 'all', 'income', 'expense'
+  String _currentSearchTerm = '';
 
   @override
   void initState() {
@@ -85,6 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _isLoading = true;
       _hasSearched = true;
+      _currentSearchTerm = query;
     });
 
     try {
@@ -232,6 +235,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           setState(() {
                             _searchResults.clear();
                             _hasSearched = false;
+                            _currentSearchTerm = '';
                           });
                         },
                       )
@@ -363,28 +367,51 @@ class _SearchScreenState extends State<SearchScreen> {
                 size: 20,
               ),
             ),
-            title: Text(
-              transaction.description.isNotEmpty
+            title: HighlightedText(
+              text: transaction.description.isNotEmpty
                   ? transaction.description
                   : category?.name ?? 'Unknown',
+              searchTerm: _currentSearchTerm,
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  category?.name ?? 'Unknown Category',
+                HighlightedText(
+                  text: category?.name ?? 'Unknown Category',
+                  searchTerm: _currentSearchTerm,
                   style: TextStyle(
                     fontSize: 12,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
-                Text(
-                  _formatDate(transaction.transactionDateTime),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: HighlightedText(
+                        text:
+                            _paymentSourcesMap[transaction.paymentSourceId]
+                                ?.name ??
+                            'Unknown Source',
+                        searchTerm: _currentSearchTerm,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' • ${_formatDate(transaction.transactionDateTime)}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

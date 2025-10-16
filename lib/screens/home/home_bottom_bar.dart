@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/account.dart';
-import '../transaction_list_screen.dart';
+import '../history_screen.dart';
 import '../add_edit_transaction_screen.dart';
+
 import 'analytics_screen.dart';
 
 class HomeBottomBarWidget extends StatelessWidget {
@@ -36,6 +37,12 @@ class HomeBottomBarWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              _buildNavItem(
+                context: context,
+                icon: Icons.settings,
+                label: l10n.settings,
+                onTap: () => _navigateToSettings(context),
+              ),
               _buildNavItem(
                 context: context,
                 icon: Icons.receipt_long,
@@ -95,6 +102,10 @@ class HomeBottomBarWidget extends StatelessWidget {
     );
   }
 
+  void _navigateToSettings(BuildContext context) {
+    Navigator.of(context).pushNamed('/settings');
+  }
+
   void _navigateToTransactions(BuildContext context) {
     if (account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,9 +115,7 @@ class HomeBottomBarWidget extends StatelessWidget {
     }
 
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TransactionListScreen(account: account!),
-      ),
+      MaterialPageRoute(builder: (context) => HistoryScreen(account: account!)),
     );
   }
 
