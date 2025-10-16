@@ -30,9 +30,9 @@ class BackupAccountScreen extends StatelessWidget {
   void _onGoogleSignIn(BuildContext context) {
     // TODO: Implement Google Sign-in
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Google Sign-in will be implemented with Firebase Auth'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.googleSignInComingSoon),
+        duration: const Duration(seconds: 2),
       ),
     );
     // Complete onboarding and navigate to home
@@ -42,9 +42,9 @@ class BackupAccountScreen extends StatelessWidget {
   void _onAppleSignIn(BuildContext context) {
     // TODO: Implement Apple Sign-in
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Apple Sign-in will be implemented with Firebase Auth'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.appleSignInComingSoon),
+        duration: const Duration(seconds: 2),
       ),
     );
     // Complete onboarding and navigate to home

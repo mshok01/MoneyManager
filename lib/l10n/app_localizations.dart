@@ -916,6 +916,18 @@ abstract class AppLocalizations {
   /// **'Failed to create user account: {error}'**
   String failedToCreateUserAccount(String error);
 
+  /// Message shown when Google Sign-in is not yet implemented
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-in will be implemented with Firebase Auth'**
+  String get googleSignInComingSoon;
+
+  /// Message shown when Apple Sign-in is not yet implemented
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Sign-in will be implemented with Firebase Auth'**
+  String get appleSignInComingSoon;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:

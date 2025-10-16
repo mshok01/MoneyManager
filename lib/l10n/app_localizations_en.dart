@@ -460,6 +460,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get googleSignInComingSoon =>
+      'Google Sign-in will be implemented with Firebase Auth';
+
+  @override
+  String get appleSignInComingSoon =>
+      'Apple Sign-in will be implemented with Firebase Auth';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

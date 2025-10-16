@@ -642,6 +642,14 @@
       }
     }
   },
+  "googleSignInComingSoon": "Google Sign-in will be implemented with Firebase Auth",
+  "@googleSignInComingSoon": {
+    "description": "Message shown when Google Sign-in is not yet implemented"
+  },
+  "appleSignInComingSoon": "Apple Sign-in will be implemented with Firebase Auth",
+  "@appleSignInComingSoon": {
+    "description": "Message shown when Apple Sign-in is not yet implemented"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"
