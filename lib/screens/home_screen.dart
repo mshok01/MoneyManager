@@ -64,7 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleAccountRename() {
     // TODO: Implement account rename dialog
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Account rename feature coming soon!')),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.accountRenameComingSoon),
+      ),
     );
   }
 
@@ -266,12 +268,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAddAccountOption(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.1),
         child: Icon(Icons.add, color: theme.colorScheme.secondary, size: 20),
       ),
-      title: const Text('Add New Account'),
+      title: Text(l10n.addNewAccountAction),
       onTap: () {
         Navigator.of(context).pop();
         Navigator.of(context).pushNamed('/add-account');
@@ -280,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildManageAccountsOption(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.tertiary.withValues(alpha: 0.1),
@@ -289,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
           size: 20,
         ),
       ),
-      title: const Text('Manage Accounts'),
+      title: Text(l10n.manageAccountsAction),
       onTap: () {
         Navigator.of(context).pop();
         Navigator.of(context).pushNamed('/manage-accounts');
@@ -398,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Ready to track your finances!',
+                                l10n.readyToTrackFinances,
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w600,
@@ -407,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Start by adding your first transaction',
+                                l10n.startByAddingTransaction,
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: theme.colorScheme.onSurface.withValues(
@@ -434,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No account selected',
+                          l10n.noAccountSelected,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -443,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Please select an account to continue',
+                          l10n.pleaseSelectAccountFirst,
                           style: TextStyle(
                             fontSize: 16,
                             color: theme.colorScheme.onSurface.withValues(

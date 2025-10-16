@@ -724,6 +724,10 @@
   "@all": {
     "description": "Filter option to show all items"
   },
+  "noAccountSelected": "No account selected",
+  "@noAccountSelected": {
+    "description": "Empty state title when no account is selected"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"

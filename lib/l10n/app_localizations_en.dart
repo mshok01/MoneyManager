@@ -522,6 +522,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
+  String get noAccountSelected => 'No account selected';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

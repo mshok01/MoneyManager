@@ -1030,6 +1030,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get all;
 
+  /// Empty state title when no account is selected
+  ///
+  /// In en, this message translates to:
+  /// **'No account selected'**
+  String get noAccountSelected;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:
