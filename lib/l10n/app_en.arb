@@ -1383,5 +1383,13 @@
         "description": "The year with no transactions"
       }
     }
+  },
+  "searchCategories": "Search categories...",
+  "@searchCategories": {
+    "description": "Hint text for category search field"
+  },
+  "noCategoriesFound": "No categories found",
+  "@noCategoriesFound": {
+    "description": "Message shown when no categories match search criteria"
   }
 }

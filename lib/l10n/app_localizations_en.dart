@@ -964,4 +964,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String noTransactionsInYear(int year) {
     return 'No transactions in $year';
   }
+
+  @override
+  String get searchCategories => 'Search categories...';
+
+  @override
+  String get noCategoriesFound => 'No categories found';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/category_item.dart';
+import '../l10n/app_localizations.dart';
 
 class CategoryBottomSheet extends StatefulWidget {
   final List<CategoryItem> categories;
@@ -38,8 +39,7 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredCategories = widget.categories
-          .where((category) =>
-              category.name.toLowerCase().contains(query))
+          .where((category) => category.name.toLowerCase().contains(query))
           .toList();
     });
   }
@@ -47,6 +47,7 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -67,14 +68,14 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Text(
-                  'Select Category',
+                  l10n.selectCategory,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -94,7 +95,7 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search categories...',
+                hintText: l10n.searchCategories,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -118,13 +119,17 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
                         Icon(
                           Icons.search_off,
                           size: 48,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No categories found',
+                          l10n.noCategoriesFound,
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                       ],
@@ -135,11 +140,14 @@ class _CategoryBottomSheetState extends State<CategoryBottomSheet> {
                     itemCount: _filteredCategories.length,
                     itemBuilder: (context, index) {
                       final category = _filteredCategories[index];
-                      final isSelected = category.id == widget.selectedCategory?.id;
+                      final isSelected =
+                          category.id == widget.selectedCategory?.id;
 
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: category.color.withValues(alpha: 0.2),
+                          backgroundColor: category.color.withValues(
+                            alpha: 0.2,
+                          ),
                           child: Icon(
                             category.icon,
                             color: category.color,

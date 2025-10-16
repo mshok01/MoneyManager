@@ -1791,6 +1791,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No transactions in {year}'**
   String noTransactionsInYear(int year);
+
+  /// Hint text for category search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories...'**
+  String get searchCategories;
+
+  /// Message shown when no categories match search criteria
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found'**
+  String get noCategoriesFound;
 }
 
 class _AppLocalizationsDelegate
