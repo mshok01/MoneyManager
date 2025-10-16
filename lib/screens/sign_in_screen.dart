@@ -6,10 +6,11 @@ class SignInScreen extends StatelessWidget {
 
   void _onGoogleSignIn(BuildContext context) {
     // TODO: Implement Google Sign-in with account detection
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Google Sign-in will be implemented with Firebase Auth'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(l10n.googleSignInComingSoon),
+        duration: const Duration(seconds: 2),
       ),
     );
     // For now, navigate to home
@@ -18,10 +19,11 @@ class SignInScreen extends StatelessWidget {
 
   void _onAppleSignIn(BuildContext context) {
     // TODO: Implement Apple Sign-in with account detection
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Apple Sign-in will be implemented with Firebase Auth'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(l10n.appleSignInComingSoon),
+        duration: const Duration(seconds: 2),
       ),
     );
     // For now, navigate to home
