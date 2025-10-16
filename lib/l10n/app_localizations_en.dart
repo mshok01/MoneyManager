@@ -885,4 +885,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentSourcesTitle => 'Payment Sources';
+
+  @override
+  String get searchTransactionsTitle => 'Search Transactions';
+
+  @override
+  String get searchTransactionsHint =>
+      'Search transactions, categories, amounts...';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get searchYourTransactions => 'Search your transactions';
+
+  @override
+  String get searchInstructions =>
+      'Enter keywords to find transactions by description, category, payment source, or amount';
+
+  @override
+  String get tryDifferentKeywords =>
+      'Try different keywords or adjust your filters';
 }

@@ -9,6 +9,7 @@ import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../widgets/highlighted_text.dart';
+import '../l10n/app_localizations.dart';
 import 'transaction_details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -169,10 +170,11 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Transactions'),
+        title: Text(l10n.searchTransactionsTitle),
         backgroundColor: theme.colorScheme.inversePrimary,
         actions: [
           PopupMenuButton<String>(
@@ -185,15 +187,9 @@ class _SearchScreenState extends State<SearchScreen> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'all',
-                child: Text('All Transactions'),
-              ),
-              const PopupMenuItem(value: 'income', child: Text('Income Only')),
-              const PopupMenuItem(
-                value: 'expense',
-                child: Text('Expenses Only'),
-              ),
+              PopupMenuItem(value: 'all', child: Text(l10n.allTransactions)),
+              PopupMenuItem(value: 'income', child: Text(l10n.incomeOnly)),
+              PopupMenuItem(value: 'expense', child: Text(l10n.expensesOnly)),
             ],
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -204,10 +200,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(width: 4),
                   Text(
                     _filterType == 'all'
-                        ? 'All'
+                        ? l10n.all
                         : _filterType == 'income'
-                        ? 'Income'
-                        : 'Expenses',
+                        ? l10n.income
+                        : l10n.expensesTab,
                     style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                 ],
@@ -225,7 +221,7 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchController,
               focusNode: _focusNode,
               decoration: InputDecoration(
-                hintText: 'Search transactions, categories, amounts...',
+                hintText: l10n.searchTransactionsHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -266,7 +262,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Search'),
+                    : Text(l10n.search),
               ),
             ),
           ),
@@ -274,13 +270,13 @@ class _SearchScreenState extends State<SearchScreen> {
           const SizedBox(height: 16),
 
           // Results
-          Expanded(child: _buildSearchResults(theme)),
+          Expanded(child: _buildSearchResults(theme, l10n)),
         ],
       ),
     );
   }
 
-  Widget _buildSearchResults(ThemeData theme) {
+  Widget _buildSearchResults(ThemeData theme, AppLocalizations l10n) {
     if (!_hasSearched) {
       return Center(
         child: Column(
@@ -293,14 +289,14 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Search your transactions',
+              l10n.searchYourTransactions,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter keywords to find transactions by description, category, payment source, or amount',
+              l10n.searchInstructions,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
@@ -327,14 +323,14 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No transactions found',
+              l10n.noTransactionsFound,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Try different keywords or adjust your filters',
+              l10n.tryDifferentKeywords,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
@@ -370,7 +366,7 @@ class _SearchScreenState extends State<SearchScreen> {
             title: HighlightedText(
               text: transaction.description.isNotEmpty
                   ? transaction.description
-                  : category?.name ?? 'Unknown',
+                  : category?.name ?? l10n.unknown,
               searchTerm: _currentSearchTerm,
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
@@ -378,7 +374,7 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 HighlightedText(
-                  text: category?.name ?? 'Unknown Category',
+                  text: category?.name ?? l10n.unknownCategory,
                   searchTerm: _currentSearchTerm,
                   style: TextStyle(
                     fontSize: 12,
@@ -392,7 +388,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         text:
                             _paymentSourcesMap[transaction.paymentSourceId]
                                 ?.name ??
-                            'Unknown Source',
+                            l10n.unknownSource,
                         searchTerm: _currentSearchTerm,
                         style: TextStyle(
                           fontSize: 11,

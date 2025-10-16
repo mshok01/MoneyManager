@@ -1259,5 +1259,29 @@
   "paymentSourcesTitle": "Payment Sources",
   "@paymentSourcesTitle": {
     "description": "Payment sources screen title"
+  },
+  "searchTransactionsTitle": "Search Transactions",
+  "@searchTransactionsTitle": {
+    "description": "Search transactions screen title"
+  },
+  "searchTransactionsHint": "Search transactions, categories, amounts...",
+  "@searchTransactionsHint": {
+    "description": "Search field hint text for comprehensive search"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Search button text"
+  },
+  "searchYourTransactions": "Search your transactions",
+  "@searchYourTransactions": {
+    "description": "Empty state title on search screen"
+  },
+  "searchInstructions": "Enter keywords to find transactions by description, category, payment source, or amount",
+  "@searchInstructions": {
+    "description": "Empty state instructions on search screen"
+  },
+  "tryDifferentKeywords": "Try different keywords or adjust your filters",
+  "@tryDifferentKeywords": {
+    "description": "No search results suggestion"
   }
 }

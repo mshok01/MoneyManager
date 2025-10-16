@@ -1665,6 +1665,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment Sources'**
   String get paymentSourcesTitle;
+
+  /// Search transactions screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Search Transactions'**
+  String get searchTransactionsTitle;
+
+  /// Search field hint text for comprehensive search
+  ///
+  /// In en, this message translates to:
+  /// **'Search transactions, categories, amounts...'**
+  String get searchTransactionsHint;
+
+  /// Search button text
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// Empty state title on search screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search your transactions'**
+  String get searchYourTransactions;
+
+  /// Empty state instructions on search screen
+  ///
+  /// In en, this message translates to:
+  /// **'Enter keywords to find transactions by description, category, payment source, or amount'**
+  String get searchInstructions;
+
+  /// No search results suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Try different keywords or adjust your filters'**
+  String get tryDifferentKeywords;
 }
 
 class _AppLocalizationsDelegate
