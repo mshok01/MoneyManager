@@ -650,6 +650,80 @@
   "@appleSignInComingSoon": {
     "description": "Message shown when Apple Sign-in is not yet implemented"
   },
+  "errorLoadingTransactions": "Error loading transactions: {error}",
+  "@errorLoadingTransactions": {
+    "description": "Error message when transactions fail to load",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "dailyTransactions": "Daily Transactions",
+  "@dailyTransactions": {
+    "description": "Title for daily transactions screen"
+  },
+  "noTransactionsForThisDay": "No transactions for this day",
+  "@noTransactionsForThisDay": {
+    "description": "Message when no transactions exist for the selected day"
+  },
+  "tryAdjustingSearchOrFilters": "Try adjusting your search or filters",
+  "@tryAdjustingSearchOrFilters": {
+    "description": "Suggestion when no transactions found with filters"
+  },
+  "january": "January",
+  "@january": {
+    "description": "Month name"
+  },
+  "february": "February",
+  "@february": {
+    "description": "Month name"
+  },
+  "march": "March",
+  "@march": {
+    "description": "Month name"
+  },
+  "april": "April",
+  "@april": {
+    "description": "Month name"
+  },
+  "may": "May",
+  "@may": {
+    "description": "Month name"
+  },
+  "june": "June",
+  "@june": {
+    "description": "Month name"
+  },
+  "july": "July",
+  "@july": {
+    "description": "Month name"
+  },
+  "august": "August",
+  "@august": {
+    "description": "Month name"
+  },
+  "september": "September",
+  "@september": {
+    "description": "Month name"
+  },
+  "october": "October",
+  "@october": {
+    "description": "Month name"
+  },
+  "november": "November",
+  "@november": {
+    "description": "Month name"
+  },
+  "december": "December",
+  "@december": {
+    "description": "Month name"
+  },
+  "all": "All",
+  "@all": {
+    "description": "Filter option to show all items"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"

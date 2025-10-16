@@ -468,6 +468,60 @@ class AppLocalizationsEn extends AppLocalizations {
       'Apple Sign-in will be implemented with Firebase Auth';
 
   @override
+  String errorLoadingTransactions(String error) {
+    return 'Error loading transactions: $error';
+  }
+
+  @override
+  String get dailyTransactions => 'Daily Transactions';
+
+  @override
+  String get noTransactionsForThisDay => 'No transactions for this day';
+
+  @override
+  String get tryAdjustingSearchOrFilters =>
+      'Try adjusting your search or filters';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get june => 'June';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
+
+  @override
+  String get all => 'All';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

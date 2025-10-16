@@ -928,6 +928,108 @@ abstract class AppLocalizations {
   /// **'Apple Sign-in will be implemented with Firebase Auth'**
   String get appleSignInComingSoon;
 
+  /// Error message when transactions fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading transactions: {error}'**
+  String errorLoadingTransactions(String error);
+
+  /// Title for daily transactions screen
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Transactions'**
+  String get dailyTransactions;
+
+  /// Message when no transactions exist for the selected day
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions for this day'**
+  String get noTransactionsForThisDay;
+
+  /// Suggestion when no transactions found with filters
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search or filters'**
+  String get tryAdjustingSearchOrFilters;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'January'**
+  String get january;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'February'**
+  String get february;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'March'**
+  String get march;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'April'**
+  String get april;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get may;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get june;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'July'**
+  String get july;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'August'**
+  String get august;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get september;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'October'**
+  String get october;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'November'**
+  String get november;
+
+  /// Month name
+  ///
+  /// In en, this message translates to:
+  /// **'December'**
+  String get december;
+
+  /// Filter option to show all items
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:

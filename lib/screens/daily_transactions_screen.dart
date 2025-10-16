@@ -9,6 +9,7 @@ import '../services/category_service.dart';
 import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../l10n/app_localizations.dart';
 import 'add_edit_transaction_screen.dart';
 import 'transaction_details_screen.dart';
 
@@ -122,7 +123,13 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading transactions: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.errorLoadingTransactions(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -205,20 +212,21 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
-  String get _dayTitle {
-    const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+  String _getDayTitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final monthNames = [
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
     return '${monthNames[widget.month - 1]} ${widget.day}, ${widget.year}';
   }
@@ -226,6 +234,7 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -239,7 +248,7 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Daily Transactions'),
+              Text(l10n.dailyTransactions),
               Text(
                 widget.account.name,
                 style: TextStyle(
@@ -271,7 +280,7 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _dayTitle,
+                        _getDayTitle(context),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -282,21 +291,21 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                         children: [
                           _buildSummaryColumn(
                             context,
-                            'Income',
+                            l10n.income,
                             _dailySummary!.totalIncome,
                             Colors.green,
                             Icons.arrow_upward,
                           ),
                           _buildSummaryColumn(
                             context,
-                            'Expenses',
+                            l10n.expensesTab,
                             _dailySummary!.totalExpenses,
                             Colors.red,
                             Icons.arrow_downward,
                           ),
                           _buildSummaryColumn(
                             context,
-                            'Balance',
+                            l10n.balance,
                             _dailySummary!.balance,
                             _dailySummary!.balance >= 0
                                 ? Colors.green
@@ -319,11 +328,11 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                     Expanded(
                       child: TextField(
                         controller: _searchController,
-                        decoration: const InputDecoration(
-                          hintText: 'Search transactions...',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
+                        decoration: InputDecoration(
+                          hintText: l10n.searchTransactions,
+                          prefixIcon: const Icon(Icons.search),
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
                           ),
@@ -340,14 +349,14 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                         });
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'all', child: Text('All')),
-                        const PopupMenuItem(
+                        PopupMenuItem(value: 'all', child: Text(l10n.all)),
+                        PopupMenuItem(
                           value: 'income',
-                          child: Text('Income'),
+                          child: Text(l10n.income),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'expense',
-                          child: Text('Expenses'),
+                          child: Text(l10n.expensesTab),
                         ),
                       ],
                       child: Container(
@@ -366,10 +375,10 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                             const SizedBox(width: 4),
                             Text(
                               _filterType == 'all'
-                                  ? 'All'
+                                  ? l10n.all
                                   : _filterType == 'income'
-                                  ? 'Income'
-                                  : 'Expenses',
+                                  ? l10n.income
+                                  : l10n.expensesTab,
                               style: TextStyle(
                                 color: theme.colorScheme.onSurface,
                               ),
@@ -403,8 +412,8 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                             const SizedBox(height: 16),
                             Text(
                               _searchQuery.isNotEmpty || _filterType != 'all'
-                                  ? 'No transactions found'
-                                  : 'No transactions for this day',
+                                  ? l10n.noTransactionsFound
+                                  : l10n.noTransactionsForThisDay,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: theme.colorScheme.onSurface.withValues(
                                   alpha: 0.6,
@@ -414,8 +423,8 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                             const SizedBox(height: 8),
                             Text(
                               _searchQuery.isNotEmpty || _filterType != 'all'
-                                  ? 'Try adjusting your search or filters'
-                                  : 'Add a transaction to get started',
+                                  ? l10n.tryAdjustingSearchOrFilters
+                                  : l10n.addFirstTransactionToGetStarted,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurface.withValues(
                                   alpha: 0.5,
@@ -459,7 +468,7 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                                         transaction.description.isNotEmpty
                                             ? transaction.description
                                             : category?.name ??
-                                                  'Unknown Category',
+                                                  l10n.unknownCategory,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -477,7 +486,7 @@ class _DailyTransactionsScreenState extends State<DailyTransactionsScreen> {
                                   ],
                                 ),
                                 subtitle: Text(
-                                  '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
+                                  '${category?.name ?? l10n.unknown} • ${paymentSource?.name ?? l10n.unknown}',
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.7),
