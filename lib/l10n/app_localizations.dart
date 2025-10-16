@@ -1036,6 +1036,42 @@ abstract class AppLocalizations {
   /// **'No account selected'**
   String get noAccountSelected;
 
+  /// Filter option to show all transactions
+  ///
+  /// In en, this message translates to:
+  /// **'All Transactions'**
+  String get allTransactions;
+
+  /// Filter option to show income transactions only
+  ///
+  /// In en, this message translates to:
+  /// **'Income Only'**
+  String get incomeOnly;
+
+  /// Filter option to show expense transactions only
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses Only'**
+  String get expensesOnly;
+
+  /// Empty state message when no days match search/filter
+  ///
+  /// In en, this message translates to:
+  /// **'No matching days'**
+  String get noMatchingDays;
+
+  /// Empty state message when no days have transactions
+  ///
+  /// In en, this message translates to:
+  /// **'No days with transactions'**
+  String get noDaysWithTransactions;
+
+  /// Empty state hint to add transactions for daily summaries
+  ///
+  /// In en, this message translates to:
+  /// **'Add transactions to see daily summaries'**
+  String get addTransactionsToSeeDailySummaries;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:

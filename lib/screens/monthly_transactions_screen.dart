@@ -164,6 +164,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
     if (_monthlySummary == null) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final summary = _monthlySummary!;
 
     return Card(
@@ -184,7 +185,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
               children: [
                 Expanded(
                   child: _buildSummaryItem(
-                    'Income',
+                    l10n.income,
                     _formatAmount(summary.totalIncome),
                     Icons.trending_up,
                     Colors.green,
@@ -192,7 +193,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                 ),
                 Expanded(
                   child: _buildSummaryItem(
-                    'Expenses',
+                    l10n.expensesTab,
                     _formatAmount(summary.totalExpenses),
                     Icons.trending_down,
                     Colors.red,
@@ -200,7 +201,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                 ),
                 Expanded(
                   child: _buildSummaryItem(
-                    'Balance',
+                    l10n.balance,
                     _formatAmount(summary.balance),
                     summary.isPositiveBalance
                         ? Icons.trending_up
@@ -256,7 +257,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final monthName = _monthlySummary?.monthName ?? 'Month';
+    final monthName = _monthlySummary?.monthName ?? l10n.month;
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
@@ -278,18 +279,9 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                 });
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'all',
-                  child: Text('All Transactions'),
-                ),
-                const PopupMenuItem(
-                  value: 'income',
-                  child: Text('Income Only'),
-                ),
-                const PopupMenuItem(
-                  value: 'expense',
-                  child: Text('Expenses Only'),
-                ),
+                PopupMenuItem(value: 'all', child: Text(l10n.allTransactions)),
+                PopupMenuItem(value: 'income', child: Text(l10n.incomeOnly)),
+                PopupMenuItem(value: 'expense', child: Text(l10n.expensesOnly)),
               ],
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -300,10 +292,10 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                     const SizedBox(width: 4),
                     Text(
                       _filterType == 'all'
-                          ? 'All'
+                          ? l10n.all
                           : _filterType == 'income'
-                          ? 'Income'
-                          : 'Expenses',
+                          ? l10n.income
+                          : l10n.expensesTab,
                       style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
                   ],
@@ -323,7 +315,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        hintText: 'Search transactions...',
+                        hintText: l10n.searchTransactions,
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -354,8 +346,8 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                                 Text(
                                   _searchQuery.isNotEmpty ||
                                           _filterType != 'all'
-                                      ? 'No matching days'
-                                      : 'No days with transactions',
+                                      ? l10n.noMatchingDays
+                                      : l10n.noDaysWithTransactions,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.6),
@@ -365,8 +357,8 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                                 Text(
                                   _searchQuery.isNotEmpty ||
                                           _filterType != 'all'
-                                      ? 'Try adjusting your search or filters'
-                                      : 'Add transactions to see daily summaries',
+                                      ? l10n.tryAdjustingSearchOrFilters
+                                      : l10n.addTransactionsToSeeDailySummaries,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.5),
@@ -419,14 +411,16 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                                     ),
                                     subtitle: dailySummary.hasTransactions
                                         ? Text(
-                                            '${dailySummary.transactionCount} transactions',
+                                            l10n.transactionsCount(
+                                              dailySummary.transactionCount,
+                                            ),
                                             style: TextStyle(
                                               color: theme.colorScheme.onSurface
                                                   .withValues(alpha: 0.6),
                                             ),
                                           )
                                         : Text(
-                                            'No transactions',
+                                            l10n.noTransactionsYet,
                                             style: TextStyle(
                                               color: theme.colorScheme.onSurface
                                                   .withValues(alpha: 0.5),
@@ -458,7 +452,7 @@ class _MonthlyTransactionsScreenState extends State<MonthlyTransactionsScreen> {
                                                 ),
                                               ),
                                               Text(
-                                                'Balance',
+                                                l10n.balance,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: theme

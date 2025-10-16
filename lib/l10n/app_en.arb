@@ -728,6 +728,30 @@
   "@noAccountSelected": {
     "description": "Empty state title when no account is selected"
   },
+  "allTransactions": "All Transactions",
+  "@allTransactions": {
+    "description": "Filter option to show all transactions"
+  },
+  "incomeOnly": "Income Only",
+  "@incomeOnly": {
+    "description": "Filter option to show income transactions only"
+  },
+  "expensesOnly": "Expenses Only",
+  "@expensesOnly": {
+    "description": "Filter option to show expense transactions only"
+  },
+  "noMatchingDays": "No matching days",
+  "@noMatchingDays": {
+    "description": "Empty state message when no days match search/filter"
+  },
+  "noDaysWithTransactions": "No days with transactions",
+  "@noDaysWithTransactions": {
+    "description": "Empty state message when no days have transactions"
+  },
+  "addTransactionsToSeeDailySummaries": "Add transactions to see daily summaries",
+  "@addTransactionsToSeeDailySummaries": {
+    "description": "Empty state hint to add transactions for daily summaries"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"

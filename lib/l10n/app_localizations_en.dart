@@ -525,6 +525,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAccountSelected => 'No account selected';
 
   @override
+  String get allTransactions => 'All Transactions';
+
+  @override
+  String get incomeOnly => 'Income Only';
+
+  @override
+  String get expensesOnly => 'Expenses Only';
+
+  @override
+  String get noMatchingDays => 'No matching days';
+
+  @override
+  String get noDaysWithTransactions => 'No days with transactions';
+
+  @override
+  String get addTransactionsToSeeDailySummaries =>
+      'Add transactions to see daily summaries';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override
