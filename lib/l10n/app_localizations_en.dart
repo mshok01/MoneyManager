@@ -430,6 +430,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseSelectAccountFirst => 'Please select an account first';
 
   @override
+  String get accountBalance => 'Account Balance';
+
+  @override
+  String get currentBalance => 'Current Balance';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get recentTransactions => 'Recent Transactions';
+
+  @override
+  String get noTransactionsYet => 'No transactions yet';
+
+  @override
+  String get addFirstTransactionToGetStarted =>
+      'Add your first transaction to get started';
+
+  @override
+  String get transaction => 'Transaction';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

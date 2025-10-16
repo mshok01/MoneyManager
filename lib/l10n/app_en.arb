@@ -600,6 +600,38 @@
   "@pleaseSelectAccountFirst": {
     "description": "Message shown when user tries to navigate without selecting an account"
   },
+  "accountBalance": "Account Balance",
+  "@accountBalance": {
+    "description": "Account balance section title"
+  },
+  "currentBalance": "Current Balance",
+  "@currentBalance": {
+    "description": "Current balance label"
+  },
+  "quickActions": "Quick Actions",
+  "@quickActions": {
+    "description": "Quick actions section title"
+  },
+  "viewAll": "View All",
+  "@viewAll": {
+    "description": "View all button label"
+  },
+  "recentTransactions": "Recent Transactions",
+  "@recentTransactions": {
+    "description": "Recent transactions section title"
+  },
+  "noTransactionsYet": "No transactions yet",
+  "@noTransactionsYet": {
+    "description": "Message when no transactions exist"
+  },
+  "addFirstTransactionToGetStarted": "Add your first transaction to get started",
+  "@addFirstTransactionToGetStarted": {
+    "description": "Encouragement message for first transaction"
+  },
+  "transaction": "Transaction",
+  "@transaction": {
+    "description": "Default transaction description"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"

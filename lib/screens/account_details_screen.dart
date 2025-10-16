@@ -826,7 +826,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   Icon(Icons.account_balance, color: theme.colorScheme.primary),
                   const SizedBox(width: 8),
                   Text(
-                    'Account Balance',
+                    AppLocalizations.of(context)!.accountBalance,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -852,7 +852,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       child: Column(
                         children: [
                           Text(
-                            'Current Balance',
+                            AppLocalizations.of(context)!.currentBalance,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.7,
@@ -888,7 +888,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                 Icon(Icons.trending_up, color: Colors.green),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Income',
+                                  AppLocalizations.of(context)!.income,
                                   style: theme.textTheme.bodySmall,
                                 ),
                                 Text(
@@ -915,7 +915,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                 Icon(Icons.trending_down, color: Colors.red),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Expenses',
+                                  AppLocalizations.of(context)!.expensesTab,
                                   style: theme.textTheme.bodySmall,
                                 ),
                                 Text(
@@ -950,7 +950,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quick Actions',
+                AppLocalizations.of(context)!.quickActions,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -962,7 +962,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _addTransaction(),
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Transaction'),
+                      label: Text(AppLocalizations.of(context)!.addTransaction),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -973,7 +973,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _viewAllTransactions(),
                       icon: const Icon(Icons.list),
-                      label: const Text('View All'),
+                      label: Text(AppLocalizations.of(context)!.viewAll),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -1001,7 +1001,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Recent Transactions',
+                    AppLocalizations.of(context)!.recentTransactions,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1009,7 +1009,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   if (_recentTransactions.isNotEmpty)
                     TextButton(
                       onPressed: () => _viewAllTransactions(),
-                      child: const Text('View All'),
+                      child: Text(AppLocalizations.of(context)!.viewAll),
                     ),
                 ],
               ),
@@ -1031,7 +1031,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'No transactions yet',
+                        AppLocalizations.of(context)!.noTransactionsYet,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(
                             alpha: 0.6,
@@ -1040,7 +1040,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Add your first transaction to get started',
+                        AppLocalizations.of(
+                          context,
+                        )!.addFirstTransactionToGetStarted,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(
                             alpha: 0.5,
@@ -1073,7 +1075,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       title: Text(
                         transaction.description.isNotEmpty
                             ? transaction.description
-                            : 'Transaction',
+                            : AppLocalizations.of(context)!.transaction,
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                       subtitle: Text(

@@ -862,6 +862,54 @@ abstract class AppLocalizations {
   /// **'Please select an account first'**
   String get pleaseSelectAccountFirst;
 
+  /// Account balance section title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Balance'**
+  String get accountBalance;
+
+  /// Current balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Current Balance'**
+  String get currentBalance;
+
+  /// Quick actions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// View all button label
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// Recent transactions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Transactions'**
+  String get recentTransactions;
+
+  /// Message when no transactions exist
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get noTransactionsYet;
+
+  /// Encouragement message for first transaction
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first transaction to get started'**
+  String get addFirstTransactionToGetStarted;
+
+  /// Default transaction description
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction'**
+  String get transaction;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:
