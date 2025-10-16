@@ -45,7 +45,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load categories: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToLoadCategories(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -79,9 +85,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     unselectedLabelColor: theme.colorScheme.onSurface
                         .withValues(alpha: 0.6),
                     indicatorColor: theme.colorScheme.primary,
-                    tabs: const [
-                      Tab(icon: Icon(Icons.trending_up), text: 'Income'),
-                      Tab(icon: Icon(Icons.trending_down), text: 'Expenses'),
+                    tabs: [
+                      Tab(
+                        icon: const Icon(Icons.trending_up),
+                        text: l10n.income,
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.trending_down),
+                        text: l10n.expensesTab,
+                      ),
                     ],
                   ),
                   Expanded(
@@ -127,23 +139,23 @@ class _CategoryScreenState extends State<CategoryScreen> {
               onSelected: (value) =>
                   _handleCategoryAction(value, category, type),
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit),
-                      SizedBox(width: 8),
-                      Text('Edit'),
+                      const Icon(Icons.edit),
+                      const SizedBox(width: 8),
+                      Text(AppLocalizations.of(context)!.edit),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete),
-                      SizedBox(width: 8),
-                      Text('Delete'),
+                      const Icon(Icons.delete),
+                      const SizedBox(width: 8),
+                      Text(AppLocalizations.of(context)!.delete),
                     ],
                   ),
                 ),
@@ -364,7 +376,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void _showEditCategoryDialog(CategoryItem category, String type) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Edit ${category.name} functionality coming soon!'),
+        content: Text(
+          AppLocalizations.of(context)!.editCategoryComingSoon(category.name),
+        ),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -374,12 +388,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Category'),
-        content: Text('Are you sure you want to delete "${category.name}"?'),
+        title: Text(AppLocalizations.of(context)!.deleteCategory),
+        content: Text(
+          AppLocalizations.of(
+            context,
+          )!.deleteCategoryConfirmation(category.name),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -387,13 +405,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Delete ${category.name} functionality coming soon!',
+                    AppLocalizations.of(
+                      context,
+                    )!.deleteCategoryComingSoon(category.name),
                   ),
                   duration: const Duration(seconds: 2),
                 ),
               );
             },
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
