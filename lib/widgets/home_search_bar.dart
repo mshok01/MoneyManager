@@ -9,6 +9,7 @@ import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../screens/transaction_details_screen.dart';
+import '../l10n/app_localizations.dart';
 import 'highlighted_text.dart';
 
 /// Search bar widget for the home screen that searches transactions
@@ -165,6 +166,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       children: [
@@ -182,7 +184,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
             controller: _searchController,
             focusNode: _focusNode,
             decoration: InputDecoration(
-              hintText: 'Search transactions...',
+              hintText: l10n.searchTransactions,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -236,7 +238,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                 ? Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'No transactions found',
+                      l10n.noTransactionsFound,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(
                           alpha: 0.6,
@@ -258,13 +260,14 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                           category,
                           paymentSource,
                           theme,
+                          l10n,
                         );
                       }),
                       if (_searchResults.length >= 5)
                         Padding(
                           padding: const EdgeInsets.all(8),
                           child: Text(
-                            'Showing top 5 results',
+                            l10n.showingTopResults,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.5,
@@ -285,6 +288,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
     CategoryItem? category,
     PaymentSource? paymentSource,
     ThemeData theme,
+    AppLocalizations l10n,
   ) {
     return InkWell(
       onTap: () => _navigateToTransactionDetails(transaction),
@@ -322,7 +326,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                   HighlightedText(
                     text: transaction.description.isNotEmpty
                         ? transaction.description
-                        : category?.name ?? 'Unknown',
+                        : category?.name ?? l10n.unknown,
                     searchTerm: _currentSearchTerm,
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
@@ -336,7 +340,7 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
                     children: [
                       Expanded(
                         child: HighlightedText(
-                          text: category?.name ?? 'Unknown Category',
+                          text: category?.name ?? l10n.unknownCategory,
                           searchTerm: _currentSearchTerm,
                           style: TextStyle(
                             fontSize: 12,

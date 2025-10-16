@@ -104,7 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return await AccountService.instance.getAccountById(_selectedAccountId!);
   }
 
-  Widget _buildAccountSelector(Account? account, ThemeData theme) {
+  Widget _buildAccountSelector(
+    Account? account,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     return GestureDetector(
       onTap: _showAccountSelector,
       child: Row(
@@ -120,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              account?.name ?? 'No Account',
+              account?.name ?? l10n.noAccount,
               style:
                   theme.appBarTheme.titleTextStyle?.copyWith(
                     fontSize: 18,
@@ -151,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAccountSelectorBottomSheet() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<List<Account>>(
       future: AccountService.instance.activeAccounts,
@@ -163,12 +168,16 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final accounts = snapshot.data!;
-        return _buildAccountSelectorContent(theme, accounts);
+        return _buildAccountSelectorContent(theme, accounts, l10n);
       },
     );
   }
 
-  Widget _buildAccountSelectorContent(ThemeData theme, List<Account> accounts) {
+  Widget _buildAccountSelectorContent(
+    ThemeData theme,
+    List<Account> accounts,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
@@ -191,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               children: [
                 Text(
-                  'Select Account',
+                  l10n.selectAccount,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -335,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ) {
     return Scaffold(
       appBar: AppBar(
-        title: _buildAccountSelector(currentAccount, theme),
+        title: _buildAccountSelector(currentAccount, theme, l10n),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
       body: Column(

@@ -9,6 +9,7 @@ import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../widgets/highlighted_text.dart';
+import '../l10n/app_localizations.dart';
 
 import 'transaction_details_screen.dart';
 
@@ -82,9 +83,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load history: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.failedToLoadHistory(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -168,9 +173,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final transactionDate = DateTime(date.year, date.month, date.day);
 
     if (transactionDate == today) {
-      return 'Today';
+      return AppLocalizations.of(context)!.today;
     } else if (transactionDate == yesterday) {
-      return 'Yesterday';
+      return AppLocalizations.of(context)!.yesterday;
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
@@ -221,17 +226,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildPeriodSelector() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       margin: const EdgeInsets.all(16),
       child: Row(
         children: [
-          _buildPeriodChip('all', 'All Time'),
+          _buildPeriodChip('all', l10n.allTime),
           const SizedBox(width: 8),
-          _buildPeriodChip('week', 'Week'),
+          _buildPeriodChip('week', l10n.week),
           const SizedBox(width: 8),
-          _buildPeriodChip('month', 'Month'),
+          _buildPeriodChip('month', l10n.month),
           const SizedBox(width: 8),
-          _buildPeriodChip('year', 'Year'),
+          _buildPeriodChip('year', l10n.year),
         ],
       ),
     );
@@ -275,6 +282,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildSummaryCard() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -290,7 +298,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Income',
+                  l10n.income,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer.withValues(
                       alpha: 0.7,
@@ -317,7 +325,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'Expenses',
+                  l10n.expensesTab,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer.withValues(
                       alpha: 0.7,
@@ -342,6 +350,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final groupedTransactions = _groupedTransactions;
 
     return Scaffold(
@@ -350,15 +359,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Search transactions...',
+                decoration: InputDecoration(
+                  hintText: l10n.searchTransactions,
                   border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white70),
                 ),
                 style: const TextStyle(color: Colors.white),
                 onChanged: _performSearch,
               )
-            : Text('${widget.account.name} History'),
+            : Text(l10n.accountHistory(widget.account.name)),
         backgroundColor: theme.colorScheme.inversePrimary,
         actions: [
           IconButton(
@@ -371,9 +380,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                _buildPeriodSelector(),
-                _buildSummaryCard(),
-                const SizedBox(height: 16),
+                if (!_isSearching) _buildPeriodSelector(),
+                if (!_isSearching) _buildSummaryCard(),
+                if (!_isSearching) const SizedBox(height: 16),
 
                 Expanded(
                   child: _filteredTransactions.isEmpty
@@ -390,7 +399,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No transactions found',
+                                l10n.noTransactionsFound,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(
                                     alpha: 0.6,
@@ -399,7 +408,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Try selecting a different time period',
+                                l10n.tryDifferentTimePeriod,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(
                                     alpha: 0.5,
@@ -491,7 +500,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                               transaction.description.isNotEmpty
                                               ? transaction.description
                                               : category?.name ??
-                                                    'Unknown Category',
+                                                    l10n.unknownCategory,
                                           searchTerm: _currentSearchTerm,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
@@ -516,7 +525,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             HighlightedText(
                                               text:
                                                   paymentSource?.name ??
-                                                  'Unknown Source',
+                                                  l10n.unknownSource,
                                               searchTerm: _currentSearchTerm,
                                               style: TextStyle(
                                                 color: theme

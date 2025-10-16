@@ -392,6 +392,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAccounts => 'No Accounts';
 
   @override
+  String get noAccount => 'No Account';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override
@@ -461,10 +464,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountRenameComingSoon => 'Account rename feature coming soon!';
 
   @override
-  String get noAccount => 'No Account';
+  String get selectAccount => 'Select Account';
 
   @override
-  String get selectAccount => 'Select Account';
+  String get searchTransactions => 'Search transactions...';
+
+  @override
+  String get allTime => 'All Time';
+
+  @override
+  String get week => 'Week';
+
+  @override
+  String get month => 'Month';
+
+  @override
+  String get year => 'Year';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get noTransactionsFound => 'No transactions found';
+
+  @override
+  String get tryDifferentTimePeriod => 'Try selecting a different time period';
+
+  @override
+  String get unknownCategory => 'Unknown Category';
+
+  @override
+  String get unknownSource => 'Unknown Source';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get showingTopResults => 'Showing top 5 results';
+
+  @override
+  String failedToLoadHistory(String error) {
+    return 'Failed to load history: $error';
+  }
+
+  @override
+  String accountHistory(String accountName) {
+    return '$accountName History';
+  }
 
   @override
   String get addNewAccountAction => 'Add New Account';
@@ -619,12 +668,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get time => 'Time';
-
-  @override
-  String get unknownCategory => 'Unknown Category';
-
-  @override
-  String get unknownSource => 'Unknown Source';
 
   @override
   String get editTransactionTitle => 'Edit Transaction';

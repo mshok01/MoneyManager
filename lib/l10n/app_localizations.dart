@@ -796,6 +796,12 @@ abstract class AppLocalizations {
   /// **'No Accounts'**
   String get noAccounts;
 
+  /// Text shown when no account is selected
+  ///
+  /// In en, this message translates to:
+  /// **'No Account'**
+  String get noAccount;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:
@@ -922,17 +928,101 @@ abstract class AppLocalizations {
   /// **'Account rename feature coming soon!'**
   String get accountRenameComingSoon;
 
-  /// Default text when no account is selected
-  ///
-  /// In en, this message translates to:
-  /// **'No Account'**
-  String get noAccount;
-
-  /// Account selection dialog title
+  /// Header text for account selection modal
   ///
   /// In en, this message translates to:
   /// **'Select Account'**
   String get selectAccount;
+
+  /// Hint text for transaction search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search transactions...'**
+  String get searchTransactions;
+
+  /// Period filter option for all time
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get allTime;
+
+  /// Period filter option for week
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get week;
+
+  /// Period filter option for month
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// Period filter option for year
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// Today date label
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Yesterday date label
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// Message when no transactions are found
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found'**
+  String get noTransactionsFound;
+
+  /// Suggestion when no transactions are found
+  ///
+  /// In en, this message translates to:
+  /// **'Try selecting a different time period'**
+  String get tryDifferentTimePeriod;
+
+  /// Fallback text for unknown category
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Category'**
+  String get unknownCategory;
+
+  /// Fallback text for unknown payment source
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Source'**
+  String get unknownSource;
+
+  /// Generic fallback text for unknown items
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// Text shown when search results are limited to top 5
+  ///
+  /// In en, this message translates to:
+  /// **'Showing top 5 results'**
+  String get showingTopResults;
+
+  /// Error message when history fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load history: {error}'**
+  String failedToLoadHistory(String error);
+
+  /// History screen title with account name
+  ///
+  /// In en, this message translates to:
+  /// **'{accountName} History'**
+  String accountHistory(String accountName);
 
   /// Add new account action in account selector
   ///
@@ -1191,18 +1281,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time'**
   String get time;
-
-  /// Fallback text for unknown category
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown Category'**
-  String get unknownCategory;
-
-  /// Fallback text for unknown payment source
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown Source'**
-  String get unknownSource;
 
   /// Edit transaction screen title
   ///

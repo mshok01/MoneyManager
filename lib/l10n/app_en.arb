@@ -544,6 +544,10 @@
   "@noAccounts": {
     "description": "Empty state title when no accounts exist"
   },
+  "noAccount": "No Account",
+  "@noAccount": {
+    "description": "Text shown when no account is selected"
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"
@@ -650,13 +654,81 @@
   "@accountRenameComingSoon": {
     "description": "Coming soon message for account rename feature"
   },
-  "noAccount": "No Account",
-  "@noAccount": {
-    "description": "Default text when no account is selected"
-  },
   "selectAccount": "Select Account",
   "@selectAccount": {
-    "description": "Account selection dialog title"
+    "description": "Header text for account selection modal"
+  },
+  "searchTransactions": "Search transactions...",
+  "@searchTransactions": {
+    "description": "Hint text for transaction search field"
+  },
+  "allTime": "All Time",
+  "@allTime": {
+    "description": "Period filter option for all time"
+  },
+  "week": "Week",
+  "@week": {
+    "description": "Period filter option for week"
+  },
+  "month": "Month",
+  "@month": {
+    "description": "Period filter option for month"
+  },
+  "year": "Year",
+  "@year": {
+    "description": "Period filter option for year"
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Today date label"
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Yesterday date label"
+  },
+  "noTransactionsFound": "No transactions found",
+  "@noTransactionsFound": {
+    "description": "Message when no transactions are found"
+  },
+  "tryDifferentTimePeriod": "Try selecting a different time period",
+  "@tryDifferentTimePeriod": {
+    "description": "Suggestion when no transactions are found"
+  },
+  "unknownCategory": "Unknown Category",
+  "@unknownCategory": {
+    "description": "Fallback text for unknown category"
+  },
+  "unknownSource": "Unknown Source",
+  "@unknownSource": {
+    "description": "Fallback text for unknown payment source"
+  },
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Generic fallback text for unknown items"
+  },
+  "showingTopResults": "Showing top 5 results",
+  "@showingTopResults": {
+    "description": "Text shown when search results are limited to top 5"
+  },
+  "failedToLoadHistory": "Failed to load history: {error}",
+  "@failedToLoadHistory": {
+    "description": "Error message when history fails to load",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "accountHistory": "{accountName} History",
+  "@accountHistory": {
+    "description": "History screen title with account name",
+    "placeholders": {
+      "accountName": {
+        "type": "String",
+        "description": "The name of the account"
+      }
+    }
   },
   "addNewAccountAction": "Add New Account",
   "@addNewAccountAction": {
@@ -883,14 +955,6 @@
   "time": "Time",
   "@time": {
     "description": "Time field label"
-  },
-  "unknownCategory": "Unknown Category",
-  "@unknownCategory": {
-    "description": "Fallback text for unknown category"
-  },
-  "unknownSource": "Unknown Source",
-  "@unknownSource": {
-    "description": "Fallback text for unknown payment source"
   },
   "editTransactionTitle": "Edit Transaction",
   "@editTransactionTitle": {
