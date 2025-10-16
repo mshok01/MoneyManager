@@ -1283,5 +1283,71 @@
   "tryDifferentKeywords": "Try different keywords or adjust your filters",
   "@tryDifferentKeywords": {
     "description": "No search results suggestion"
+  },
+  "transactions": "Transactions",
+  "@transactions": {
+    "description": "Transactions screen title"
+  },
+  "viewAllTransactions": "View All Transactions",
+  "@viewAllTransactions": {
+    "description": "Tooltip for view all transactions button"
+  },
+  "previousPeriod": "Previous {period}",
+  "@previousPeriod": {
+    "description": "Tooltip for previous period navigation",
+    "placeholders": {
+      "period": {
+        "type": "String",
+        "description": "The period type (day, month, year)"
+      }
+    }
+  },
+  "nextPeriod": "Next {period}",
+  "@nextPeriod": {
+    "description": "Tooltip for next period navigation",
+    "placeholders": {
+      "period": {
+        "type": "String",
+        "description": "The period type (day, month, year)"
+      }
+    }
+  },
+  "noMonthsFound": "No months found",
+  "@noMonthsFound": {
+    "description": "Empty state when no months match filters"
+  },
+  "noTransactionsThisYear": "No transactions this year",
+  "@noTransactionsThisYear": {
+    "description": "Empty state when no transactions exist for the year"
+  },
+  "addTransactionsToSeeMonthly": "Add transactions to see monthly summaries",
+  "@addTransactionsToSeeMonthly": {
+    "description": "Empty state hint to add transactions for monthly summaries"
+  },
+  "noDaysFound": "No days found",
+  "@noDaysFound": {
+    "description": "Empty state when no days match filters"
+  },
+  "noTransactionsThisMonth": "No transactions this month",
+  "@noTransactionsThisMonth": {
+    "description": "Empty state when no transactions exist for the month"
+  },
+  "noTransactionsForPeriod": "No transactions for {period}",
+  "@noTransactionsForPeriod": {
+    "description": "Empty state when no transactions exist for the period",
+    "placeholders": {
+      "period": {
+        "type": "String",
+        "description": "The period description"
+      }
+    }
+  },
+  "addTransactionToGetStarted": "Add a transaction to get started",
+  "@addTransactionToGetStarted": {
+    "description": "Empty state hint to add first transaction"
+  },
+  "noTransactionsText": "No transactions",
+  "@noTransactionsText": {
+    "description": "Text shown when there are no transactions"
   }
 }

@@ -11,6 +11,7 @@ import '../services/category_service.dart';
 import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../l10n/app_localizations.dart';
 
 import 'add_edit_transaction_screen.dart';
 import 'transaction_list_screen.dart';
@@ -156,9 +157,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToLoadData(e.toString()))),
+        );
       }
     }
   }
@@ -260,6 +262,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   void _showTransactionOptions(Transaction transaction) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -268,7 +271,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit Transaction'),
+              title: Text(l10n.editTransaction),
               onTap: () {
                 Navigator.of(context).pop();
                 _editTransaction(transaction);
@@ -276,9 +279,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
-                'Delete Transaction',
-                style: TextStyle(color: Colors.red),
+              title: Text(
+                l10n.deleteTransaction,
+                style: const TextStyle(color: Colors.red),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -308,17 +311,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Future<void> _deleteTransaction(Transaction transaction) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: const Text(
-          'Are you sure you want to delete this transaction? This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteTransaction),
+        content: Text(l10n.deleteTransactionConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -326,7 +328,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -338,14 +340,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         _hasChanges = true; // Mark that changes were made
         _loadData(); // Reload data after deletion
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Transaction deleted successfully')),
+            SnackBar(content: Text(l10n.transactionDeletedSuccessfully)),
           );
         }
       } catch (e) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete transaction: $e')),
+            SnackBar(
+              content: Text(l10n.failedToDeleteTransaction(e.toString())),
+            ),
           );
         }
       }
@@ -457,18 +463,19 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   void _navigateToDate(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     Map<String, int> newDateRange;
     String newPeriodTitle;
 
     if (widget.periodType == 'today') {
       newDateRange = _getDateRangeForDate(date);
-      newPeriodTitle = 'Today';
+      newPeriodTitle = l10n.today;
     } else if (widget.periodType == 'month') {
       newDateRange = _getMonthRangeForDate(date);
-      newPeriodTitle = 'This Month';
+      newPeriodTitle = l10n.thisMonth;
     } else if (widget.periodType == 'year') {
       newDateRange = _getYearRangeForDate(date);
-      newPeriodTitle = 'This Year';
+      newPeriodTitle = l10n.thisYear;
     } else {
       return;
     }
@@ -535,6 +542,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -549,7 +557,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Transactions'),
+              Text(l10n.transactions),
               Text(
                 widget.account.name,
                 style: TextStyle(
@@ -564,12 +572,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: _openSearchScreen,
-              tooltip: 'Search',
+              tooltip: l10n.search,
             ),
             IconButton(
               icon: const Icon(Icons.list_alt),
               onPressed: _viewAllTransactions,
-              tooltip: 'View All Transactions',
+              tooltip: l10n.viewAllTransactions,
             ),
             PopupMenuButton<String>(
               onSelected: (value) {
@@ -579,18 +587,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 });
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'all',
-                  child: Text('All Transactions'),
-                ),
-                const PopupMenuItem(
-                  value: 'income',
-                  child: Text('Income Only'),
-                ),
-                const PopupMenuItem(
-                  value: 'expense',
-                  child: Text('Expenses Only'),
-                ),
+                PopupMenuItem(value: 'all', child: Text(l10n.allTransactions)),
+                PopupMenuItem(value: 'income', child: Text(l10n.incomeOnly)),
+                PopupMenuItem(value: 'expense', child: Text(l10n.expensesOnly)),
               ],
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -601,10 +600,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     const SizedBox(width: 4),
                     Text(
                       _filterType == 'all'
-                          ? 'All'
+                          ? l10n.all
                           : _filterType == 'income'
-                          ? 'Income'
-                          : 'Expenses',
+                          ? l10n.income
+                          : l10n.expensesTab,
                       style: TextStyle(color: theme.colorScheme.onSurface),
                     ),
                   ],
@@ -643,7 +642,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               Icons.chevron_left,
                               color: theme.colorScheme.primary,
                             ),
-                            tooltip: 'Previous ${widget.periodType}',
+                            tooltip: l10n.previousPeriod(widget.periodType),
                           ),
                           // Date display
                           Row(
@@ -679,7 +678,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     ),
                             ),
                             tooltip: _canNavigateToNext()
-                                ? 'Next ${widget.periodType}'
+                                ? l10n.nextPeriod(widget.periodType)
                                 : null,
                           ),
                         ],
@@ -693,7 +692,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             Expanded(
                               child: _buildSummaryColumn(
                                 context,
-                                'Income',
+                                l10n.income,
                                 _summary!.totalIncome,
                                 Colors.green,
                                 Icons.trending_up,
@@ -703,7 +702,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             Expanded(
                               child: _buildSummaryColumn(
                                 context,
-                                'Expenses',
+                                l10n.expensesTab,
                                 _summary!.totalExpenses,
                                 Colors.red,
                                 Icons.trending_down,
@@ -713,7 +712,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             Expanded(
                               child: _buildSummaryColumn(
                                 context,
-                                'Balance',
+                                l10n.balance,
                                 _summary!.balance,
                                 _summary!.isPositiveBalance
                                     ? Colors.green
@@ -756,6 +755,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Widget _buildMonthlyList(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return _filteredMonthlySummaries.isEmpty
         ? Center(
             child: Column(
@@ -769,8 +769,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _filterType != 'all'
-                      ? 'No months found'
-                      : 'No transactions this year',
+                      ? l10n.noMonthsFound
+                      : l10n.noTransactionsThisYear,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -778,8 +778,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _filterType != 'all'
-                      ? 'Try adjusting your filters'
-                      : 'Add transactions to see monthly summaries',
+                      ? l10n.tryAdjustingSearchOrFilters
+                      : l10n.addTransactionsToSeeMonthly,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
@@ -823,7 +823,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ),
                     subtitle: monthlySummary.hasTransactions
                         ? Text(
-                            '${monthlySummary.transactionCount} transactions',
+                            l10n.transactionsCount(
+                              monthlySummary.transactionCount,
+                            ),
                             style: TextStyle(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.6,
@@ -831,7 +833,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                           )
                         : Text(
-                            'No transactions',
+                            l10n.noTransactionsText,
                             style: TextStyle(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.5,
@@ -855,7 +857,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                 ),
                               ),
                               Text(
-                                'Balance',
+                                l10n.balance,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: theme.colorScheme.onSurface.withValues(
@@ -874,6 +876,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Widget _buildDailyList(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return _filteredDailySummaries.isEmpty
         ? Center(
             child: Column(
@@ -887,8 +890,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _filterType != 'all'
-                      ? 'No days found'
-                      : 'No transactions this month',
+                      ? l10n.noDaysFound
+                      : l10n.noTransactionsThisMonth,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -896,8 +899,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _filterType != 'all'
-                      ? 'Try adjusting your filters'
-                      : 'Add transactions to see daily summaries',
+                      ? l10n.tryAdjustingSearchOrFilters
+                      : l10n.addTransactionsToSeeDailySummaries,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
@@ -941,7 +944,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ),
                     subtitle: dailySummary.hasTransactions
                         ? Text(
-                            '${dailySummary.transactionCount} transactions',
+                            l10n.transactionsCount(
+                              dailySummary.transactionCount,
+                            ),
                             style: TextStyle(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.6,
@@ -949,7 +954,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                           )
                         : Text(
-                            'No transactions',
+                            l10n.noTransactionsText,
                             style: TextStyle(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.5,
@@ -973,7 +978,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                 ),
                               ),
                               Text(
-                                'Balance',
+                                l10n.balance,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: theme.colorScheme.onSurface.withValues(
@@ -992,6 +997,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Widget _buildTransactionList(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return _filteredTransactions.isEmpty
         ? Center(
             child: Column(
@@ -1005,8 +1011,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _filterType != 'all'
-                      ? 'No transactions found'
-                      : 'No transactions for ${widget.periodTitle.toLowerCase()}',
+                      ? l10n.noTransactionsFound
+                      : l10n.noTransactionsForPeriod(
+                          widget.periodTitle.toLowerCase(),
+                        ),
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -1014,8 +1022,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _filterType != 'all'
-                      ? 'Try adjusting your filters'
-                      : 'Add a transaction to get started',
+                      ? l10n.tryAdjustingSearchOrFilters
+                      : l10n.addTransactionToGetStarted,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
@@ -1055,7 +1063,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           child: Text(
                             transaction.description.isNotEmpty
                                 ? transaction.description
-                                : category?.name ?? 'Unknown Category',
+                                : category?.name ?? l10n.unknownCategory,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -1074,7 +1082,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
+                          '${category?.name ?? l10n.unknown} • ${paymentSource?.name ?? l10n.unknown}',
                           style: TextStyle(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.7,

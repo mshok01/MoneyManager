@@ -906,4 +906,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tryDifferentKeywords =>
       'Try different keywords or adjust your filters';
+
+  @override
+  String get transactions => 'Transactions';
+
+  @override
+  String get viewAllTransactions => 'View All Transactions';
+
+  @override
+  String previousPeriod(String period) {
+    return 'Previous $period';
+  }
+
+  @override
+  String nextPeriod(String period) {
+    return 'Next $period';
+  }
+
+  @override
+  String get noMonthsFound => 'No months found';
+
+  @override
+  String get noTransactionsThisYear => 'No transactions this year';
+
+  @override
+  String get addTransactionsToSeeMonthly =>
+      'Add transactions to see monthly summaries';
+
+  @override
+  String get noDaysFound => 'No days found';
+
+  @override
+  String get noTransactionsThisMonth => 'No transactions this month';
+
+  @override
+  String noTransactionsForPeriod(String period) {
+    return 'No transactions for $period';
+  }
+
+  @override
+  String get addTransactionToGetStarted => 'Add a transaction to get started';
+
+  @override
+  String get noTransactionsText => 'No transactions';
 }

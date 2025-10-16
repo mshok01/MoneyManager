@@ -1701,6 +1701,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try different keywords or adjust your filters'**
   String get tryDifferentKeywords;
+
+  /// Transactions screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get transactions;
+
+  /// Tooltip for view all transactions button
+  ///
+  /// In en, this message translates to:
+  /// **'View All Transactions'**
+  String get viewAllTransactions;
+
+  /// Tooltip for previous period navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Previous {period}'**
+  String previousPeriod(String period);
+
+  /// Tooltip for next period navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Next {period}'**
+  String nextPeriod(String period);
+
+  /// Empty state when no months match filters
+  ///
+  /// In en, this message translates to:
+  /// **'No months found'**
+  String get noMonthsFound;
+
+  /// Empty state when no transactions exist for the year
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions this year'**
+  String get noTransactionsThisYear;
+
+  /// Empty state hint to add transactions for monthly summaries
+  ///
+  /// In en, this message translates to:
+  /// **'Add transactions to see monthly summaries'**
+  String get addTransactionsToSeeMonthly;
+
+  /// Empty state when no days match filters
+  ///
+  /// In en, this message translates to:
+  /// **'No days found'**
+  String get noDaysFound;
+
+  /// Empty state when no transactions exist for the month
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions this month'**
+  String get noTransactionsThisMonth;
+
+  /// Empty state when no transactions exist for the period
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions for {period}'**
+  String noTransactionsForPeriod(String period);
+
+  /// Empty state hint to add first transaction
+  ///
+  /// In en, this message translates to:
+  /// **'Add a transaction to get started'**
+  String get addTransactionToGetStarted;
+
+  /// Text shown when there are no transactions
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions'**
+  String get noTransactionsText;
 }
 
 class _AppLocalizationsDelegate
