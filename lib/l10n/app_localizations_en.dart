@@ -395,6 +395,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAccount => 'No Account';
 
   @override
+  String get quickStats => 'Quick Stats';
+
+  @override
+  String get thisMonth => 'This Month';
+
+  @override
+  String get thisYear => 'This Year';
+
+  @override
+  String transactionsCount(int count) {
+    return '$count transactions';
+  }
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get monthlyBreakdown => 'Monthly Breakdown';
+
+  @override
+  String get noDataAvailable => 'No data available';
+
+  @override
+  String get addTransactionsToSeeAnalytics =>
+      'Add some transactions to see monthly analytics';
+
+  @override
+  String failedToLoadAnalytics(String error) {
+    return 'Failed to load analytics: $error';
+  }
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

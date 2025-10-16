@@ -802,6 +802,60 @@ abstract class AppLocalizations {
   /// **'No Account'**
   String get noAccount;
 
+  /// Quick stats section title in analytics
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Stats'**
+  String get quickStats;
+
+  /// This month label in analytics
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thisMonth;
+
+  /// This year label in analytics
+  ///
+  /// In en, this message translates to:
+  /// **'This Year'**
+  String get thisYear;
+
+  /// Transactions count label
+  ///
+  /// In en, this message translates to:
+  /// **'{count} transactions'**
+  String transactionsCount(int count);
+
+  /// Balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// Monthly breakdown section title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Breakdown'**
+  String get monthlyBreakdown;
+
+  /// Message when no data is available
+  ///
+  /// In en, this message translates to:
+  /// **'No data available'**
+  String get noDataAvailable;
+
+  /// Message encouraging users to add transactions
+  ///
+  /// In en, this message translates to:
+  /// **'Add some transactions to see monthly analytics'**
+  String get addTransactionsToSeeAnalytics;
+
+  /// Error message when analytics loading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load analytics: {error}'**
+  String failedToLoadAnalytics(String error);
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:
