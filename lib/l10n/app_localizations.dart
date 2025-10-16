@@ -856,6 +856,12 @@ abstract class AppLocalizations {
   /// **'Failed to load analytics: {error}'**
   String failedToLoadAnalytics(String error);
 
+  /// Message shown when user tries to navigate without selecting an account
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an account first'**
+  String get pleaseSelectAccountFirst;
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:

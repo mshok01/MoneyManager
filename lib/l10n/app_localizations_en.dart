@@ -427,6 +427,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get pleaseSelectAccountFirst => 'Please select an account first';
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override

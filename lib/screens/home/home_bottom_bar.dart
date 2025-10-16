@@ -109,7 +109,9 @@ class HomeBottomBarWidget extends StatelessWidget {
   void _navigateToTransactions(BuildContext context) {
     if (account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account first')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pleaseSelectAccountFirst),
+        ),
       );
       return;
     }
@@ -122,7 +124,9 @@ class HomeBottomBarWidget extends StatelessWidget {
   void _navigateToAnalytics(BuildContext context) {
     if (account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account first')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pleaseSelectAccountFirst),
+        ),
       );
       return;
     }
@@ -137,7 +141,9 @@ class HomeBottomBarWidget extends StatelessWidget {
   void _navigateToAddTransaction(BuildContext context) {
     if (account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account first')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pleaseSelectAccountFirst),
+        ),
       );
       return;
     }
