@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:money_manager/screens/home/home_bottom_bar.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
 import '../widgets/transaction_summary_card.dart';
@@ -7,7 +8,6 @@ import '../services/account_service.dart';
 import '../services/preferences_service.dart';
 import '../services/transaction_service.dart';
 import '../models/account.dart';
-import 'add_edit_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -71,36 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _showWelcomeNudge = false;
     });
-  }
-
-  Future<void> _addTransaction(Account? currentAccount) async {
-    if (currentAccount == null) {
-      // Show message to select an account first
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select an account first'),
-          action: SnackBarAction(
-            label: 'Select',
-            onPressed: _showAccountSelector,
-          ),
-        ),
-      );
-      return;
-    }
-
-    // Navigate to add transaction screen
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(account: currentAccount),
-      ),
-    );
-
-    // Refresh data if transaction was added
-    if (result == true) {
-      setState(() {
-        // This will trigger a rebuild and refresh the transaction summary
-      });
-    }
   }
 
   void _showAccountSelector() {
@@ -403,9 +373,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       if (hasTransactions) {
                         // Show transaction summary
-                        return SingleChildScrollView(
-                          child: TransactionSummaryCard(
-                            account: currentAccount,
+                        return SafeArea(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TransactionSummaryCard(account: currentAccount),
+                              HomeBottomBarWidget(account: currentAccount),
+                            ],
                           ),
                         );
                       } else {
@@ -481,11 +455,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addTransaction(currentAccount),
-        tooltip: l10n.addTransaction,
-        child: const Icon(Icons.add),
       ),
     );
   }

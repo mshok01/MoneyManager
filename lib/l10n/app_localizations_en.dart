@@ -452,6 +452,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get add => 'Add';
 
   @override
+  String get history => 'History';
+
+  @override
+  String get analytics => 'Analytics';
+
+  @override
   String get accountRenameComingSoon => 'Account rename feature coming soon!';
 
   @override

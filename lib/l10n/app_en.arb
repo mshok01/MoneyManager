@@ -638,6 +638,14 @@
   "@add": {
     "description": "Add button text"
   },
+  "history": "History",
+  "@history": {
+    "description": "History navigation option in bottom bar"
+  },
+  "analytics": "Analytics",
+  "@analytics": {
+    "description": "Analytics navigation option in bottom bar"
+  },
   "accountRenameComingSoon": "Account rename feature coming soon!",
   "@accountRenameComingSoon": {
     "description": "Coming soon message for account rename feature"

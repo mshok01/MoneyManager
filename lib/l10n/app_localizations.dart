@@ -904,6 +904,18 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get add;
 
+  /// History navigation option in bottom bar
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// Analytics navigation option in bottom bar
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analytics;
+
   /// Coming soon message for account rename feature
   ///
   /// In en, this message translates to:
