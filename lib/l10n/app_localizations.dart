@@ -1803,6 +1803,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No categories found'**
   String get noCategoriesFound;
+
+  /// Error message when transaction summary fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading summary'**
+  String get errorLoadingSummary;
+
+  /// Summary section title
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summary;
 }
 
 class _AppLocalizationsDelegate

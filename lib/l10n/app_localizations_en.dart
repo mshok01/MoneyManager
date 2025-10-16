@@ -970,4 +970,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noCategoriesFound => 'No categories found';
+
+  @override
+  String get errorLoadingSummary => 'Error loading summary';
+
+  @override
+  String get summary => 'Summary';
 }

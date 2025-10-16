@@ -5,6 +5,7 @@ import '../services/transaction_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../utils/user_utils.dart';
+import '../l10n/app_localizations.dart';
 import '../screens/transaction_history_screen.dart';
 
 /// Widget that displays transaction summaries for today, this month, and this year
@@ -59,6 +60,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<Map<String, TransactionSummary>>(
       future: _summariesFuture,
@@ -89,7 +91,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Error loading summary',
+                      l10n.errorLoadingSummary,
                       style: TextStyle(
                         color: theme.colorScheme.error,
                         fontSize: 16,
@@ -125,7 +127,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Summary',
+                      l10n.summary,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -139,7 +141,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                 // Summary periods
                 _buildSummaryPeriod(
                   context,
-                  'Today',
+                  l10n.today,
                   todaySummary,
                   Icons.today,
                   'today',
@@ -147,7 +149,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                 const SizedBox(height: 16),
                 _buildSummaryPeriod(
                   context,
-                  'This Month',
+                  l10n.thisMonth,
                   monthSummary,
                   Icons.calendar_month,
                   'month',
@@ -155,7 +157,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                 const SizedBox(height: 16),
                 _buildSummaryPeriod(
                   context,
-                  'This Year',
+                  l10n.thisYear,
                   yearSummary,
                   Icons.event_note,
                   'year',
@@ -176,6 +178,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     String periodType,
   ) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: summary.hasTransactions
@@ -224,7 +227,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                   Expanded(
                     child: _buildAmountColumn(
                       context,
-                      'Income',
+                      l10n.income,
                       summary.totalIncome,
                       Colors.green,
                       Icons.trending_up,
@@ -234,7 +237,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                   Expanded(
                     child: _buildAmountColumn(
                       context,
-                      'Expenses',
+                      l10n.expensesTab,
                       summary.totalExpenses,
                       Colors.red,
                       Icons.trending_down,
@@ -244,7 +247,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                   Expanded(
                     child: _buildAmountColumn(
                       context,
-                      'Balance',
+                      l10n.balance,
                       summary.balance,
                       summary.isPositiveBalance
                           ? Colors.green
@@ -263,7 +266,7 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                'No transactions',
+                l10n.noTransactionsText,
                 style: TextStyle(
                   fontSize: 14,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),

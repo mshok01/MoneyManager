@@ -1391,5 +1391,13 @@
   "noCategoriesFound": "No categories found",
   "@noCategoriesFound": {
     "description": "Message shown when no categories match search criteria"
+  },
+  "errorLoadingSummary": "Error loading summary",
+  "@errorLoadingSummary": {
+    "description": "Error message when transaction summary fails to load"
+  },
+  "summary": "Summary",
+  "@summary": {
+    "description": "Summary section title"
   }
 }
