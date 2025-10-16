@@ -1773,6 +1773,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No transactions'**
   String get noTransactionsText;
+
+  /// Transaction list screen title with account name
+  ///
+  /// In en, this message translates to:
+  /// **'{accountName} Transactions'**
+  String accountTransactions(String accountName);
 }
 
 class _AppLocalizationsDelegate

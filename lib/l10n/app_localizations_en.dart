@@ -949,4 +949,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noTransactionsText => 'No transactions';
+
+  @override
+  String accountTransactions(String accountName) {
+    return '$accountName Transactions';
+  }
 }

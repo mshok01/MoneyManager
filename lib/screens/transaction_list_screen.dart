@@ -8,6 +8,7 @@ import '../services/category_service.dart';
 import '../services/payment_source_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../l10n/app_localizations.dart';
 import 'add_edit_transaction_screen.dart';
 import 'transaction_details_screen.dart';
 
@@ -89,8 +90,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load transactions: $e')),
+          SnackBar(content: Text(l10n.errorLoadingTransactions(e.toString()))),
         );
       }
     }
@@ -155,6 +157,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   }
 
   void _showTransactionOptions(Transaction transaction) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -163,7 +166,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit Transaction'),
+              title: Text(l10n.editTransaction),
               onTap: () {
                 Navigator.of(context).pop();
                 _editTransaction(transaction);
@@ -171,9 +174,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
-                'Delete Transaction',
-                style: TextStyle(color: Colors.red),
+              title: Text(
+                l10n.deleteTransaction,
+                style: const TextStyle(color: Colors.red),
               ),
               onTap: () {
                 Navigator.of(context).pop();
@@ -202,17 +205,16 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   }
 
   Future<void> _deleteTransaction(Transaction transaction) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: const Text(
-          'Are you sure you want to delete this transaction? This action cannot be undone.',
-        ),
+        title: Text(l10n.deleteTransaction),
+        content: Text(l10n.deleteTransactionConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -220,7 +222,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -231,14 +233,18 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
         await TransactionService.instance.deleteTransaction(transaction.id);
         _loadData(); // Reload data after deletion
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Transaction deleted successfully')),
+            SnackBar(content: Text(l10n.transactionDeletedSuccessfully)),
           );
         }
       } catch (e) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete transaction: $e')),
+            SnackBar(
+              content: Text(l10n.failedToDeleteTransaction(e.toString())),
+            ),
           );
         }
       }
@@ -263,10 +269,11 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.account.name} Transactions'),
+        title: Text(l10n.accountTransactions(widget.account.name)),
         backgroundColor: theme.colorScheme.inversePrimary,
         actions: [
           PopupMenuButton<String>(
@@ -277,15 +284,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               });
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'all',
-                child: Text('All Transactions'),
-              ),
-              const PopupMenuItem(value: 'income', child: Text('Income Only')),
-              const PopupMenuItem(
-                value: 'expense',
-                child: Text('Expenses Only'),
-              ),
+              PopupMenuItem(value: 'all', child: Text(l10n.allTransactions)),
+              PopupMenuItem(value: 'income', child: Text(l10n.incomeOnly)),
+              PopupMenuItem(value: 'expense', child: Text(l10n.expensesOnly)),
             ],
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -296,10 +297,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   const SizedBox(width: 4),
                   Text(
                     _filterType == 'all'
-                        ? 'All'
+                        ? l10n.all
                         : _filterType == 'income'
-                        ? 'Income'
-                        : 'Expenses',
+                        ? l10n.income
+                        : l10n.expensesTab,
                     style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                 ],
@@ -316,7 +317,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search transactions...',
+                hintText: l10n.searchTransactions,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -344,8 +345,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         const SizedBox(height: 16),
                         Text(
                           _searchQuery.isNotEmpty || _filterType != 'all'
-                              ? 'No transactions found'
-                              : 'No transactions yet',
+                              ? l10n.noTransactionsFound
+                              : l10n.noTransactionsYet,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.6,
@@ -355,8 +356,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _searchQuery.isNotEmpty || _filterType != 'all'
-                              ? 'Try adjusting your search or filters'
-                              : 'Add your first transaction to get started',
+                              ? l10n.tryAdjustingSearchOrFilters
+                              : l10n.addFirstTransactionToGetStarted,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.5,
@@ -400,7 +401,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                                   child: Text(
                                     transaction.description.isNotEmpty
                                         ? transaction.description
-                                        : category?.name ?? 'Unknown Category',
+                                        : category?.name ??
+                                              l10n.unknownCategory,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -421,7 +423,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${category?.name ?? 'Unknown'} • ${paymentSource?.name ?? 'Unknown'}',
+                                  '${category?.name ?? l10n.unknown} • ${paymentSource?.name ?? l10n.unknown}',
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.7),
