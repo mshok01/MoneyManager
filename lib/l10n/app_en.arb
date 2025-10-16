@@ -1359,5 +1359,29 @@
         "description": "The account name"
       }
     }
+  },
+  "accountYearlyTransactions": "{accountName} - {year}",
+  "@accountYearlyTransactions": {
+    "description": "Yearly transactions screen title with account name and year",
+    "placeholders": {
+      "accountName": {
+        "type": "String",
+        "description": "The account name"
+      },
+      "year": {
+        "type": "int",
+        "description": "The selected year"
+      }
+    }
+  },
+  "noTransactionsInYear": "No transactions in {year}",
+  "@noTransactionsInYear": {
+    "description": "Message shown when no transactions exist for a specific year",
+    "placeholders": {
+      "year": {
+        "type": "int",
+        "description": "The year with no transactions"
+      }
+    }
   }
 }

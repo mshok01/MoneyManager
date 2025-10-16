@@ -1779,6 +1779,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{accountName} Transactions'**
   String accountTransactions(String accountName);
+
+  /// Yearly transactions screen title with account name and year
+  ///
+  /// In en, this message translates to:
+  /// **'{accountName} - {year}'**
+  String accountYearlyTransactions(String accountName, int year);
+
+  /// Message shown when no transactions exist for a specific year
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions in {year}'**
+  String noTransactionsInYear(int year);
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import '../models/monthly_summary.dart';
 import '../services/transaction_service.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
+import '../l10n/app_localizations.dart';
 import 'monthly_transactions_screen.dart';
 
 class YearlyTransactionsScreen extends StatefulWidget {
@@ -95,13 +96,14 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
   }
 
   Widget _buildYearSelector() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           const Icon(Icons.calendar_today, size: 20),
           const SizedBox(width: 8),
-          Text('Year:', style: Theme.of(context).textTheme.titleMedium),
+          Text('${l10n.year}:', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButton<int>(
@@ -123,6 +125,7 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
 
   Widget _buildMonthlySummaryCard(MonthlySummary summary) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final hasTransactions = summary.hasTransactions;
 
     return Card(
@@ -185,7 +188,7 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${summary.transactionCount} transaction${summary.transactionCount != 1 ? 's' : ''}',
+                    l10n.transactionsCount(summary.transactionCount),
                     style: TextStyle(
                       fontSize: 11,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -194,7 +197,7 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
                 ],
               )
             : Text(
-                'No transactions',
+                l10n.noTransactionsText,
                 style: TextStyle(
                   fontSize: 12,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
@@ -231,10 +234,13 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.account.name} - $_selectedYear'),
+        title: Text(
+          l10n.accountYearlyTransactions(widget.account.name, _selectedYear),
+        ),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
       body: _isLoading
@@ -258,7 +264,7 @@ class _YearlyTransactionsScreenState extends State<YearlyTransactionsScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No transactions in $_selectedYear',
+                                l10n.noTransactionsInYear(_selectedYear),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(
                                     alpha: 0.6,

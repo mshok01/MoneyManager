@@ -954,4 +954,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String accountTransactions(String accountName) {
     return '$accountName Transactions';
   }
+
+  @override
+  String accountYearlyTransactions(String accountName, int year) {
+    return '$accountName - $year';
+  }
+
+  @override
+  String noTransactionsInYear(int year) {
+    return 'No transactions in $year';
+  }
 }
