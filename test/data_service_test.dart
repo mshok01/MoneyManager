@@ -23,7 +23,7 @@ void main() {
     test('DataService should load default income categories', () async {
       await dataService.initialize();
 
-      final incomeCategories = dataService.defaultIncomeCategories;
+      final incomeCategories = await dataService.defaultIncomeCategories;
 
       expect(incomeCategories.isNotEmpty, true);
       expect(incomeCategories.length, 6); // We have 6 income categories
@@ -39,7 +39,7 @@ void main() {
     test('DataService should load default expense categories', () async {
       await dataService.initialize();
 
-      final expenseCategories = dataService.defaultExpenseCategories;
+      final expenseCategories = await dataService.defaultExpenseCategories;
 
       expect(expenseCategories.isNotEmpty, true);
       expect(expenseCategories.length, 9); // We have 9 expense categories
@@ -55,7 +55,7 @@ void main() {
     test('DataService should load default payment sources', () async {
       await dataService.initialize();
 
-      final paymentSources = dataService.defaultPaymentSources;
+      final paymentSources = await dataService.defaultPaymentSources;
 
       expect(paymentSources.isNotEmpty, true);
       expect(paymentSources.length, 7); // We have 7 payment sources
@@ -71,22 +71,28 @@ void main() {
     test('DataService should find categories by ID', () async {
       await dataService.initialize();
 
-      final salaryCategory = dataService.findCategoryById('income_salary');
+      final salaryCategory = await dataService.findCategoryById(
+        'income_salary',
+      );
       expect(salaryCategory, isNotNull);
       expect(salaryCategory!.name, 'Salary');
 
-      final nonExistentCategory = dataService.findCategoryById('non_existent');
+      final nonExistentCategory = await dataService.findCategoryById(
+        'non_existent',
+      );
       expect(nonExistentCategory, isNull);
     });
 
     test('DataService should find payment sources by ID', () async {
       await dataService.initialize();
 
-      final creditCardSource = dataService.findPaymentSourceById('credit_card');
+      final creditCardSource = await dataService.findPaymentSourceById(
+        'credit_card',
+      );
       expect(creditCardSource, isNotNull);
       expect(creditCardSource!.name, 'Credit Card');
 
-      final nonExistentSource = dataService.findPaymentSourceById(
+      final nonExistentSource = await dataService.findPaymentSourceById(
         'non_existent',
       );
       expect(nonExistentSource, isNull);
@@ -110,23 +116,26 @@ void main() {
       () async {
         await dataService.initialize();
 
-        final incomeCategories = dataService.getIncomeCategories();
-        final expenseCategories = dataService.getExpenseCategories();
-        final paymentSources = dataService.getPaymentSources();
+        final incomeCategories = await dataService.getIncomeCategories();
+        final expenseCategories = await dataService.getExpenseCategories();
+        final paymentSources = await dataService.getPaymentSources();
 
         expect(
           incomeCategories.length,
-          dataService.defaultIncomeCategories.length,
+          (await dataService.defaultIncomeCategories).length,
         );
         expect(
           expenseCategories.length,
-          dataService.defaultExpenseCategories.length,
+          (await dataService.defaultExpenseCategories).length,
         );
-        expect(paymentSources.length, dataService.defaultPaymentSources.length);
+        expect(
+          paymentSources.length,
+          (await dataService.defaultPaymentSources).length,
+        );
 
         // Modifying the returned lists should not affect the original data
         incomeCategories.clear();
-        expect(dataService.defaultIncomeCategories.isNotEmpty, true);
+        expect((await dataService.defaultIncomeCategories).isNotEmpty, true);
       },
     );
   });
