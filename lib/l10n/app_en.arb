@@ -632,6 +632,16 @@
   "@transaction": {
     "description": "Default transaction description"
   },
+  "failedToCreateUserAccount": "Failed to create user account: {error}",
+  "@failedToCreateUserAccount": {
+    "description": "Error message when user account creation fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
   "createFirstAccount": "Create your first account to get started",
   "@createFirstAccount": {
     "description": "Empty state description when no accounts exist"

@@ -39,7 +39,11 @@ class AuthChoiceScreen extends StatelessWidget {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create user account: $e'),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.failedToCreateUserAccount(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );

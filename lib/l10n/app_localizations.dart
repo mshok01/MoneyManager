@@ -910,6 +910,12 @@ abstract class AppLocalizations {
   /// **'Transaction'**
   String get transaction;
 
+  /// Error message when user account creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create user account: {error}'**
+  String failedToCreateUserAccount(String error);
+
   /// Empty state description when no accounts exist
   ///
   /// In en, this message translates to:

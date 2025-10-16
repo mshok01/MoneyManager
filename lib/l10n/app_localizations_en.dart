@@ -455,6 +455,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transaction => 'Transaction';
 
   @override
+  String failedToCreateUserAccount(String error) {
+    return 'Failed to create user account: $error';
+  }
+
+  @override
   String get createFirstAccount => 'Create your first account to get started';
 
   @override
