@@ -25,6 +25,7 @@ void main() {
         langCode: 'en',
         timezone: 'America/New_York',
         timezoneOffset: -300,
+        fcmToken: 'test-fcm-token',
       );
     });
 

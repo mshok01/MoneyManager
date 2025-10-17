@@ -21,13 +21,17 @@ import 'services/account_service.dart';
 import 'services/nudge_service.dart';
 import 'services/category_service.dart';
 import 'services/payment_source_service.dart';
+import 'services/firebase_service.dart';
 import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Initialize core services first
+    // Initialize Firebase first
+    await FirebaseService.instance.initialize();
+
+    // Initialize core services
     await ThemeService.instance.initialize();
 
     // Initialize database and wait for it to complete
@@ -43,6 +47,13 @@ void main() async {
     await UserService.instance.initialize();
     await AccountService.instance.initialize();
     await NudgeService.instance.initialize();
+
+    // Set up Firebase token refresh callback (for when user grants permission later)
+    FirebaseService.instance.setOnTokenRefresh((newToken) {
+      DeviceRecordService.instance.updateFcmToken(newToken);
+    });
+
+    // Note: FCM token will be fetched only when user grants notification permission
 
     runApp(const MoneyManagerApp());
   } catch (e) {

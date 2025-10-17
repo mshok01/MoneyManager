@@ -31,6 +31,17 @@
                 "staging"
             ],
             "program": "lib/main.dart"
+        },
+        {
+            "name": "MoneyManager (prod mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "args": [
+                "--flavor",
+                "production"
+            ],
+            "program": "lib/main.dart"
         }
     ]
 }

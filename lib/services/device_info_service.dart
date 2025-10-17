@@ -61,6 +61,7 @@ class DeviceInfoService {
         langCode: localeInfo['langCode'] ?? 'en',
         timezone: timezoneInfo['timezone'] ?? 'UTC',
         timezoneOffset: timezoneInfo['timezoneOffset'] ?? 0,
+        fcmToken: '', // Will be updated by FirebaseService
       );
     } catch (e) {
       // Return a basic device record with fallback values if collection fails
@@ -194,6 +195,7 @@ class DeviceInfoService {
       langCode: 'en',
       timezone: 'UTC',
       timezoneOffset: 0,
+      fcmToken: '', // Will be updated by FirebaseService
     );
   }
 

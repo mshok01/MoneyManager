@@ -70,6 +70,7 @@ class DeviceRecordErrorHandler {
       langCode: 'en',
       timezone: 'UTC',
       timezoneOffset: 0,
+      fcmToken: '', // Will be updated by FirebaseService
     );
   }
 

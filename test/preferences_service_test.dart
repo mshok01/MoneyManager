@@ -114,6 +114,7 @@ void main() {
           langCode: 'en',
           timezone: 'UTC',
           timezoneOffset: 0,
+          fcmToken: 'test-fcm-token',
         );
       });
 
