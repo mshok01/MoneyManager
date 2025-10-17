@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
 import '../services/theme_service.dart';
 import '../services/user_service.dart';
+import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -302,15 +303,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+      padding: const EdgeInsets.fromLTRB(
+        AppTheme.spacingMd,
+        AppTheme.spacingMd,
+        AppTheme.spacingMd,
+        AppTheme.spacingSm,
       ),
+      child: Text(title, style: AppTheme.sectionHeaderStyle(context)),
     );
   }
 }
