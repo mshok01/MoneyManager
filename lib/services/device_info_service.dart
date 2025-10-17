@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:uuid/uuid.dart';
 import '../models/device.dart';
+import 'logging_service.dart';
 
 class DeviceInfoService {
   static DeviceInfoService? _instance;
@@ -14,17 +15,25 @@ class DeviceInfoService {
 
   DeviceInfoService._();
 
+  // Logger instance for this service
+  static final _log = LoggingService.getLogger('DeviceInfoService');
+
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
   final Uuid _uuid = const Uuid();
 
   /// Initialize timezone data
   Future<void> initialize() async {
+    _log.entering('initialize');
+
     try {
       tz.initializeTimeZones();
+      _log.d('Timezone data initialized successfully');
     } catch (e) {
       // Timezone initialization failed, continue with fallback values
-      print('Failed to initialize timezone data: $e');
+      _log.w('Failed to initialize timezone data, using fallbacks', error: e);
     }
+
+    _log.exiting('initialize');
   }
 
   /// Collect comprehensive device information and create a Device
@@ -99,7 +108,7 @@ class DeviceInfoService {
         };
       }
     } catch (e) {
-      print('Failed to get platform-specific info: $e');
+      _log.w('Failed to get platform-specific info, using fallbacks', error: e);
     }
 
     return {
@@ -123,7 +132,7 @@ class DeviceInfoService {
         'countryName': _getCountryName(countryCode),
       };
     } catch (e) {
-      print('Failed to get locale info: $e');
+      _log.w('Failed to get locale info, using fallbacks', error: e);
       return {
         'langCode': 'en',
         'countryCode': 'US',
@@ -141,7 +150,7 @@ class DeviceInfoService {
 
       return {'timezone': timezoneName, 'timezoneOffset': timezoneOffset};
     } catch (e) {
-      print('Failed to get timezone info: $e');
+      _log.w('Failed to get timezone info, using fallbacks', error: e);
       return {'timezone': 'UTC', 'timezoneOffset': 0};
     }
   }

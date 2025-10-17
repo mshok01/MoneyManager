@@ -22,12 +22,16 @@ import 'services/nudge_service.dart';
 import 'services/category_service.dart';
 import 'services/payment_source_service.dart';
 import 'services/firebase_service.dart';
+import 'services/logging_service.dart';
 import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize logging service first
+    LoggingService.initialize();
+
     // Initialize Firebase first
     await FirebaseService.instance.initialize();
 
@@ -57,7 +61,9 @@ void main() async {
 
     runApp(const MoneyManagerApp());
   } catch (e) {
-    debugPrint('Failed to initialize app: $e');
+    // Use logging service for app initialization errors
+    final log = LoggingService.getLogger('Main');
+    log.e('Failed to initialize app', error: e);
     // Run app anyway with error handling
     runApp(const MoneyManagerApp());
   }
