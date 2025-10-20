@@ -389,34 +389,44 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       } else {
                         // Show empty state
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        return SafeArea(
+                          child: Stack(
                             children: [
-                              Icon(
-                                Icons.trending_up,
-                                size: 64,
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.5,
+                              Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.trending_up,
+                                      size: 64,
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      l10n.readyToTrackFinances,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      l10n.startByAddingTransaction,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                l10n.readyToTrackFinances,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                l10n.startByAddingTransaction,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.7,
-                                  ),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: HomeBottomBarWidget(
+                                  account: currentAccount,
                                 ),
                               ),
                             ],
