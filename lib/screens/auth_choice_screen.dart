@@ -2,27 +2,87 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/user_service.dart';
 import '../services/device_record_service.dart';
+import '../services/account_service.dart';
+import '../services/firebase_auth_service.dart';
+import '../services/auth_api_service.dart';
+import '../services/logging_service.dart';
+import '../services/firebase_service.dart';
 
 class AuthChoiceScreen extends StatelessWidget {
   const AuthChoiceScreen({super.key});
 
-  /// Handle "Get Started" button press - create new user
+  /// Handle "Get Started" button press - create new user with Firebase anonymous auth
   Future<void> _onGetStarted(BuildContext context) async {
+    final log = LoggingService.getLogger('AuthChoiceScreen');
     try {
       // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
 
-      // Create new user
+      log.i('Starting Firebase anonymous authentication');
+
+      // Step 1: Firebase anonymous sign-in
+      final firebaseAuthService = FirebaseAuthService.instance;
+      final credential = await firebaseAuthService.signInAnonymously();
+      if (credential == null || credential.user == null) {
+        throw Exception('Firebase anonymous sign-in failed');
+      }
+
+      final firebaseUid = credential.user!.uid;
+      log.d('Firebase anonymous sign-in successful, UID: $firebaseUid');
+
+      // Step 2: Get Firebase ID token
+      final idToken = await firebaseAuthService.getIdToken();
+      if (idToken == null) {
+        throw Exception('Failed to get Firebase ID token');
+      }
+      log.d('Firebase ID token obtained: $idToken');
+
+      // Step 3: Prepare user and device details (WITHOUT saving locally yet)
       final userService = UserService.instance;
-      final user = await userService.createUser();
-
-      // Update device record with user ID
       final deviceService = DeviceRecordService.instance;
-      await deviceService.updateUserId(user.id);
+
+      // Build user object WITHOUT saving to database
+      final user = userService.buildUser();
+      log.d('User object prepared: ${user.id}');
+
+      // Get device details
+      final deviceRecord = deviceService.currentDeviceRecord;
+      if (deviceRecord == null) {
+        throw Exception('Device record not available');
+      }
+      log.d('Device record obtained');
+
+      // Step 4: Get FCM token if available
+      final fcmToken = FirebaseService.instance.fcmToken;
+      log.d('FCM token: ${fcmToken != null ? 'available' : 'not available'}');
+
+      // Step 5: Call backend API
+      log.i('Calling backend authentication API');
+      final authApiService = AuthApiService.instance;
+      final authResponse = await authApiService.authenticateAnonymously(
+        firebaseIdToken: idToken,
+        firebaseUid: firebaseUid,
+        userDetails: user,
+        deviceDetails: deviceRecord,
+        fcmToken: fcmToken,
+      );
+      log.i('Backend authentication successful');
+
+      // Step 6: Save user, account, and device locally after successful API response
+      log.d('Saving user, account, and device locally');
+      await userService.saveUserFromResponse(authResponse.user);
+      await AccountService.instance.saveAccountFromResponse(
+        authResponse.account,
+      );
+      await deviceService.saveDeviceFromResponse(authResponse.device);
+      log.d('User, account, and device saved successfully');
 
       // Close loading dialog
       if (context.mounted) {
@@ -32,6 +92,7 @@ class AuthChoiceScreen extends StatelessWidget {
         Navigator.of(context).pushNamed('/backup-account');
       }
     } catch (e) {
+      log.e('Get started failed', error: e);
       // Close loading dialog if still open
       if (context.mounted) {
         Navigator.of(context).pop();

@@ -20,7 +20,7 @@ void main() {
         userId: '',
         lastOpenedAt: testTimestamp,
         appVersion: '1.0.0',
-        appBuildNumber: '1',
+        appBuildNumber: 1,
         deviceManufacturer: 'Google',
         langCode: 'en',
         timezone: 'America/New_York',

@@ -12,7 +12,12 @@
           "package_name": "in.manager.money"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1067746733059-uvv7ihminqujasv6v34o1i5sdee7c2v3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAJ6qfFzbY07E0SnFJhGRGSbh2CgAvBO_Y"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1067746733059-uvv7ihminqujasv6v34o1i5sdee7c2v3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1067746733059-8fek924kbnpms8c23amu039qbj8bk756.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "in.manager.money.moneyManager"
+              }
+            }
+          ]
         }
       }
     }

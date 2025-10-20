@@ -270,4 +270,15 @@ class DeviceRecordService {
       throw Exception('Failed to import device record: $e');
     }
   }
+
+  /// Save device received from backend API response
+  /// Used after successful anonymous auth API call
+  Future<void> saveDeviceFromResponse(Device device) async {
+    try {
+      _currentDeviceRecord = device;
+      await _preferencesService!.setDeviceRecord(_currentDeviceRecord!);
+    } catch (e) {
+      throw Exception('Failed to save device from API response: $e');
+    }
+  }
 }

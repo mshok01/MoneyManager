@@ -176,6 +176,40 @@ class UserService {
     }
   }
 
+  /// Build a new user object WITHOUT saving to database
+  /// Auto-detects currency from device locale
+  /// Used for anonymous auth flow where we need to send user details to backend first
+  User buildUser({
+    String email = '',
+    String name = 'User',
+    String profilePic = '',
+    String? currencyCode,
+    String? currencyName,
+  }) {
+    if (!_isInitialized) {
+      throw Exception('UserService not initialized. Call initialize() first.');
+    }
+
+    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+
+    // Auto-detect currency if not provided
+    final detectedCurrency = _detectCurrencyFromLocale();
+    final finalCurrencyCode = currencyCode ?? detectedCurrency['code']!;
+    final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
+
+    return User(
+      id: _uuid.v4(),
+      createdAt: now,
+      updatedAt: now,
+      isActive: 1,
+      email: email,
+      name: name,
+      profilePic: profilePic,
+      currencyCode: finalCurrencyCode,
+      currencyName: finalCurrencyName,
+    );
+  }
+
   /// Create a new user with default values
   /// Auto-detects currency from device locale
   Future<User> createUser({
@@ -189,23 +223,12 @@ class UserService {
       throw Exception('UserService not initialized. Call initialize() first.');
     }
 
-    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
-
-    // Auto-detect currency if not provided
-    final detectedCurrency = _detectCurrencyFromLocale();
-    final finalCurrencyCode = currencyCode ?? detectedCurrency['code']!;
-    final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
-
-    final user = User(
-      id: _uuid.v4(),
-      createdAt: now,
-      updatedAt: now,
-      isActive: 1,
+    final user = buildUser(
       email: email,
       name: name,
       profilePic: profilePic,
-      currencyCode: finalCurrencyCode,
-      currencyName: finalCurrencyName,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
     );
 
     // Save the user
@@ -238,6 +261,16 @@ class UserService {
       _currentUser = user;
     } catch (e) {
       throw Exception('Failed to save user: $e');
+    }
+  }
+
+  /// Save user received from backend API response
+  /// Used after successful anonymous auth API call
+  Future<void> saveUserFromResponse(User user) async {
+    try {
+      await _saveUser(user);
+    } catch (e) {
+      throw Exception('Failed to save user from API response: $e');
     }
   }
 

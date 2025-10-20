@@ -70,7 +70,7 @@ class DeviceRecordErrorHandler {
       userId: userId ?? '',
       lastOpenedAt: now,
       appVersion: '1.0.0',
-      appBuildNumber: '1',
+      appBuildNumber: 1,
       deviceManufacturer: _getFallbackManufacturer(),
       langCode: 'en',
       timezone: 'UTC',
@@ -134,9 +134,7 @@ class DeviceRecordErrorHandler {
           ? 'United States'
           : record.countryName,
       appVersion: record.appVersion.isEmpty ? '1.0.0' : record.appVersion,
-      appBuildNumber: record.appBuildNumber.isEmpty
-          ? '1'
-          : record.appBuildNumber,
+      appBuildNumber: record.appBuildNumber == 0 ? 1 : record.appBuildNumber,
       deviceManufacturer: record.deviceManufacturer.isEmpty
           ? _getFallbackManufacturer()
           : record.deviceManufacturer,

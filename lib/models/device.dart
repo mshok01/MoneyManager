@@ -10,7 +10,7 @@ class Device {
   final String userId; // initially empty, filled when user is created
   final int lastOpenedAt; // milliseconds since epoch in UTC
   final String appVersion;
-  final String appBuildNumber;
+  final int appBuildNumber;
   final String deviceManufacturer;
   final String langCode; // language code
   final String timezone;
@@ -51,7 +51,7 @@ class Device {
       userId: json['userId'] as String? ?? '',
       lastOpenedAt: json['lastOpenedAt'] as int? ?? 0,
       appVersion: json['appVersion'] as String? ?? '',
-      appBuildNumber: json['appBuildNumber'] as String? ?? '',
+      appBuildNumber: json['appBuildNumber'] as int? ?? 0,
       deviceManufacturer: json['deviceManufacturer'] as String? ?? '',
       langCode: json['langCode'] as String? ?? '',
       timezone: json['timezone'] as String? ?? '',
@@ -96,7 +96,7 @@ class Device {
     String? userId,
     int? lastOpenedAt,
     String? appVersion,
-    String? appBuildNumber,
+    int? appBuildNumber,
     String? deviceManufacturer,
     String? langCode,
     String? timezone,

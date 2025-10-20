@@ -109,7 +109,7 @@ void main() {
           userId: 'test-user-123',
           lastOpenedAt: now,
           appVersion: '1.0.0',
-          appBuildNumber: '1',
+          appBuildNumber: 1,
           deviceManufacturer: 'Google',
           langCode: 'en',
           timezone: 'UTC',

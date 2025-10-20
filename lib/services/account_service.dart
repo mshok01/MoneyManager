@@ -172,6 +172,28 @@ class AccountService {
     return updatedAccount;
   }
 
+  /// Save account received from backend API response
+  /// Used after successful anonymous auth API call
+  Future<void> saveAccountFromResponse(Account account) async {
+    if (!_isInitialized) {
+      throw Exception(
+        'AccountService not initialized. Call initialize() first.',
+      );
+    }
+
+    try {
+      // Validate account before saving
+      if (!account.isValid) {
+        throw Exception('Invalid account data from API response');
+      }
+
+      // Save to database
+      await DatabaseService.instance.accountDao.insert(account);
+    } catch (e) {
+      throw Exception('Failed to save account from API response: $e');
+    }
+  }
+
   /// Delete an account (mark as inactive)
   Future<void> deleteAccount(String accountId) async {
     if (!_isInitialized) {
