@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'logging_service.dart';
 
 /// Service to handle Firebase Authentication (anonymous sign-in)
@@ -119,6 +120,32 @@ class FirebaseAuthService {
     } catch (e) {
       _log.e('Failed to refresh ID token', error: e);
       _log.exiting('refreshIdToken', null);
+      return null;
+    }
+  }
+
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      await GoogleSignIn.instance.initialize(
+        serverClientId:
+            '1067746733059-uvv7ihminqujasv6v34o1i5sdee7c2v3.apps.googleusercontent.com',
+      );
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      _log.e(e.toString());
       return null;
     }
   }

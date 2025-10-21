@@ -1893,6 +1893,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Summary'**
   String get summary;
+
+  /// Title for new account dialog
+  ///
+  /// In en, this message translates to:
+  /// **'New Account Detected'**
+  String get newAccountDetected;
+
+  /// Message shown when new Google user is detected
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any associated details with Money Manager. Would you like to create an account with your Google details?'**
+  String get noAssociatedDetailsMessage;
+
+  /// Button to create account for new Google user
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// Loading message while fetching user details from backend
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching your details...'**
+  String get fetchingUserDetails;
+
+  /// Loading message while signing in
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in...'**
+  String get signingIn;
+
+  /// Error message when sign in fails
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed'**
+  String get signInFailed;
+
+  /// Error message when account creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Account creation failed'**
+  String get accountCreationFailed;
+
+  /// Error message when removing user account fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove user account'**
+  String get failedToRemoveUser;
+
+  /// Error message when sign out fails
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out failed'**
+  String get signOutFailed;
 }
 
 class _AppLocalizationsDelegate

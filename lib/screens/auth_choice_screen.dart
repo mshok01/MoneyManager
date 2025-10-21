@@ -66,7 +66,7 @@ class AuthChoiceScreen extends StatelessWidget {
       // Step 5: Call backend API
       log.i('Calling backend authentication API');
       final authApiService = AuthApiService.instance;
-      final authResponse = await authApiService.authenticateAnonymously(
+      final authResponse = await authApiService.register(
         firebaseIdToken: idToken,
         firebaseUid: firebaseUid,
         userDetails: user,

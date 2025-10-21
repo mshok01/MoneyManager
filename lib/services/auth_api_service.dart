@@ -7,14 +7,14 @@ import '../models/account.dart';
 import 'logging_service.dart';
 
 /// Response model for anonymous auth
-class AnonymousAuthResponse {
+class RegisterUserResponse {
   final User user;
   final Account account;
   final Device device;
   final String authToken;
   final String firebaseToken;
 
-  AnonymousAuthResponse({
+  RegisterUserResponse({
     required this.user,
     required this.account,
     required this.device,
@@ -22,8 +22,8 @@ class AnonymousAuthResponse {
     required this.firebaseToken,
   });
 
-  factory AnonymousAuthResponse.fromJson(Map<String, dynamic> json) {
-    return AnonymousAuthResponse(
+  factory RegisterUserResponse.fromJson(Map<String, dynamic> json) {
+    return RegisterUserResponse(
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       account: Account.fromJson(json['account'] as Map<String, dynamic>),
       device: Device.fromJson(json['device'] as Map<String, dynamic>),
@@ -83,7 +83,7 @@ class AuthApiService {
 
   /// Authenticate anonymously with the backend
   /// Sends Firebase ID token and user/device details
-  Future<AnonymousAuthResponse> authenticateAnonymously({
+  Future<RegisterUserResponse> register({
     required String firebaseIdToken,
     required String firebaseUid,
     required User userDetails,
@@ -100,12 +100,12 @@ class AuthApiService {
         if (fcmToken != null && fcmToken.isNotEmpty) 'fcmToken': fcmToken,
       };
 
-      _log.d('Sending anonymous auth request to backend');
+      _log.d('Sending auth request to backend');
       _log.d('Request body: ${jsonEncode(requestBody)}');
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/auth/anonymous'),
+            Uri.parse('$_baseUrl/auth/register'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(requestBody),
           )
@@ -121,17 +121,15 @@ class AuthApiService {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Anonymous auth successful');
-        _log.exiting('authenticateAnonymously', true);
-        return AnonymousAuthResponse.fromJson(jsonResponse);
+        _log.d(' auth successful');
+        return RegisterUserResponse.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Anonymous auth failed: $errorBody');
+        _log.e(' auth failed: $errorBody');
         throw Exception('Failed to authenticate: ${response.statusCode}');
       }
     } catch (e) {
-      _log.e('Exception during anonymous auth', error: e);
-      _log.exiting('authenticateAnonymously', null);
+      _log.e('Exception during  auth', error: e);
       rethrow;
     }
   }
@@ -239,6 +237,43 @@ class AuthApiService {
     } catch (e) {
       _log.e('Exception during link existing account', error: e);
       _log.exiting('linkExistingGoogleAccount', null);
+      rethrow;
+    }
+  }
+
+  /// Remove user from backend
+  /// Called during logout to delete the user account
+  Future<void> removeUser({required String firebaseUID}) async {
+    _log.entering('removeUser');
+    try {
+      _log.d('Sending remove user request to backend for UID: $firebaseUID');
+
+      final response = await http
+          .get(
+            Uri.parse('$_baseUrl/auth/remove-user/$firebaseUID'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              _log.e('Request timeout');
+              throw Exception('Request timeout');
+            },
+          );
+
+      _log.d('Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        _log.d('Remove user successful');
+        _log.exiting('removeUser', true);
+      } else {
+        final errorBody = response.body;
+        _log.e('Remove user failed: $errorBody');
+        throw Exception('Failed to remove user: ${response.statusCode}');
+      }
+    } catch (e) {
+      _log.e('Exception during remove user', error: e);
+      _log.exiting('removeUser', null);
       rethrow;
     }
   }

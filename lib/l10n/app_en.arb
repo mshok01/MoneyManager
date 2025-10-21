@@ -1457,5 +1457,45 @@
   "summary": "Summary",
   "@summary": {
     "description": "Summary section title"
+  },
+  "newAccountDetected": "New Account Detected",
+  "@newAccountDetected": {
+    "description": "Title for new account dialog"
+  },
+  "noAssociatedDetailsMessage": "You don't have any associated details with Money Manager. Would you like to create an account with your Google details?",
+  "@noAssociatedDetailsMessage": {
+    "description": "Message shown when new Google user is detected"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Button to create account for new Google user"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "fetchingUserDetails": "Fetching your details...",
+  "@fetchingUserDetails": {
+    "description": "Loading message while fetching user details from backend"
+  },
+  "signingIn": "Signing in...",
+  "@signingIn": {
+    "description": "Loading message while signing in"
+  },
+  "signInFailed": "Sign in failed",
+  "@signInFailed": {
+    "description": "Error message when sign in fails"
+  },
+  "accountCreationFailed": "Account creation failed",
+  "@accountCreationFailed": {
+    "description": "Error message when account creation fails"
+  },
+  "failedToRemoveUser": "Failed to remove user account",
+  "@failedToRemoveUser": {
+    "description": "Error message when removing user account fails"
+  },
+  "signOutFailed": "Sign out failed",
+  "@signOutFailed": {
+    "description": "Error message when sign out fails"
   }
 }

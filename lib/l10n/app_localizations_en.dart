@@ -1019,4 +1019,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get summary => 'Summary';
+
+  @override
+  String get newAccountDetected => 'New Account Detected';
+
+  @override
+  String get noAssociatedDetailsMessage =>
+      'You don\'t have any associated details with Money Manager. Would you like to create an account with your Google details?';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get fetchingUserDetails => 'Fetching your details...';
+
+  @override
+  String get signingIn => 'Signing in...';
+
+  @override
+  String get signInFailed => 'Sign in failed';
+
+  @override
+  String get accountCreationFailed => 'Account creation failed';
+
+  @override
+  String get failedToRemoveUser => 'Failed to remove user account';
+
+  @override
+  String get signOutFailed => 'Sign out failed';
 }
