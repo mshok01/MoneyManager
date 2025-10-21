@@ -8,6 +8,8 @@ import '../services/device_record_service.dart';
 import '../services/account_service.dart';
 import '../services/auth_api_service.dart';
 import '../services/firebase_service.dart';
+import '../services/transaction_api_service.dart';
+import '../database/database_service.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});
@@ -214,10 +216,11 @@ class SignInScreen extends StatelessWidget {
 
       // Step 6: Save user, account, and device locally after successful API response
       log.d('Saving user, account, and device locally');
+      // refresh idtoken
       await userService.saveUserFromResponse(authResponse.user);
-      await AccountService.instance.saveAccountFromResponse(
-        authResponse.account,
-      );
+      for (final account in authResponse.accounts) {
+        await AccountService.instance.saveAccountFromResponse(account);
+      }
       await deviceService.saveDeviceFromResponse(authResponse.device);
       log.d('User, account, and device saved successfully');
 
@@ -336,12 +339,16 @@ class SignInScreen extends StatelessWidget {
       // Step 6: Save user, account, and device locally after successful API response
       log.d('Saving user, account, and device locally');
       await userService.saveUserFromResponse(authResponse.user);
-      await AccountService.instance.saveAccountFromResponse(
-        authResponse.account,
-      );
+      for (final account in authResponse.accounts) {
+        await AccountService.instance.saveAccountFromResponse(account);
+      }
+
       await deviceService.saveDeviceFromResponse(authResponse.device);
       log.d('User, account, and device saved successfully');
 
+      // Step 7: Fetch transactions asynchronously for all accounts
+      log.i('Starting async transaction fetch for all accounts');
+      await _fetchTransactionsForAllAccounts();
       if (!context.mounted) return;
       Navigator.of(context).pop(); // Close loading dialog
 
@@ -425,6 +432,118 @@ class SignInScreen extends StatelessWidget {
           ),
         );
       }
+    }
+  }
+
+  /// Fetch transactions for all user accounts asynchronously
+  /// Starts with current timestamp and fetches transactions in batches of 50
+  /// Continues fetching until a batch has less than 50 transactions
+  Future<void> _fetchTransactionsForAllAccounts() async {
+    final log = LoggingService.getLogger('SignInScreen');
+    log.entering('_fetchTransactionsForAllAccounts');
+
+    try {
+      String jwtToken = await FirebaseAuthService.instance.getIdToken() ?? '';
+      log.d('JWT: $jwtToken');
+      if (jwtToken.isEmpty) {
+        log.w('JWT is empty, skipping transaction fetch');
+        log.exiting('_fetchTransactionsForAllAccounts');
+        return;
+      }
+      // Get all accounts for the current user
+      final accounts = await AccountService.instance.accounts;
+      log.d('Found ${accounts.length} accounts for transaction fetch');
+
+      if (accounts.isEmpty) {
+        log.d('No accounts found, skipping transaction fetch');
+        log.exiting('_fetchTransactionsForAllAccounts');
+        return;
+      }
+
+      // Fetch transactions for each account asynchronously (don't wait)
+      for (final account in accounts) {
+        await _fetchTransactionsForAccount(account.id, jwtToken);
+      }
+
+      log.exiting('_fetchTransactionsForAllAccounts');
+    } catch (e) {
+      log.e('Error fetching transactions for all accounts', error: e);
+      log.exiting('_fetchTransactionsForAllAccounts');
+    }
+  }
+
+  /// Fetch transactions for a specific account in batches
+  /// Starts with current timestamp and continues until a batch has less than 50 transactions
+  Future<void> _fetchTransactionsForAccount(
+    String accountId,
+    String jwtToken,
+  ) async {
+    final log = LoggingService.getLogger('SignInScreen');
+    log.entering('_fetchTransactionsForAccount');
+
+    try {
+      final transactionApiService = TransactionApiService.instance;
+      int currentTimestamp = DateTime.now().toUtc().millisecondsSinceEpoch;
+      int batchCount = 0;
+
+      while (true) {
+        batchCount++;
+        log.d(
+          'Fetching batch $batchCount for account $accountId, timestamp: $currentTimestamp',
+        );
+
+        // Fetch transactions before current timestamp
+        final transactions = await transactionApiService
+            .getTransactionsByAccountAndTimestamp(
+              accountId: accountId,
+              timestamp: currentTimestamp,
+              jwtToken: jwtToken,
+            );
+
+        log.d(
+          'Fetched ${transactions.length} transactions in batch $batchCount for account $accountId',
+        );
+
+        // Save transactions to local database
+        for (final transaction in transactions) {
+          try {
+            await DatabaseService.instance.transactionDao.insert(transaction);
+          } catch (e) {
+            log.w(
+              'Failed to save transaction ${transaction.id} locally',
+              error: e,
+            );
+          }
+        }
+
+        // If we got less than 50 transactions, we've reached the end
+        if (transactions.length < 50) {
+          log.d(
+            'Reached end of transactions for account $accountId (batch $batchCount had ${transactions.length} transactions)',
+          );
+          break;
+        }
+
+        // If we got exactly 50 transactions, prepare for next batch
+        // The next timestamp should be the last transaction's timestamp
+        if (transactions.isNotEmpty) {
+          final lastTransaction = transactions.last;
+          currentTimestamp = lastTransaction.transactionDate;
+          log.d(
+            'Continuing to next batch for account $accountId, new timestamp: $currentTimestamp',
+          );
+        } else {
+          break;
+        }
+      }
+
+      log.d(
+        'Completed transaction fetch for account $accountId (total batches: $batchCount)',
+      );
+      log.exiting('_fetchTransactionsForAccount');
+    } catch (e) {
+      log.e('Error fetching transactions for account $accountId', error: e);
+      log.exiting('_fetchTransactionsForAccount');
     }
   }
 

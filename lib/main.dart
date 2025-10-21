@@ -60,6 +60,9 @@ void main() async {
       DeviceRecordService.instance.updateFcmToken(newToken);
     });
 
+    // log jwt
+    log('JWT: ${(await FirebaseAuthService.instance.getIdToken()).toString()}');
+
     // Note: FCM token will be fetched only when user grants notification permission
 
     runApp(const MoneyManagerApp());

@@ -1,12 +1,11 @@
 import 'dart:io';
+import 'package:money_manager/utils/utils.dart';
+
 import '../models/device.dart';
 import '../services/logging_service.dart';
-import 'package:uuid/uuid.dart';
 
 /// Error handler for device record operations with fallback mechanisms
 class DeviceRecordErrorHandler {
-  static const Uuid _uuid = Uuid();
-
   // Logger instance for this utility class
   static final _log = LoggingService.getLogger('DeviceRecordErrorHandler');
 
@@ -59,7 +58,7 @@ class DeviceRecordErrorHandler {
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     return Device(
-      id: existingId ?? _uuid.v4(),
+      id: existingId ?? getUniqueId(),
       platformType: _getFallbackPlatformType(),
       os: _getFallbackOS(),
       osVersion: _getFallbackOSVersion(),
@@ -121,7 +120,7 @@ class DeviceRecordErrorHandler {
   /// Validate device record data and fix any issues
   static Device validateAndFixDeviceRecord(Device record) {
     return record.copyWith(
-      id: record.id.isEmpty ? _uuid.v4() : record.id,
+      id: record.id.isEmpty ? getUniqueId() : record.id,
       platformType: record.platformType.isEmpty
           ? _getFallbackPlatformType()
           : record.platformType,

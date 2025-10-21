@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:money_manager/utils/utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:uuid/uuid.dart';
 import '../models/device.dart';
 import 'logging_service.dart';
 
@@ -19,7 +19,6 @@ class DeviceInfoService {
   static final _log = LoggingService.getLogger('DeviceInfoService');
 
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-  final Uuid _uuid = const Uuid();
 
   /// Initialize timezone data
   Future<void> initialize() async {
@@ -52,7 +51,7 @@ class DeviceInfoService {
       final timezoneInfo = _getTimezoneInfo();
 
       return Device(
-        id: existingId ?? _uuid.v4(),
+        id: existingId ?? getUniqueId(),
         platformType: _getPlatformType(),
         os: platformInfo['os'] ?? 'Unknown',
         osVersion: platformInfo['osVersion'] ?? 'Unknown',
@@ -188,7 +187,7 @@ class DeviceInfoService {
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     return Device(
-      id: existingId ?? _uuid.v4(),
+      id: existingId ?? getUniqueId(),
       platformType: _getPlatformType(),
       os: Platform.operatingSystem,
       osVersion: Platform.operatingSystemVersion,

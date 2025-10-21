@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:money_manager/services/firebase_auth_service.dart';
 import '../models/user.dart';
 import '../models/device.dart';
 import '../models/account.dart';
@@ -9,14 +10,14 @@ import 'logging_service.dart';
 /// Response model for anonymous auth
 class RegisterUserResponse {
   final User user;
-  final Account account;
+  final List<Account> accounts;
   final Device device;
   final String authToken;
   final String firebaseToken;
 
   RegisterUserResponse({
     required this.user,
-    required this.account,
+    required this.accounts,
     required this.device,
     required this.authToken,
     required this.firebaseToken,
@@ -25,7 +26,13 @@ class RegisterUserResponse {
   factory RegisterUserResponse.fromJson(Map<String, dynamic> json) {
     return RegisterUserResponse(
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      account: Account.fromJson(json['account'] as Map<String, dynamic>),
+      accounts:
+          (json['accounts'] as List<dynamic>?)
+              ?.map(
+                (account) => Account.fromJson(account as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
       device: Device.fromJson(json['device'] as Map<String, dynamic>),
       authToken: json['authToken'] as String? ?? '',
       firebaseToken: json['firebaseToken'] as String? ?? '',
@@ -122,6 +129,9 @@ class AuthApiService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
         _log.d(' auth successful');
+
+        final firebaseAuthService = FirebaseAuthService.instance;
+        await firebaseAuthService.refreshIdToken();
         return RegisterUserResponse.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;

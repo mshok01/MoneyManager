@@ -78,9 +78,9 @@ class AuthChoiceScreen extends StatelessWidget {
       // Step 6: Save user, account, and device locally after successful API response
       log.d('Saving user, account, and device locally');
       await userService.saveUserFromResponse(authResponse.user);
-      await AccountService.instance.saveAccountFromResponse(
-        authResponse.account,
-      );
+      for (final account in authResponse.accounts) {
+        await AccountService.instance.saveAccountFromResponse(account);
+      }
       await deviceService.saveDeviceFromResponse(authResponse.device);
       log.d('User, account, and device saved successfully');
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/payment_source.dart';
 import '../services/data_service.dart';
 import '../l10n/app_localizations.dart';
@@ -233,7 +233,7 @@ class _AddPaymentSourceDialogState extends State<_AddPaymentSourceDialog> {
     final isEditing = widget.existingSource != null;
 
     final source = PaymentSource(
-      id: isEditing ? widget.existingSource!.id : const Uuid().v4(),
+      id: isEditing ? widget.existingSource!.id : getUniqueId(),
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       icon: Icons.payment,

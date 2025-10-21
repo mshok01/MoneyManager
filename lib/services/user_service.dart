@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/user.dart';
 import 'preferences_service.dart';
 import 'account_service.dart';
@@ -18,7 +18,6 @@ class UserService {
   PreferencesService? _preferencesService;
   User? _currentUser;
   bool _isInitialized = false;
-  final Uuid _uuid = const Uuid();
 
   // Default account constants - these will be replaced with localized strings
   static const String defaultAccountName = 'Main Account';
@@ -198,7 +197,7 @@ class UserService {
     final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
 
     return User(
-      id: _uuid.v4(),
+      id: getUniqueId(),
       createdAt: now,
       updatedAt: now,
       isActive: 1,

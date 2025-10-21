@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/account.dart';
 import 'user_service.dart';
 import '../database/database_service.dart';
@@ -14,7 +14,6 @@ class AccountService {
   AccountService._();
 
   bool _isInitialized = false;
-  final Uuid _uuid = const Uuid();
 
   /// Get all accounts
   Future<List<Account>> get accounts async =>
@@ -99,7 +98,7 @@ class AccountService {
     }
 
     final account = Account(
-      id: _uuid.v4(),
+      id: getUniqueId(),
       name: name.trim(),
       description: description.trim(),
       pic: pic.trim(),
