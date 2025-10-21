@@ -4,6 +4,8 @@ import '../services/preferences_service.dart';
 import '../services/theme_service.dart';
 import '../services/user_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/backup_account_widget.dart';
+import 'backup_account_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -117,6 +119,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _navigateToManageAccounts() {
     Navigator.of(context).pushNamed('/manage-accounts');
+  }
+
+  void _navigateToBackupAccount() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const BackupAccountScreen(isFromSettings: true),
+      ),
+    );
   }
 
   Future<void> _showThemeSelectionDialog() async {
@@ -267,13 +277,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Data & Privacy Section
           _buildSectionHeader(l10n.dataPrivacy),
-          ListTile(
-            leading: const Icon(Icons.backup),
-            title: Text(l10n.backup),
-            subtitle: Text(l10n.notConnected),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showComingSoonSnackBar(l10n.backup),
-          ),
+          BackupAccountWidget(onTap: _navigateToBackupAccount),
           const Divider(),
 
           // Notifications Section - Hidden for now

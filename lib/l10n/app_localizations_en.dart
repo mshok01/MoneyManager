@@ -734,6 +734,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notConnected => 'Not connected';
 
   @override
+  String get connected => 'Connected';
+
+  @override
+  String get addBackupAccount => 'Add Backup Account';
+
+  @override
+  String backupAccountEmail(String email) {
+    return 'Backup account: $email';
+  }
+
+  @override
   String currencyChangedTo(String currency) {
     return 'Currency changed to $currency';
   }
@@ -755,6 +766,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appleSignInImplementation =>
       'Apple Sign-in will be implemented with Firebase Auth';
+
+  @override
+  String get linkingAccount => 'Linking your account...';
+
+  @override
+  String get accountLinkedSuccessfully => 'Account linked successfully!';
+
+  @override
+  String get linkingFailed => 'Account linking failed';
+
+  @override
+  String get accountAlreadyExists => 'Account Already Exists';
+
+  @override
+  String get accountAlreadyExistsMessage =>
+      'This Google account already has some data in Money Manager. To restore your previous data, you need to:\n\n1. Logout from your current account\n2. Login with this Google account\n\nYour existing data in the current account will be lost. Do you want to proceed?';
+
+  @override
+  String get restoreData => 'Restore Data';
+
+  @override
+  String get proceedWithoutRestore => 'Proceed Without Restore';
+
+  @override
+  String get failedToAddRecoveryAccount => 'Failed to Add Recovery Account';
+
+  @override
+  String get failedToAddRecoveryAccountMessage =>
+      'We encountered an error while trying to add your recovery account. Please try again later or contact support if the problem persists.';
+
+  @override
+  String get tryAgain => 'Try Again';
 
   @override
   String get welcomeToMoneyManagerEmoji => '🎉 Welcome to Money Manager!';

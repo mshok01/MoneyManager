@@ -10,6 +10,8 @@ class PreferencesService {
   static const String _deviceRecordKey = 'device_record';
   static const String _userRecordKey = 'user_record';
   static const String _selectedAccountKey = 'selected_account_id';
+  static const String _authTokenKey = 'auth_token';
+  static const String _firebaseTokenKey = 'firebase_token';
 
   static PreferencesService? _instance;
   static SharedPreferences? _preferences;
@@ -201,5 +203,39 @@ class PreferencesService {
       final updatedRecord = userRecord.updateTimestamp();
       await setUserRecord(updatedRecord);
     }
+  }
+
+  // Auth token preferences
+  Future<void> setAuthToken(String token) async {
+    await _preferences!.setString(_authTokenKey, token);
+  }
+
+  String? getAuthToken() {
+    return _preferences!.getString(_authTokenKey);
+  }
+
+  Future<void> clearAuthToken() async {
+    await _preferences!.remove(_authTokenKey);
+  }
+
+  bool hasAuthToken() {
+    return _preferences!.containsKey(_authTokenKey);
+  }
+
+  // Firebase token preferences
+  Future<void> setFirebaseToken(String token) async {
+    await _preferences!.setString(_firebaseTokenKey, token);
+  }
+
+  String? getFirebaseToken() {
+    return _preferences!.getString(_firebaseTokenKey);
+  }
+
+  Future<void> clearFirebaseToken() async {
+    await _preferences!.remove(_firebaseTokenKey);
+  }
+
+  bool hasFirebaseToken() {
+    return _preferences!.containsKey(_firebaseTokenKey);
   }
 }

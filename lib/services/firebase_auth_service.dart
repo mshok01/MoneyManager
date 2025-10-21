@@ -14,7 +14,7 @@ class FirebaseAuthService {
   UserCredential? _currentCredential;
 
   /// Get the current Firebase ID token
-  Future<String?> getIdToken() async {
+  Future<String?> getIdToken([bool forceRefresh = false]) async {
     _log.entering('getIdToken');
     try {
       final user = _firebaseAuth.currentUser;
@@ -24,7 +24,7 @@ class FirebaseAuthService {
         return null;
       }
 
-      final idToken = await user.getIdToken();
+      final idToken = await user.getIdToken(forceRefresh);
       _log.d('ID token retrieved successfully');
       _log.exiting('getIdToken', idToken != null);
       return idToken;
@@ -51,7 +51,9 @@ class FirebaseAuthService {
     try {
       _log.d('Starting anonymous sign-in');
       _currentCredential = await _firebaseAuth.signInAnonymously();
-      _log.i('Anonymous sign-in successful, UID: ${_currentCredential?.user?.uid}');
+      _log.i(
+        'Anonymous sign-in successful, UID: ${_currentCredential?.user?.uid}',
+      );
       _log.exiting('signInAnonymously', true);
       return _currentCredential;
     } catch (e) {
@@ -121,4 +123,3 @@ class FirebaseAuthService {
     }
   }
 }
-

@@ -1038,6 +1038,24 @@
   "@notConnected": {
     "description": "Backup status when not connected"
   },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Backup status when connected"
+  },
+  "addBackupAccount": "Add Backup Account",
+  "@addBackupAccount": {
+    "description": "Button text to add backup account"
+  },
+  "backupAccountEmail": "Backup account: {email}",
+  "@backupAccountEmail": {
+    "description": "Display backup account email",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "description": "The backup account email"
+      }
+    }
+  },
   "currencyChangedTo": "Currency changed to {currency}",
   "@currencyChangedTo": {
     "description": "Success message when currency is changed",
@@ -1075,6 +1093,46 @@
   "appleSignInImplementation": "Apple Sign-in will be implemented with Firebase Auth",
   "@appleSignInImplementation": {
     "description": "Implementation note for Apple Sign-in"
+  },
+  "linkingAccount": "Linking your account...",
+  "@linkingAccount": {
+    "description": "Loading message while linking account"
+  },
+  "accountLinkedSuccessfully": "Account linked successfully!",
+  "@accountLinkedSuccessfully": {
+    "description": "Success message when account linking is complete"
+  },
+  "linkingFailed": "Account linking failed",
+  "@linkingFailed": {
+    "description": "Error message when account linking fails"
+  },
+  "accountAlreadyExists": "Account Already Exists",
+  "@accountAlreadyExists": {
+    "description": "Dialog title when Google account already has data"
+  },
+  "accountAlreadyExistsMessage": "This Google account already has some data in Money Manager. To restore your previous data, you need to:\n\n1. Logout from your current account\n2. Login with this Google account\n\nYour existing data in the current account will be lost. Do you want to proceed?",
+  "@accountAlreadyExistsMessage": {
+    "description": "Dialog message explaining account already exists scenario"
+  },
+  "restoreData": "Restore Data",
+  "@restoreData": {
+    "description": "Button to restore data from existing Google account"
+  },
+  "proceedWithoutRestore": "Proceed Without Restore",
+  "@proceedWithoutRestore": {
+    "description": "Button to skip restoring data and continue with current account"
+  },
+  "failedToAddRecoveryAccount": "Failed to Add Recovery Account",
+  "@failedToAddRecoveryAccount": {
+    "description": "Dialog title when adding recovery account fails"
+  },
+  "failedToAddRecoveryAccountMessage": "We encountered an error while trying to add your recovery account. Please try again later or contact support if the problem persists.",
+  "@failedToAddRecoveryAccountMessage": {
+    "description": "Dialog message when adding recovery account fails"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Button to retry an action"
   },
   "welcomeToMoneyManagerEmoji": "🎉 Welcome to Money Manager!",
   "@welcomeToMoneyManagerEmoji": {

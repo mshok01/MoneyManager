@@ -274,6 +274,16 @@ class UserService {
     }
   }
 
+  /// Update current user with a new User object
+  /// Used after account linking to update user data from backend response
+  Future<void> updateCurrentUser(User user) async {
+    try {
+      await _saveUser(user);
+    } catch (e) {
+      throw Exception('Failed to update current user: $e');
+    }
+  }
+
   /// Update the current user
   Future<User> updateUser({
     String? email,

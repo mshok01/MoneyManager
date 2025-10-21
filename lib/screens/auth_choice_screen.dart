@@ -38,7 +38,7 @@ class AuthChoiceScreen extends StatelessWidget {
       log.d('Firebase anonymous sign-in successful, UID: $firebaseUid');
 
       // Step 2: Get Firebase ID token
-      final idToken = await firebaseAuthService.getIdToken();
+      final idToken = await firebaseAuthService.getIdToken(true);
       if (idToken == null) {
         throw Exception('Failed to get Firebase ID token');
       }

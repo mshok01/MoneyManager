@@ -1414,6 +1414,24 @@ abstract class AppLocalizations {
   /// **'Not connected'**
   String get notConnected;
 
+  /// Backup status when connected
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// Button text to add backup account
+  ///
+  /// In en, this message translates to:
+  /// **'Add Backup Account'**
+  String get addBackupAccount;
+
+  /// Display backup account email
+  ///
+  /// In en, this message translates to:
+  /// **'Backup account: {email}'**
+  String backupAccountEmail(String email);
+
   /// Success message when currency is changed
   ///
   /// In en, this message translates to:
@@ -1443,6 +1461,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apple Sign-in will be implemented with Firebase Auth'**
   String get appleSignInImplementation;
+
+  /// Loading message while linking account
+  ///
+  /// In en, this message translates to:
+  /// **'Linking your account...'**
+  String get linkingAccount;
+
+  /// Success message when account linking is complete
+  ///
+  /// In en, this message translates to:
+  /// **'Account linked successfully!'**
+  String get accountLinkedSuccessfully;
+
+  /// Error message when account linking fails
+  ///
+  /// In en, this message translates to:
+  /// **'Account linking failed'**
+  String get linkingFailed;
+
+  /// Dialog title when Google account already has data
+  ///
+  /// In en, this message translates to:
+  /// **'Account Already Exists'**
+  String get accountAlreadyExists;
+
+  /// Dialog message explaining account already exists scenario
+  ///
+  /// In en, this message translates to:
+  /// **'This Google account already has some data in Money Manager. To restore your previous data, you need to:\n\n1. Logout from your current account\n2. Login with this Google account\n\nYour existing data in the current account will be lost. Do you want to proceed?'**
+  String get accountAlreadyExistsMessage;
+
+  /// Button to restore data from existing Google account
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Data'**
+  String get restoreData;
+
+  /// Button to skip restoring data and continue with current account
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed Without Restore'**
+  String get proceedWithoutRestore;
+
+  /// Dialog title when adding recovery account fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to Add Recovery Account'**
+  String get failedToAddRecoveryAccount;
+
+  /// Dialog message when adding recovery account fails
+  ///
+  /// In en, this message translates to:
+  /// **'We encountered an error while trying to add your recovery account. Please try again later or contact support if the problem persists.'**
+  String get failedToAddRecoveryAccountMessage;
+
+  /// Button to retry an action
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
 
   /// Welcome message with emoji in welcome nudge card
   ///
