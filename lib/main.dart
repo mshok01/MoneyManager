@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_manager/services/firebase_auth_service.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/intro_screen.dart';
@@ -73,13 +74,13 @@ void main() async {
       SyncService.instance.syncPendingTransactions();
     });
 
-    runApp(const MoneyManagerApp());
+    runApp(const ProviderScope(child: MoneyManagerApp()));
   } catch (e) {
     // Use logging service for app initialization errors
     final log = LoggingService.getLogger('Main');
     log.e('Failed to initialize app', error: e);
     // Run app anyway with error handling
-    runApp(const MoneyManagerApp());
+    runApp(const ProviderScope(child: MoneyManagerApp()));
   }
 }
 
