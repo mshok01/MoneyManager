@@ -11,7 +11,7 @@ import 'screens/currency_selection_screen.dart';
 import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/category_screen.dart';
+import 'screens/categories/category_screen.dart';
 import 'screens/payment_sources_screen.dart';
 import 'screens/manage_accounts_screen.dart';
 import 'screens/account_details_screen.dart';
