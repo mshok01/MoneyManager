@@ -8,10 +8,7 @@ import '../../services/payment_source_service.dart';
 class EditPaymentSourceScreen extends ConsumerStatefulWidget {
   final PaymentSource paymentSource;
 
-  const EditPaymentSourceScreen({
-    super.key,
-    required this.paymentSource,
-  });
+  const EditPaymentSourceScreen({super.key, required this.paymentSource});
 
   @override
   ConsumerState<EditPaymentSourceScreen> createState() =>
@@ -22,20 +19,27 @@ class _EditPaymentSourceScreenState
     extends ConsumerState<EditPaymentSourceScreen> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+  late FocusNode _nameFocusNode;
+  late FocusNode _descriptionFocusNode;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.paymentSource.name);
-    _descriptionController =
-        TextEditingController(text: widget.paymentSource.description);
+    _descriptionController = TextEditingController(
+      text: widget.paymentSource.description,
+    );
+    _nameFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _nameFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -106,6 +110,12 @@ class _EditPaymentSourceScreenState
           children: [
             TextField(
               controller: _nameController,
+              focusNode: _nameFocusNode,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) {
+                _nameFocusNode.unfocus();
+                FocusScope.of(context).requestFocus(_descriptionFocusNode);
+              },
               decoration: InputDecoration(
                 labelText: l10n.name,
                 hintText: l10n.nameHint,
@@ -117,6 +127,11 @@ class _EditPaymentSourceScreenState
             const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
+              focusNode: _descriptionFocusNode,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) {
+                _descriptionFocusNode.unfocus();
+              },
               decoration: InputDecoration(
                 labelText: l10n.description,
                 hintText: l10n.descriptionHint,
@@ -157,4 +172,3 @@ class _EditPaymentSourceScreenState
     );
   }
 }
-

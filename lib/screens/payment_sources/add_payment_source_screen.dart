@@ -17,12 +17,23 @@ class _AddPaymentSourceScreenState
     extends ConsumerState<AddPaymentSourceScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  late FocusNode _nameFocusNode;
+  late FocusNode _descriptionFocusNode;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _nameFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -98,6 +109,12 @@ class _AddPaymentSourceScreenState
           children: [
             TextField(
               controller: _nameController,
+              focusNode: _nameFocusNode,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) {
+                _nameFocusNode.unfocus();
+                FocusScope.of(context).requestFocus(_descriptionFocusNode);
+              },
               decoration: InputDecoration(
                 labelText: l10n.name,
                 hintText: l10n.nameHint,
@@ -109,6 +126,11 @@ class _AddPaymentSourceScreenState
             const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
+              focusNode: _descriptionFocusNode,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) {
+                _descriptionFocusNode.unfocus();
+              },
               decoration: InputDecoration(
                 labelText: l10n.description,
                 hintText: l10n.descriptionHint,

@@ -22,6 +22,8 @@ class EditCategoryScreen extends ConsumerStatefulWidget {
 class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
+  late FocusNode _titleFocusNode;
+  late FocusNode _descriptionFocusNode;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -32,12 +34,16 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
     _descriptionController = TextEditingController(
       text: widget.category.description,
     );
+    _titleFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _titleFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -61,6 +67,12 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
               // Category Title Input
               TextFormField(
                 controller: _titleController,
+                focusNode: _titleFocusNode,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {
+                  _titleFocusNode.unfocus();
+                  FocusScope.of(context).requestFocus(_descriptionFocusNode);
+                },
                 decoration: InputDecoration(
                   labelText: l10n.categoryTitle,
                   border: OutlineInputBorder(
@@ -79,6 +91,11 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
               // Category Description Input
               TextFormField(
                 controller: _descriptionController,
+                focusNode: _descriptionFocusNode,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) {
+                  _descriptionFocusNode.unfocus();
+                },
                 decoration: InputDecoration(
                   labelText: l10n.categoryDescription,
                   border: OutlineInputBorder(

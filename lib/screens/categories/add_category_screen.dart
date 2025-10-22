@@ -15,6 +15,8 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
 class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
+  late FocusNode _titleFocusNode;
+  late FocusNode _descriptionFocusNode;
   String _selectedType = 'income'; // Default to income
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -24,12 +26,16 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
     super.initState();
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
+    _titleFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _titleFocusNode.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -53,6 +59,12 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               // Category Title Input
               TextFormField(
                 controller: _titleController,
+                focusNode: _titleFocusNode,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {
+                  _titleFocusNode.unfocus();
+                  FocusScope.of(context).requestFocus(_descriptionFocusNode);
+                },
                 decoration: InputDecoration(
                   labelText: l10n.categoryTitle,
                   border: OutlineInputBorder(
@@ -71,13 +83,18 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               // Category Description Input
               TextFormField(
                 controller: _descriptionController,
+                focusNode: _descriptionFocusNode,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) {
+                  _descriptionFocusNode.unfocus();
+                },
                 decoration: InputDecoration(
                   labelText: l10n.categoryDescription,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                maxLines: 3,
+                maxLines: 2,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return l10n.pleaseEnterDescription;
