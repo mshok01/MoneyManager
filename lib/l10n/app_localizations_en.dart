@@ -167,6 +167,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addCategory => 'Add Category';
 
   @override
+  String get editCategory => 'Edit Category';
+
+  @override
   String get categoryTitle => 'Category Title';
 
   @override
@@ -1047,4 +1050,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutFailed => 'Sign out failed';
+
+  @override
+  String get syncCategories => 'Sync Categories';
+
+  @override
+  String get syncCompleted => 'Categories synced successfully';
+
+  @override
+  String failedToSync(String error) {
+    return 'Failed to sync categories: $error';
+  }
 }

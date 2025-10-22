@@ -206,6 +206,10 @@
   "@addCategory": {
     "description": "Add category dialog title and button text"
   },
+  "editCategory": "Edit Category",
+  "@editCategory": {
+    "description": "Edit category screen title"
+  },
   "categoryTitle": "Category Title",
   "@categoryTitle": {
     "description": "Category title input field label"
@@ -1497,5 +1501,23 @@
   "signOutFailed": "Sign out failed",
   "@signOutFailed": {
     "description": "Error message when sign out fails"
+  },
+  "syncCategories": "Sync Categories",
+  "@syncCategories": {
+    "description": "Tooltip for sync categories button"
+  },
+  "syncCompleted": "Categories synced successfully",
+  "@syncCompleted": {
+    "description": "Success message when category sync is completed"
+  },
+  "failedToSync": "Failed to sync categories: {error}",
+  "@failedToSync": {
+    "description": "Error message when category sync fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
   }
 }

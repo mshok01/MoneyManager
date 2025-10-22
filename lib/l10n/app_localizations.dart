@@ -394,6 +394,12 @@ abstract class AppLocalizations {
   /// **'Add Category'**
   String get addCategory;
 
+  /// Edit category screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get editCategory;
+
   /// Category title input field label
   ///
   /// In en, this message translates to:
@@ -1947,6 +1953,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out failed'**
   String get signOutFailed;
+
+  /// Tooltip for sync categories button
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Categories'**
+  String get syncCategories;
+
+  /// Success message when category sync is completed
+  ///
+  /// In en, this message translates to:
+  /// **'Categories synced successfully'**
+  String get syncCompleted;
+
+  /// Error message when category sync fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync categories: {error}'**
+  String failedToSync(String error);
 }
 
 class _AppLocalizationsDelegate
