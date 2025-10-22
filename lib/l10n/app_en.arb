@@ -826,6 +826,18 @@
   "@editPaymentSource": {
     "description": "Edit payment source dialog title"
   },
+  "paymentSourceCreatedSuccessfully": "Payment source created successfully",
+  "@paymentSourceCreatedSuccessfully": {
+    "description": "Success message when payment source is created"
+  },
+  "paymentSourceUpdatedSuccessfully": "Payment source updated successfully",
+  "@paymentSourceUpdatedSuccessfully": {
+    "description": "Success message when payment source is updated"
+  },
+  "paymentSourceDeleted": "Payment source deleted successfully",
+  "@paymentSourceDeleted": {
+    "description": "Success message when payment source is deleted"
+  },
   "name": "Name",
   "@name": {
     "description": "Name field label"
@@ -1513,6 +1525,24 @@
   "failedToSync": "Failed to sync categories: {error}",
   "@failedToSync": {
     "description": "Error message when category sync fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "syncPaymentSources": "Sync Payment Sources",
+  "@syncPaymentSources": {
+    "description": "Tooltip for sync payment sources button"
+  },
+  "paymentSourcesSyncCompleted": "Payment sources synced successfully",
+  "@paymentSourcesSyncCompleted": {
+    "description": "Success message when payment sources sync is completed"
+  },
+  "failedToSyncPaymentSources": "Failed to sync payment sources: {error}",
+  "@failedToSyncPaymentSources": {
+    "description": "Error message when payment sources sync fails",
     "placeholders": {
       "error": {
         "type": "String",

@@ -10,6 +10,7 @@ import '../services/auth_api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/transaction_api_service.dart';
 import '../services/category_api_service.dart';
+import '../services/payment_source_api_service.dart';
 import '../database/database_service.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -351,7 +352,11 @@ class SignInScreen extends StatelessWidget {
       log.i('Starting async category fetch');
       await _fetchCategoriesFromBackend();
 
-      // Step 8: Fetch transactions asynchronously for all accounts
+      // Step 8: Fetch payment sources asynchronously
+      log.i('Starting async payment sources fetch');
+      await _fetchPaymentSourcesFromBackend();
+
+      // Step 9: Fetch transactions asynchronously for all accounts
       log.i('Starting async transaction fetch for all accounts');
       await _fetchTransactionsForAllAccounts();
       if (!context.mounted) return;
@@ -599,6 +604,50 @@ class SignInScreen extends StatelessWidget {
       log.e('Error fetching categories from backend', error: e);
       log.exiting('_fetchCategoriesFromBackend');
       // Don't rethrow - category fetch failure shouldn't block signin
+    }
+  }
+
+  /// Fetch payment sources from backend and save to local database
+  /// Called during account recovery (signin) to sync payment sources
+  Future<void> _fetchPaymentSourcesFromBackend() async {
+    final log = LoggingService.getLogger('SignInScreen');
+    log.entering('_fetchPaymentSourcesFromBackend');
+
+    try {
+      final paymentSourceApiService = PaymentSourceApiService.instance;
+
+      log.d('Fetching payment sources from backend API');
+      final paymentSources = await paymentSourceApiService.getPaymentSources();
+      log.d('Retrieved ${paymentSources.length} payment sources from backend');
+
+      if (paymentSources.isEmpty) {
+        log.d('No payment sources to save');
+        log.exiting('_fetchPaymentSourcesFromBackend');
+        return;
+      }
+
+      // Save each payment source to local database
+      for (final paymentSource in paymentSources) {
+        try {
+          log.d(
+            'Saving payment source: ${paymentSource.name} (${paymentSource.id})',
+          );
+
+          await DatabaseService.instance.paymentSourceDao.insert(paymentSource);
+        } catch (e) {
+          log.w('Failed to save payment source ${paymentSource.id}', error: e);
+          // Continue with next payment source even if one fails
+        }
+      }
+
+      log.i(
+        'Successfully saved ${paymentSources.length} payment sources to local database',
+      );
+      log.exiting('_fetchPaymentSourcesFromBackend');
+    } catch (e) {
+      log.e('Error fetching payment sources from backend', error: e);
+      log.exiting('_fetchPaymentSourcesFromBackend');
+      // Don't rethrow - payment source fetch failure shouldn't block signin
     }
   }
 

@@ -589,6 +589,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editPaymentSource => 'Edit Payment Source';
 
   @override
+  String get paymentSourceCreatedSuccessfully =>
+      'Payment source created successfully';
+
+  @override
+  String get paymentSourceUpdatedSuccessfully =>
+      'Payment source updated successfully';
+
+  @override
+  String get paymentSourceDeleted => 'Payment source deleted successfully';
+
+  @override
   String get name => 'Name';
 
   @override
@@ -1060,5 +1071,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String failedToSync(String error) {
     return 'Failed to sync categories: $error';
+  }
+
+  @override
+  String get syncPaymentSources => 'Sync Payment Sources';
+
+  @override
+  String get paymentSourcesSyncCompleted =>
+      'Payment sources synced successfully';
+
+  @override
+  String failedToSyncPaymentSources(String error) {
+    return 'Failed to sync payment sources: $error';
   }
 }

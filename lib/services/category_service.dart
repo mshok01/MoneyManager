@@ -154,6 +154,7 @@ class CategoryService {
         categoryType: categoryType == 'income' ? 1 : 0,
         createdBy: createdBy,
         accessTo: accessTo,
+        id: category.id,
       ),
     );
 
@@ -186,6 +187,21 @@ class CategoryService {
       description: description,
       icon: icon,
       color: color,
+    );
+
+    // Sync to backend asynchronously (don't wait for response)
+    // This allows the UI to respond immediately while the API call happens in the background
+    _syncCategoryAsync(
+      categoryId: categoryId,
+      operation: SyncOperation.update,
+      syncFn: () => CategoryApiService.instance.updateCategory(
+        categoryId: categoryId,
+        userId: currentCategory.createdBy,
+        name: name,
+        description: description,
+        icon: icon != null ? _iconToString(icon) : null,
+        color: color != null ? _colorToString(color) : null,
+      ),
     );
 
     // Return updated category
@@ -411,6 +427,7 @@ class CategoryService {
     required int categoryType, // 0 for expense, 1 for income
     required String createdBy,
     List<String>? accessTo,
+    required String id,
   }) async {
     _ensureInitialized();
     try {
@@ -429,6 +446,7 @@ class CategoryService {
         categoryType: categoryType,
         createdBy: createdBy,
         accessTo: accessTo,
+        id: id,
       );
 
       // Sync to local database

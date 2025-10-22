@@ -82,7 +82,7 @@ class PaymentSource {
   }
 
   // Helper method to convert IconData to string
-  static String _iconToString(IconData icon) {
+  static String iconToString(IconData icon) {
     if (icon == Icons.credit_card) return 'credit_card';
     if (icon == Icons.credit_card_outlined) return 'credit_card_outlined';
     if (icon == Icons.qr_code) return 'qr_code';
@@ -93,6 +93,9 @@ class PaymentSource {
     if (icon == Icons.payment) return 'payment';
     return 'payment';
   }
+
+  // Deprecated: Use iconToString instead
+  static String _iconToString(IconData icon) => iconToString(icon);
 
   // Helper method to convert string to Color
   static Color _colorFromString(String colorName) {
@@ -121,7 +124,7 @@ class PaymentSource {
   }
 
   // Helper method to convert Color to string
-  static String _colorToString(Color color) {
+  static String colorToString(Color color) {
     if (color == Colors.blue) return 'blue';
     if (color == Colors.green) return 'green';
     if (color == Colors.orange) return 'orange';
@@ -133,6 +136,9 @@ class PaymentSource {
     if (color == Colors.teal) return 'teal';
     return 'blue';
   }
+
+  // Deprecated: Use colorToString instead
+  static String _colorToString(Color color) => colorToString(color);
 
   // Create a copy with updated fields
   PaymentSource copyWith({

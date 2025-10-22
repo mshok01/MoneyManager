@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:money_manager/utils/utils.dart';
 import '../models/payment_source.dart';
 import '../database/database_service.dart';
+import 'payment_source_api_service.dart';
+import 'sync_service.dart';
+import 'logging_service.dart';
 
 /// Service to manage payment sources with SQLite persistence
 class PaymentSourceService {
@@ -13,6 +16,7 @@ class PaymentSourceService {
 
   PaymentSourceService._();
 
+  static final _log = LoggingService.getLogger('PaymentSourceService');
   bool _isInitialized = false;
 
   /// Check if the service is initialized
@@ -85,7 +89,8 @@ class PaymentSourceService {
     );
   }
 
-  /// Create a new custom payment source
+  /// Create a new custom payment source (offline-first)
+  /// Saves locally first, then syncs to backend asynchronously
   Future<PaymentSource> createPaymentSource({
     required String name,
     required String description,
@@ -111,11 +116,30 @@ class PaymentSourceService {
       accessTo: accessTo ?? [],
     );
 
+    // Save to local database first
     await DatabaseService.instance.paymentSourceDao.insert(paymentSource);
+
+    // Sync to backend asynchronously (don't wait for response)
+    // This allows the UI to respond immediately while the API call happens in the background
+    _syncPaymentSourceAsync(
+      paymentSourceId: paymentSource.id,
+      operation: 'create',
+      syncFn: () => PaymentSourceApiService.instance.createPaymentSource(
+        name: name,
+        description: description,
+        icon: PaymentSource.iconToString(icon),
+        color: PaymentSource.colorToString(color),
+        createdBy: createdBy,
+        accessTo: accessTo,
+        id: paymentSource.id,
+      ),
+    );
+
     return paymentSource;
   }
 
-  /// Update an existing payment source
+  /// Update an existing payment source (offline-first)
+  /// Saves locally first, then syncs to backend asynchronously
   Future<PaymentSource> updatePaymentSource(
     String paymentSourceId, {
     String? name,
@@ -135,12 +159,31 @@ class PaymentSourceService {
       throw Exception('Cannot update default payment sources');
     }
 
+    // Update local database first
     await DatabaseService.instance.paymentSourceDao.updatePaymentSourceDetails(
       paymentSourceId,
       name: name,
       description: description,
       icon: icon,
       color: color,
+    );
+
+    // Sync to backend asynchronously (don't wait for response)
+    // This allows the UI to respond immediately while the API call happens in the background
+    final userId = currentPaymentSource.createdBy;
+
+    _syncPaymentSourceUpdateAsync(
+      paymentSourceId: paymentSourceId,
+      userId: userId,
+      operation: 'update',
+      syncFn: () => PaymentSourceApiService.instance.updatePaymentSource(
+        paymentSourceId: paymentSourceId,
+        userId: userId,
+        name: name,
+        description: description,
+        icon: icon != null ? PaymentSource.iconToString(icon) : null,
+        color: color != null ? PaymentSource.colorToString(color) : null,
+      ),
     );
 
     // Return updated payment source
@@ -152,7 +195,8 @@ class PaymentSourceService {
     return updatedPaymentSource;
   }
 
-  /// Delete a custom payment source
+  /// Delete a custom payment source (offline-first)
+  /// Deletes locally first, then syncs to backend asynchronously
   Future<void> deletePaymentSource(String paymentSourceId) async {
     _ensureInitialized();
 
@@ -166,7 +210,19 @@ class PaymentSourceService {
       throw Exception('Cannot delete default payment sources');
     }
 
+    // Delete from local database first
     await DatabaseService.instance.paymentSourceDao.delete(paymentSourceId);
+
+    // Sync to backend asynchronously (don't wait for response)
+    // This allows the UI to respond immediately while the API call happens in the background
+    _syncPaymentSourceAsync(
+      paymentSourceId: paymentSourceId,
+      operation: 'delete',
+      syncFn: () => PaymentSourceApiService.instance.deletePaymentSource(
+        paymentSourceId: paymentSourceId,
+        userId: paymentSource.createdBy,
+      ),
+    );
   }
 
   /// Add user access to payment source
@@ -240,6 +296,68 @@ class PaymentSourceService {
     }
   }
 
+  /// Helper method to sync payment source asynchronously
+  /// Attempts to sync, and adds to queue if it fails
+  void _syncPaymentSourceAsync({
+    required String paymentSourceId,
+    required String operation,
+    required Future<void> Function() syncFn,
+  }) {
+    // Fire and forget - don't block the caller
+    Future.microtask(() async {
+      try {
+        await syncFn();
+        _log.d(
+          'Successfully synced payment source $paymentSourceId with operation $operation',
+        );
+      } catch (e) {
+        // Add to sync queue on failure
+        _log.w(
+          'Failed to sync payment source $paymentSourceId, adding to queue',
+          error: e,
+        );
+        await SyncService.instance.addToSyncQueue(
+          transactionId: paymentSourceId,
+          operation: operation,
+          lastError: e.toString(),
+        );
+      }
+    });
+  }
+
+  /// Helper method to sync payment source updates asynchronously
+  /// Similar to _syncPaymentSourceAsync but for update operations
+  void _syncPaymentSourceUpdateAsync({
+    required String paymentSourceId,
+    required String userId,
+    required String operation,
+    required Future<PaymentSource> Function() syncFn,
+  }) {
+    // Fire and forget - don't block the caller
+    Future.microtask(() async {
+      try {
+        _log.d(
+          'Starting async sync for payment source $paymentSourceId with operation $operation',
+        );
+        await syncFn();
+        _log.i(
+          'Successfully synced payment source $paymentSourceId with operation $operation to backend',
+        );
+      } catch (e) {
+        // Add to sync queue on failure
+        _log.e(
+          'Failed to sync payment source $paymentSourceId with operation $operation, adding to queue',
+          error: e,
+        );
+        await SyncService.instance.addToSyncQueue(
+          transactionId: paymentSourceId,
+          operation: operation,
+          lastError: e.toString(),
+        );
+      }
+    });
+  }
+
   /// Get count of payment sources
   Future<int> getPaymentSourceCount() async {
     _ensureInitialized();
@@ -305,6 +423,36 @@ class PaymentSourceService {
 
     final allPaymentSources = await getAllPaymentSources();
     return allPaymentSources.where((source) => source.icon == icon).toList();
+  }
+
+  /// Fetch payment sources from backend API and sync with local database
+  /// Uses JWT authentication
+  Future<List<PaymentSource>> fetchPaymentSourcesFromBackend() async {
+    _ensureInitialized();
+    try {
+      final apiService = PaymentSourceApiService.instance;
+      final paymentSources = await apiService.getPaymentSources();
+
+      // Sync with local database
+      for (final paymentSource in paymentSources) {
+        final existing = await getPaymentSourceById(paymentSource.id);
+        if (existing == null) {
+          // Insert new payment source
+          await DatabaseService.instance.paymentSourceDao.insert(paymentSource);
+        } else if (paymentSource.updatedAt > existing.updatedAt) {
+          // Update if backend version is newer
+          await DatabaseService.instance.paymentSourceDao.update(
+            paymentSource,
+            paymentSource.id,
+          );
+        }
+      }
+
+      return paymentSources;
+    } catch (e) {
+      debugPrint('Error fetching payment sources from backend: $e');
+      rethrow;
+    }
   }
 
   /// Get available colors for payment sources
