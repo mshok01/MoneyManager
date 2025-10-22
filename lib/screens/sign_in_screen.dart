@@ -9,6 +9,7 @@ import '../services/account_service.dart';
 import '../services/auth_api_service.dart';
 import '../services/firebase_service.dart';
 import '../services/transaction_api_service.dart';
+import '../services/category_api_service.dart';
 import '../database/database_service.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -346,7 +347,11 @@ class SignInScreen extends StatelessWidget {
       await deviceService.saveDeviceFromResponse(authResponse.device);
       log.d('User, account, and device saved successfully');
 
-      // Step 7: Fetch transactions asynchronously for all accounts
+      // Step 7: Fetch categories asynchronously
+      log.i('Starting async category fetch');
+      await _fetchCategoriesFromBackend();
+
+      // Step 8: Fetch transactions asynchronously for all accounts
       log.i('Starting async transaction fetch for all accounts');
       await _fetchTransactionsForAllAccounts();
       if (!context.mounted) return;
@@ -544,6 +549,56 @@ class SignInScreen extends StatelessWidget {
     } catch (e) {
       log.e('Error fetching transactions for account $accountId', error: e);
       log.exiting('_fetchTransactionsForAccount');
+    }
+  }
+
+  /// Fetch categories from backend and save to local database
+  /// Called during account recovery (signin) to sync categories
+  Future<void> _fetchCategoriesFromBackend() async {
+    final log = LoggingService.getLogger('SignInScreen');
+    log.entering('_fetchCategoriesFromBackend');
+
+    try {
+      final categoryApiService = CategoryApiService.instance;
+
+      log.d('Fetching categories from backend API');
+      final categories = await categoryApiService.getCategories();
+      log.d('Retrieved ${categories.length} categories from backend');
+
+      if (categories.isEmpty) {
+        log.d('No categories to save');
+        log.exiting('_fetchCategoriesFromBackend');
+        return;
+      }
+
+      // Save each category to local database
+      for (final category in categories) {
+        try {
+          log.d('Saving category: ${category.name} (${category.id})');
+
+          // Determine category type from ID prefix
+          final categoryType = category.id.startsWith('income_')
+              ? 'income'
+              : 'expense';
+
+          await DatabaseService.instance.categoryDao.insertWithType(
+            category,
+            categoryType,
+          );
+        } catch (e) {
+          log.w('Failed to save category ${category.id}', error: e);
+          // Continue with next category even if one fails
+        }
+      }
+
+      log.i(
+        'Successfully saved ${categories.length} categories to local database',
+      );
+      log.exiting('_fetchCategoriesFromBackend');
+    } catch (e) {
+      log.e('Error fetching categories from backend', error: e);
+      log.exiting('_fetchCategoriesFromBackend');
+      // Don't rethrow - category fetch failure shouldn't block signin
     }
   }
 

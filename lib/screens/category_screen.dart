@@ -1,64 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category_item.dart';
-import '../services/data_service.dart';
+import '../providers/category_providers.dart';
+import '../services/category_service.dart';
+import '../services/user_service.dart';
 
-class CategoryScreen extends StatefulWidget {
+class CategoryScreen extends ConsumerWidget {
   const CategoryScreen({super.key});
 
   @override
-  State<CategoryScreen> createState() => _CategoryScreenState();
-}
-
-class _CategoryScreenState extends State<CategoryScreen> {
-  // Lists to hold both default and custom categories
-  List<CategoryItem> _incomeCategories = [];
-  List<CategoryItem> _expenseCategories = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    try {
-      // Ensure DataService is initialized
-      if (!DataService.instance.isInitialized) {
-        await DataService.instance.initialize();
-      }
-
-      final incomeCategories = await DataService.instance.getIncomeCategories();
-      final expenseCategories = await DataService.instance
-          .getExpenseCategories();
-
-      setState(() {
-        _incomeCategories = incomeCategories;
-        _expenseCategories = expenseCategories;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      // Show error to user
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(
-                context,
-              )!.failedToLoadCategories(e.toString()),
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final incomeCategoriesAsync = ref.watch(incomeCategoriesProvider);
+    final expenseCategoriesAsync = ref.watch(expenseCategoriesProvider);
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -69,48 +23,76 @@ class _CategoryScreenState extends State<CategoryScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _showAddCategoryDialog,
+            onPressed: () => _showAddCategoryDialog(context, ref),
             tooltip: l10n.addCategory,
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : DefaultTabController(
-              length: 2,
-              child: Column(
-                children: [
-                  TabBar(
-                    labelColor: theme.colorScheme.primary,
-                    unselectedLabelColor: theme.colorScheme.onSurface
-                        .withValues(alpha: 0.6),
-                    indicatorColor: theme.colorScheme.primary,
-                    tabs: [
-                      Tab(
-                        icon: const Icon(Icons.trending_up),
-                        text: l10n.income,
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.trending_down),
-                        text: l10n.expensesTab,
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _buildCategoryList(_incomeCategories, 'Income'),
-                        _buildCategoryList(_expenseCategories, 'Expenses'),
+      body: incomeCategoriesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) =>
+            Center(child: Text(l10n.failedToLoadCategories(error.toString()))),
+        data: (incomeCategories) {
+          return expenseCategoriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(
+              child: Text(l10n.failedToLoadCategories(error.toString())),
+            ),
+            data: (expenseCategories) {
+              return DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    TabBar(
+                      labelColor: theme.colorScheme.primary,
+                      unselectedLabelColor: theme.colorScheme.onSurface
+                          .withValues(alpha: 0.6),
+                      indicatorColor: theme.colorScheme.primary,
+                      tabs: [
+                        Tab(
+                          icon: const Icon(Icons.trending_up),
+                          text: l10n.income,
+                        ),
+                        Tab(
+                          icon: const Icon(Icons.trending_down),
+                          text: l10n.expensesTab,
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildCategoryList(
+                            incomeCategories,
+                            'income',
+                            context,
+                            ref,
+                          ),
+                          _buildCategoryList(
+                            expenseCategories,
+                            'expense',
+                            context,
+                            ref,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildCategoryList(List<CategoryItem> categories, String type) {
+  Widget _buildCategoryList(
+    List<CategoryItem> categories,
+    String type,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: categories.length,
@@ -137,7 +119,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             ),
             trailing: PopupMenuButton<String>(
               onSelected: (value) =>
-                  _handleCategoryAction(value, category, type),
+                  _handleCategoryAction(value, category, type, context, ref),
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'edit',
@@ -171,18 +153,20 @@ class _CategoryScreenState extends State<CategoryScreen> {
     String action,
     CategoryItem category,
     String type,
+    BuildContext context,
+    WidgetRef ref,
   ) {
     switch (action) {
       case 'edit':
-        _showEditCategoryDialog(category, type);
+        _showEditCategoryDialog(category, type, context, ref);
         break;
       case 'delete':
-        _showDeleteCategoryDialog(category, type);
+        _showDeleteCategoryDialog(category, type, context, ref);
         break;
     }
   }
 
-  void _showAddCategoryDialog() {
+  void _showAddCategoryDialog(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -282,6 +266,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 descriptionController.text,
                 selectedType,
                 formKey,
+                context,
+                ref,
               ),
               child: Text(l10n.save),
             ),
@@ -291,89 +277,83 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  void _saveNewCategory(
+  Future<void> _saveNewCategory(
     String title,
     String description,
     String type,
     GlobalKey<FormState> formKey,
-  ) {
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
 
     if (!formKey.currentState!.validate()) {
       return;
     }
 
-    // Create new category with default icon and color
-    final nowMillis = DateTime.now().millisecondsSinceEpoch;
-    final newCategory = CategoryItem(
-      id: 'custom_$nowMillis',
-      name: title.trim(),
-      description: description.trim(),
-      icon: _getDefaultIconForCategory(title.trim()),
-      color: _getDefaultColorForCategory(type),
-      isDefault: false,
-      createdBy: 'user', // User identifier for custom categories
-      createdAt: nowMillis,
-      updatedAt: nowMillis,
-      accessTo: [
-        'user123',
-        'user456',
-      ], // List of user IDs who can access this category
-    );
-
-    // Add to appropriate list
-    setState(() {
-      if (type == 'Income') {
-        _incomeCategories.add(newCategory);
-      } else {
-        _expenseCategories.add(newCategory);
+    try {
+      // Get current user ID
+      final userId = UserService.instance.getUserId();
+      if (userId == null || userId.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.noUserLoggedIn)));
+        }
+        return;
       }
-    });
 
-    // Close dialog
-    Navigator.of(context).pop();
+      // Create category via service (offline-first)
+      // Service saves locally first, then syncs to backend asynchronously
+      await CategoryService.instance.createCategory(
+        name: title.trim(),
+        description: description.trim(),
+        icon: Icons.category,
+        color: type == 'Income' ? Colors.green : Colors.blue,
+        categoryType: type.toLowerCase(),
+        createdBy: userId,
+      );
 
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.categoryAdded(title.trim())),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
+      // Close dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
 
-  IconData _getDefaultIconForCategory(String title) {
-    // Simple logic to assign icons based on category name
-    final lowerTitle = title.toLowerCase();
-    if (lowerTitle.contains('food') || lowerTitle.contains('dining')) {
-      return Icons.restaurant;
-    } else if (lowerTitle.contains('transport') || lowerTitle.contains('car')) {
-      return Icons.directions_car;
-    } else if (lowerTitle.contains('house') || lowerTitle.contains('home')) {
-      return Icons.home;
-    } else if (lowerTitle.contains('health') ||
-        lowerTitle.contains('medical')) {
-      return Icons.local_hospital;
-    } else if (lowerTitle.contains('work') || lowerTitle.contains('salary')) {
-      return Icons.work;
-    } else if (lowerTitle.contains('business')) {
-      return Icons.business;
-    } else if (lowerTitle.contains('investment')) {
-      return Icons.trending_up;
-    } else {
-      return Icons.category; // Default icon
+      // Invalidate the appropriate provider to refresh data
+      if (type == 'Income') {
+        ref.invalidate(incomeCategoriesProvider);
+      } else {
+        ref.invalidate(expenseCategoriesProvider);
+      }
+
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.categoryAdded(title.trim())),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.failedToLoadCategories(e.toString())),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
-  Color _getDefaultColorForCategory(String type) {
-    if (type == 'Income') {
-      return Colors.green;
-    } else {
-      return Colors.blue;
-    }
-  }
-
-  void _showEditCategoryDialog(CategoryItem category, String type) {
+  void _showEditCategoryDialog(
+    CategoryItem category,
+    String type,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -384,7 +364,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  void _showDeleteCategoryDialog(CategoryItem category, String type) {
+  void _showDeleteCategoryDialog(
+    CategoryItem category,
+    String type,
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
