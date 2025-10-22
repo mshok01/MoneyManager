@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/payment_source.dart';
 import '../database/database_service.dart';
 
@@ -14,7 +14,6 @@ class PaymentSourceService {
   PaymentSourceService._();
 
   bool _isInitialized = false;
-  final Uuid _uuid = const Uuid();
 
   /// Check if the service is initialized
   bool get isInitialized => _isInitialized;
@@ -100,7 +99,7 @@ class PaymentSourceService {
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     final paymentSource = PaymentSource(
-      id: _uuid.v4(),
+      id: getUniqueId(),
       name: name.trim(),
       description: description.trim(),
       icon: icon,

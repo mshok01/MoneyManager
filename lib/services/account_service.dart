@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/account.dart';
 import 'user_service.dart';
 import '../database/database_service.dart';
@@ -14,7 +14,6 @@ class AccountService {
   AccountService._();
 
   bool _isInitialized = false;
-  final Uuid _uuid = const Uuid();
 
   /// Get all accounts
   Future<List<Account>> get accounts async =>
@@ -99,7 +98,7 @@ class AccountService {
     }
 
     final account = Account(
-      id: _uuid.v4(),
+      id: getUniqueId(),
       name: name.trim(),
       description: description.trim(),
       pic: pic.trim(),
@@ -170,6 +169,28 @@ class AccountService {
     await DatabaseService.instance.accountDao.update(updatedAccount, accountId);
 
     return updatedAccount;
+  }
+
+  /// Save account received from backend API response
+  /// Used after successful anonymous auth API call
+  Future<void> saveAccountFromResponse(Account account) async {
+    if (!_isInitialized) {
+      throw Exception(
+        'AccountService not initialized. Call initialize() first.',
+      );
+    }
+
+    try {
+      // Validate account before saving
+      if (!account.isValid) {
+        throw Exception('Invalid account data from API response');
+      }
+
+      // Save to database
+      await DatabaseService.instance.accountDao.insert(account);
+    } catch (e) {
+      throw Exception('Failed to save account from API response: $e');
+    }
   }
 
   /// Delete an account (mark as inactive)

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:money_manager/database/database_service.dart';
+import 'package:money_manager/utils/utils.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart';
-import 'package:uuid/uuid.dart';
 
-import '../lib/database/database_service.dart';
 import '../lib/models/user.dart';
 import '../lib/models/account.dart';
 import '../lib/models/category_item.dart';
@@ -16,7 +16,6 @@ import '../lib/services/payment_source_service.dart';
 void main() {
   group('Database Integration Tests', () {
     late DatabaseService databaseService;
-    final uuid = const Uuid();
 
     setUpAll(() async {
       // Initialize FFI for testing
@@ -50,7 +49,7 @@ void main() {
 
     test('User CRUD operations should work', () async {
       final user = User(
-        id: uuid.v4(),
+        id: getUniqueId(),
         email: 'test@example.com',
         name: 'Test User',
         profilePic: '',
@@ -86,9 +85,9 @@ void main() {
     });
 
     test('Account CRUD operations should work', () async {
-      final userId = uuid.v4();
+      final userId = getUniqueId();
       final account = Account(
-        id: uuid.v4(),
+        id: getUniqueId(),
         name: 'Test Account',
         description: 'Test Description',
         pic: '',
@@ -211,7 +210,7 @@ void main() {
 
     test('Database statistics should work', () async {
       // Add some test data
-      final userId = uuid.v4();
+      final userId = getUniqueId();
       final user = User(
         id: userId,
         email: 'stats@example.com',
@@ -226,7 +225,7 @@ void main() {
       await databaseService.userDao.insert(user);
 
       final account = Account(
-        id: uuid.v4(),
+        id: getUniqueId(),
         name: 'Stats Account',
         description: '',
         pic: '',

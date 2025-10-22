@@ -10,11 +10,12 @@ class Device {
   final String userId; // initially empty, filled when user is created
   final int lastOpenedAt; // milliseconds since epoch in UTC
   final String appVersion;
-  final String appBuildNumber;
+  final int appBuildNumber;
   final String deviceManufacturer;
   final String langCode; // language code
   final String timezone;
   final int timezoneOffset; // offset in minutes
+  final String fcmToken; // Firebase Cloud Messaging token
 
   Device({
     required this.id,
@@ -33,6 +34,7 @@ class Device {
     required this.langCode,
     required this.timezone,
     required this.timezoneOffset,
+    required this.fcmToken,
   });
 
   /// Factory constructor to create Device from JSON
@@ -49,11 +51,12 @@ class Device {
       userId: json['userId'] as String? ?? '',
       lastOpenedAt: json['lastOpenedAt'] as int? ?? 0,
       appVersion: json['appVersion'] as String? ?? '',
-      appBuildNumber: json['appBuildNumber'] as String? ?? '',
+      appBuildNumber: json['appBuildNumber'] as int? ?? 0,
       deviceManufacturer: json['deviceManufacturer'] as String? ?? '',
       langCode: json['langCode'] as String? ?? '',
       timezone: json['timezone'] as String? ?? '',
       timezoneOffset: json['timezoneOffset'] as int? ?? 0,
+      fcmToken: json['fcmToken'] as String? ?? '',
     );
   }
 
@@ -76,6 +79,7 @@ class Device {
       'langCode': langCode,
       'timezone': timezone,
       'timezoneOffset': timezoneOffset,
+      'fcmToken': fcmToken,
     };
   }
 
@@ -92,11 +96,12 @@ class Device {
     String? userId,
     int? lastOpenedAt,
     String? appVersion,
-    String? appBuildNumber,
+    int? appBuildNumber,
     String? deviceManufacturer,
     String? langCode,
     String? timezone,
     int? timezoneOffset,
+    String? fcmToken,
   }) {
     return Device(
       id: id ?? this.id,
@@ -115,6 +120,7 @@ class Device {
       langCode: langCode ?? this.langCode,
       timezone: timezone ?? this.timezone,
       timezoneOffset: timezoneOffset ?? this.timezoneOffset,
+      fcmToken: fcmToken ?? this.fcmToken,
     );
   }
 
@@ -128,6 +134,12 @@ class Device {
   Device updateUserId(String newUserId) {
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     return copyWith(userId: newUserId, updatedAt: now);
+  }
+
+  /// Update the FCM token field
+  Device updateFcmToken(String newFcmToken) {
+    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+    return copyWith(fcmToken: newFcmToken, updatedAt: now);
   }
 
   /// Check if the device record has a valid user ID

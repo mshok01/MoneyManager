@@ -1,10 +1,14 @@
 import '../services/device_record_service.dart';
 import '../models/device.dart';
+import '../services/logging_service.dart';
 
 /// Utility class for common device record operations
 class DeviceRecordUtils {
   /// Private constructor to prevent instantiation
   DeviceRecordUtils._();
+
+  // Logger instance for this utility class
+  static final _log = LoggingService.getLogger('DeviceRecordUtils');
 
   /// Get the current device record
   static Device? getCurrentDeviceRecord() {
@@ -13,32 +17,47 @@ class DeviceRecordUtils {
 
   /// Update user ID when user signs up or logs in
   static Future<void> setUserId(String userId) async {
+    _log.entering('setUserId', {'userId': userId});
+
     try {
       await DeviceRecordService.instance.updateUserId(userId);
+      _log.i('User ID updated successfully');
     } catch (e) {
-      print('Failed to update user ID in device record: $e');
+      _log.e('Failed to update user ID in device record', error: e);
       rethrow;
     }
+
+    _log.exiting('setUserId');
   }
 
   /// Clear user ID when user logs out
   static Future<void> clearUserId() async {
+    _log.entering('clearUserId');
+
     try {
       await DeviceRecordService.instance.clearUserId();
+      _log.i('User ID cleared successfully');
     } catch (e) {
-      print('Failed to clear user ID from device record: $e');
+      _log.e('Failed to clear user ID from device record', error: e);
       rethrow;
     }
+
+    _log.exiting('clearUserId');
   }
 
   /// Update last opened timestamp (called on app launch)
   static Future<void> updateLastOpened() async {
+    _log.entering('updateLastOpened');
+
     try {
       await DeviceRecordService.instance.updateLastOpenedAt();
+      _log.d('Last opened timestamp updated successfully');
     } catch (e) {
-      print('Failed to update last opened timestamp: $e');
+      _log.w('Failed to update last opened timestamp', error: e);
       // Don't rethrow as this is not critical
     }
+
+    _log.exiting('updateLastOpened');
   }
 
   /// Check if this is the first time the app is opened
@@ -73,12 +92,17 @@ class DeviceRecordUtils {
 
   /// Refresh device record with current information
   static Future<void> refreshDeviceRecord() async {
+    _log.entering('refreshDeviceRecord');
+
     try {
       await DeviceRecordService.instance.refreshDeviceRecord();
+      _log.i('Device record refreshed successfully');
     } catch (e) {
-      print('Failed to refresh device record: $e');
+      _log.e('Failed to refresh device record', error: e);
       rethrow;
     }
+
+    _log.exiting('refreshDeviceRecord');
   }
 
   /// Get device record summary for debugging
@@ -95,22 +119,32 @@ class DeviceRecordUtils {
   static Future<void> importDeviceRecord(
     Map<String, dynamic> deviceRecordJson,
   ) async {
+    _log.entering('importDeviceRecord');
+
     try {
       await DeviceRecordService.instance.importDeviceRecord(deviceRecordJson);
+      _log.i('Device record imported successfully');
     } catch (e) {
-      print('Failed to import device record: $e');
+      _log.e('Failed to import device record', error: e);
       rethrow;
     }
+
+    _log.exiting('importDeviceRecord');
   }
 
   /// Clear device record (for testing or reset)
   static Future<void> clearDeviceRecord() async {
+    _log.entering('clearDeviceRecord');
+
     try {
       await DeviceRecordService.instance.clearDeviceRecord();
+      _log.i('Device record cleared successfully');
     } catch (e) {
-      print('Failed to clear device record: $e');
+      _log.e('Failed to clear device record', error: e);
       rethrow;
     }
+
+    _log.exiting('clearDeviceRecord');
   }
 
   /// Get specific device information

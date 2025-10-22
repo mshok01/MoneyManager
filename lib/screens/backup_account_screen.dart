@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
+import '../services/firebase_auth_linking_service.dart';
+import '../services/logging_service.dart';
 
 class BackupAccountScreen extends StatelessWidget {
-  const BackupAccountScreen({super.key});
+  /// If true, this screen is opened from settings (show back button, hide skip)
+  /// If false, this screen is part of onboarding flow (show skip, hide back button)
+  final bool isFromSettings;
+
+  const BackupAccountScreen({super.key, this.isFromSettings = false});
 
   /// Complete onboarding and navigate to home
   Future<void> _completeOnboarding(BuildContext context) async {
@@ -18,7 +24,9 @@ class BackupAccountScreen extends StatelessWidget {
       }
     } catch (e) {
       // If there's an error, still navigate to home but log the error
-      print('Error completing onboarding: $e');
+      LoggingService.getLogger(
+        'BackupAccountScreen',
+      ).e('Error completing onboarding: $e');
       if (context.mounted) {
         Navigator.of(
           context,
@@ -27,16 +35,233 @@ class BackupAccountScreen extends StatelessWidget {
     }
   }
 
-  void _onGoogleSignIn(BuildContext context) {
-    // TODO: Implement Google Sign-in
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.googleSignInComingSoon),
-        duration: const Duration(seconds: 2),
-      ),
+  void _onGoogleSignIn(BuildContext context) async {
+    final log = LoggingService.getLogger('BackupAccountScreen');
+    log.d('Google sign-in initiated');
+
+    // Show loading dialog
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)!.linkingAccount),
+              ],
+            ),
+          ),
+        );
+      },
     );
-    // Complete onboarding and navigate to home
-    _completeOnboarding(context);
+
+    try {
+      final linkingService = FirebaseAuthLinkingService.instance;
+
+      // Try to link new Google account (Scenario 1)
+      try {
+        await linkingService.linkNewGoogleAccount();
+        log.d('New Google account linked successfully');
+
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // Close loading dialog
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.accountLinkedSuccessfully,
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        // Complete onboarding and navigate to home
+        _completeOnboarding(context);
+      } on GoogleAccountAlreadyExistsException catch (e) {
+        log.d('Google account already exists: ${e.googleEmail}');
+
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // Close loading dialog
+
+        // Check if this is a specific error that should show the restore dialog
+        if (_isAccountExistsError(e.errorCode)) {
+          // Show dialog asking user to restore data
+          _showAccountExistsDialog(context, e);
+        } else {
+          // Show generic failed dialog for other errors
+          _showFailedToAddRecoveryAccountDialog(context);
+        }
+      }
+    } catch (e) {
+      log.e('Google sign-in failed: $e');
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${AppLocalizations.of(context)!.linkingFailed}: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  /// Show dialog when Google account already has data
+  void _showAccountExistsDialog(
+    BuildContext context,
+    GoogleAccountAlreadyExistsException exception,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.accountAlreadyExists),
+          content: Text(l10n.accountAlreadyExistsMessage),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // User chose to proceed without restore
+                _completeOnboarding(context);
+              },
+              child: Text(l10n.proceedWithoutRestore),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // User chose to restore data
+                _restoreDataWithGoogleAccount(context, exception);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+              ),
+              child: Text(l10n.restoreData),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Restore data by logging out current account and logging in with Google account
+  Future<void> _restoreDataWithGoogleAccount(
+    BuildContext context,
+    GoogleAccountAlreadyExistsException exception,
+  ) async {
+    final log = LoggingService.getLogger('BackupAccountScreen');
+    log.d('User chose to restore data with Google account');
+
+    // Show loading dialog
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)!.linkingAccount),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      final linkingService = FirebaseAuthLinkingService.instance;
+
+      // Link existing Google account (Scenario 2)
+      await linkingService.linkExistingGoogleAccount();
+      log.d('Existing Google account linked successfully');
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.accountLinkedSuccessfully,
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Complete onboarding and navigate to home
+      _completeOnboarding(context);
+    } catch (e) {
+      log.e('Failed to restore data with Google account', error: e);
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${AppLocalizations.of(context)!.linkingFailed}: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  /// Check if the error code indicates an account already exists scenario
+  bool _isAccountExistsError(String? errorCode) {
+    return errorCode == 'credential-already-in-use' ||
+        errorCode == 'email-already-in-use';
+  }
+
+  /// Show dialog when adding recovery account fails
+  void _showFailedToAddRecoveryAccountDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.failedToAddRecoveryAccount),
+          content: Text(l10n.failedToAddRecoveryAccountMessage),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // User chose to skip recovery account
+                _completeOnboarding(context);
+              },
+              child: Text(AppLocalizations.of(context)!.skip),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // User chose to try again
+                _onGoogleSignIn(context);
+              },
+              child: Text(l10n.tryAgain),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _onAppleSignIn(BuildContext context) {
@@ -62,6 +287,16 @@ class BackupAccountScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: isFromSettings
+          ? AppBar(
+              title: Text(l10n.backup),
+              backgroundColor: theme.colorScheme.inversePrimary,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -69,7 +304,7 @@ class BackupAccountScreen extends StatelessWidget {
             child: Column(
               children: [
                 // Top spacing
-                const SizedBox(height: 40),
+                SizedBox(height: isFromSettings ? 24 : 40),
 
                 // Icon
                 Container(
@@ -173,64 +408,67 @@ class BackupAccountScreen extends StatelessWidget {
 
                 const SizedBox(height: 32),
 
-                // Divider with "or"
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(color: Colors.grey, thickness: 1),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                // Divider with "or" - only show in onboarding flow
+                if (!isFromSettings)
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Divider(color: Colors.grey, thickness: 1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          l10n.or,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const Expanded(
+                        child: Divider(color: Colors.grey, thickness: 1),
+                      ),
+                    ],
+                  ),
+
+                if (!isFromSettings) const SizedBox(height: 32),
+
+                // Skip button - only show in onboarding flow
+                if (!isFromSettings)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: TextButton(
+                      onPressed: () => _onSkip(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey.shade600,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       child: Text(
-                        l10n.or,
+                        l10n.skipForNow,
                         style: const TextStyle(
-                          color: Colors.grey,
                           fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const Expanded(
-                      child: Divider(color: Colors.grey, thickness: 1),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Skip button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: TextButton(
-                    onPressed: () => _onSkip(context),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.grey.shade600,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.skipForNow,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ),
-                ),
 
-                const SizedBox(height: 16),
+                if (!isFromSettings) const SizedBox(height: 16),
 
-                // Helper text
-                Text(
-                  l10n.addBackupLaterInSettings,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    height: 1.4,
+                // Helper text - only show in onboarding flow
+                if (!isFromSettings)
+                  Text(
+                    l10n.addBackupLaterInSettings,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
 
                 const SizedBox(height: 40),
               ],

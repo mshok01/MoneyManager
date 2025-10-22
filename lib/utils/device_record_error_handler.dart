@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'package:money_manager/utils/utils.dart';
+
 import '../models/device.dart';
-import 'package:uuid/uuid.dart';
+import '../services/logging_service.dart';
 
 /// Error handler for device record operations with fallback mechanisms
 class DeviceRecordErrorHandler {
-  static const Uuid _uuid = Uuid();
+  // Logger instance for this utility class
+  static final _log = LoggingService.getLogger('DeviceRecordErrorHandler');
 
   /// Handle device info collection errors and provide fallback values
   static Device handleDeviceInfoError(
@@ -12,7 +15,7 @@ class DeviceRecordErrorHandler {
     String? existingId,
     String? userId,
   }) {
-    print('Device info collection failed: $error');
+    _log.e('Device info collection failed', error: error);
     return _createFallbackDeviceRecord(
       existingId: existingId,
       userId: userId,
@@ -26,22 +29,23 @@ class DeviceRecordErrorHandler {
     T fallbackValue, {
     String? operation,
   }) {
-    print(
-      'Preferences operation failed${operation != null ? ' ($operation)' : ''}: $error',
+    _log.e(
+      'Preferences operation failed${operation != null ? ' ($operation)' : ''}',
+      error: error,
     );
     return fallbackValue;
   }
 
   /// Handle device record service initialization errors
   static void handleInitializationError(dynamic error) {
-    print('Device record service initialization failed: $error');
+    _log.e('Device record service initialization failed', error: error);
     // Log error for debugging but don't crash the app
     // In production, you might want to send this to a crash reporting service
   }
 
   /// Handle device record update errors
   static void handleUpdateError(dynamic error, String operation) {
-    print('Device record update failed ($operation): $error');
+    _log.e('Device record update failed ($operation)', error: error);
     // Log error but continue app execution
   }
 
@@ -54,7 +58,7 @@ class DeviceRecordErrorHandler {
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     return Device(
-      id: existingId ?? _uuid.v4(),
+      id: existingId ?? getUniqueId(),
       platformType: _getFallbackPlatformType(),
       os: _getFallbackOS(),
       osVersion: _getFallbackOSVersion(),
@@ -65,11 +69,12 @@ class DeviceRecordErrorHandler {
       userId: userId ?? '',
       lastOpenedAt: now,
       appVersion: '1.0.0',
-      appBuildNumber: '1',
+      appBuildNumber: 1,
       deviceManufacturer: _getFallbackManufacturer(),
       langCode: 'en',
       timezone: 'UTC',
       timezoneOffset: 0,
+      fcmToken: '', // Will be updated by FirebaseService
     );
   }
 
@@ -115,7 +120,7 @@ class DeviceRecordErrorHandler {
   /// Validate device record data and fix any issues
   static Device validateAndFixDeviceRecord(Device record) {
     return record.copyWith(
-      id: record.id.isEmpty ? _uuid.v4() : record.id,
+      id: record.id.isEmpty ? getUniqueId() : record.id,
       platformType: record.platformType.isEmpty
           ? _getFallbackPlatformType()
           : record.platformType,
@@ -128,9 +133,7 @@ class DeviceRecordErrorHandler {
           ? 'United States'
           : record.countryName,
       appVersion: record.appVersion.isEmpty ? '1.0.0' : record.appVersion,
-      appBuildNumber: record.appBuildNumber.isEmpty
-          ? '1'
-          : record.appBuildNumber,
+      appBuildNumber: record.appBuildNumber == 0 ? 1 : record.appBuildNumber,
       deviceManufacturer: record.deviceManufacturer.isEmpty
           ? _getFallbackManufacturer()
           : record.deviceManufacturer,
@@ -170,14 +173,14 @@ class DeviceRecordErrorHandler {
 
   /// Handle JSON parsing errors
   static Device? handleJsonParsingError(dynamic error, String jsonString) {
-    print('Failed to parse device record JSON: $error');
-    print('JSON string: $jsonString');
+    _log.e('Failed to parse device record JSON', error: error);
+    _log.d('JSON string: $jsonString');
     return null;
   }
 
   /// Handle network-related errors (for future API integration)
   static void handleNetworkError(dynamic error, String operation) {
-    print('Network error during $operation: $error');
+    _log.e('Network error during $operation', error: error);
     // In production, you might want to:
     // 1. Retry the operation
     // 2. Queue for later when network is available
@@ -186,7 +189,7 @@ class DeviceRecordErrorHandler {
 
   /// Handle permission-related errors
   static void handlePermissionError(dynamic error, String permission) {
-    print('Permission error for $permission: $error');
+    _log.e('Permission error for $permission', error: error);
     // In production, you might want to:
     // 1. Show user-friendly message
     // 2. Provide alternative flow
@@ -195,7 +198,7 @@ class DeviceRecordErrorHandler {
 
   /// Handle storage-related errors
   static void handleStorageError(dynamic error, String operation) {
-    print('Storage error during $operation: $error');
+    _log.e('Storage error during $operation', error: error);
     // In production, you might want to:
     // 1. Try alternative storage method
     // 2. Clear corrupted data
@@ -223,9 +226,9 @@ class DeviceRecordErrorHandler {
     String context, {
     Map<String, dynamic>? additionalData,
   }) {
-    print('Error in $context: $error');
+    _log.e('Error in $context', error: error);
     if (additionalData != null) {
-      print('Additional data: $additionalData');
+      _log.d('Additional data: $additionalData');
     }
 
     // In production, you would send this to a crash reporting service like:

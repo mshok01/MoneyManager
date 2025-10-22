@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:money_manager/utils/utils.dart';
 import '../models/user.dart';
 import 'preferences_service.dart';
 import 'account_service.dart';
@@ -18,7 +18,6 @@ class UserService {
   PreferencesService? _preferencesService;
   User? _currentUser;
   bool _isInitialized = false;
-  final Uuid _uuid = const Uuid();
 
   // Default account constants - these will be replaced with localized strings
   static const String defaultAccountName = 'Main Account';
@@ -176,6 +175,40 @@ class UserService {
     }
   }
 
+  /// Build a new user object WITHOUT saving to database
+  /// Auto-detects currency from device locale
+  /// Used for anonymous auth flow where we need to send user details to backend first
+  User buildUser({
+    String email = '',
+    String name = 'User',
+    String profilePic = '',
+    String? currencyCode,
+    String? currencyName,
+  }) {
+    if (!_isInitialized) {
+      throw Exception('UserService not initialized. Call initialize() first.');
+    }
+
+    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+
+    // Auto-detect currency if not provided
+    final detectedCurrency = _detectCurrencyFromLocale();
+    final finalCurrencyCode = currencyCode ?? detectedCurrency['code']!;
+    final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
+
+    return User(
+      id: getUniqueId(),
+      createdAt: now,
+      updatedAt: now,
+      isActive: 1,
+      email: email,
+      name: name,
+      profilePic: profilePic,
+      currencyCode: finalCurrencyCode,
+      currencyName: finalCurrencyName,
+    );
+  }
+
   /// Create a new user with default values
   /// Auto-detects currency from device locale
   Future<User> createUser({
@@ -189,23 +222,12 @@ class UserService {
       throw Exception('UserService not initialized. Call initialize() first.');
     }
 
-    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
-
-    // Auto-detect currency if not provided
-    final detectedCurrency = _detectCurrencyFromLocale();
-    final finalCurrencyCode = currencyCode ?? detectedCurrency['code']!;
-    final finalCurrencyName = currencyName ?? detectedCurrency['name']!;
-
-    final user = User(
-      id: _uuid.v4(),
-      createdAt: now,
-      updatedAt: now,
-      isActive: 1,
+    final user = buildUser(
       email: email,
       name: name,
       profilePic: profilePic,
-      currencyCode: finalCurrencyCode,
-      currencyName: finalCurrencyName,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
     );
 
     // Save the user
@@ -238,6 +260,26 @@ class UserService {
       _currentUser = user;
     } catch (e) {
       throw Exception('Failed to save user: $e');
+    }
+  }
+
+  /// Save user received from backend API response
+  /// Used after successful anonymous auth API call
+  Future<void> saveUserFromResponse(User user) async {
+    try {
+      await _saveUser(user);
+    } catch (e) {
+      throw Exception('Failed to save user from API response: $e');
+    }
+  }
+
+  /// Update current user with a new User object
+  /// Used after account linking to update user data from backend response
+  Future<void> updateCurrentUser(User user) async {
+    try {
+      await _saveUser(user);
+    } catch (e) {
+      throw Exception('Failed to update current user: $e');
     }
   }
 

@@ -2,7 +2,7 @@
 class DatabaseSchema {
   // Database configuration
   static const String databaseName = 'money_manager.db';
-  static const int databaseVersion = 3;
+  static const int databaseVersion = 4;
 
   // Table names
   static const String tableUsers = 'users';
@@ -10,6 +10,7 @@ class DatabaseSchema {
   static const String tableCategories = 'categories';
   static const String tablePaymentSources = 'payment_sources';
   static const String tableTransactions = 'transactions';
+  static const String tableSyncQueue = 'sync_queue';
 
   // Users table columns
   static const String usersId = 'id';
@@ -75,6 +76,14 @@ class DatabaseSchema {
   static const String transactionsIsActive = 'is_active';
   static const String transactionsCreatedBy = 'created_by';
 
+  // Sync queue table columns
+  static const String syncQueueId = 'id';
+  static const String syncQueueTransactionId = 'transaction_id';
+  static const String syncQueueOperation = 'operation';
+  static const String syncQueueRetryCount = 'retry_count';
+  static const String syncQueueLastError = 'last_error';
+  static const String syncQueueCreatedAt = 'created_at';
+
   // Category types
   static const String categoryTypeIncome = 'income';
   static const String categoryTypeExpense = 'expense';
@@ -90,6 +99,7 @@ class DatabaseSchema {
     tableCategories,
     tablePaymentSources,
     tableTransactions,
+    tableSyncQueue,
   ];
 
   /// Get users table columns
@@ -164,6 +174,16 @@ class DatabaseSchema {
     transactionsUpdatedAt,
     transactionsIsActive,
     transactionsCreatedBy,
+  ];
+
+  /// Get sync queue table columns
+  static List<String> get syncQueueColumns => [
+    syncQueueId,
+    syncQueueTransactionId,
+    syncQueueOperation,
+    syncQueueRetryCount,
+    syncQueueLastError,
+    syncQueueCreatedAt,
   ];
 
   /// Validate table name
@@ -271,6 +291,20 @@ class DatabaseSchema {
     )
   ''';
 
+  /// Get CREATE TABLE statement for sync queue
+  static String get createSyncQueueTable =>
+      '''
+    CREATE TABLE $tableSyncQueue (
+      $syncQueueId TEXT PRIMARY KEY,
+      $syncQueueTransactionId TEXT NOT NULL,
+      $syncQueueOperation TEXT NOT NULL,
+      $syncQueueRetryCount INTEGER NOT NULL DEFAULT 0,
+      $syncQueueLastError TEXT,
+      $syncQueueCreatedAt INTEGER NOT NULL,
+      FOREIGN KEY ($syncQueueTransactionId) REFERENCES $tableTransactions ($transactionsId) ON DELETE CASCADE
+    )
+  ''';
+
   /// Get all CREATE INDEX statements
   static List<String> get createIndexStatements => [
     // Users indexes
@@ -300,10 +334,15 @@ class DatabaseSchema {
     'CREATE INDEX idx_transactions_date ON $tableTransactions ($transactionsTransactionDate)',
     'CREATE INDEX idx_transactions_is_active ON $tableTransactions ($transactionsIsActive)',
     'CREATE INDEX idx_transactions_account_date ON $tableTransactions ($transactionsAccountId, $transactionsTransactionDate)',
+
+    // Sync queue indexes
+    'CREATE INDEX idx_sync_queue_transaction_id ON $tableSyncQueue ($syncQueueTransactionId)',
+    'CREATE INDEX idx_sync_queue_created_at ON $tableSyncQueue ($syncQueueCreatedAt)',
   ];
 
   /// Get all DROP TABLE statements
   static List<String> get dropTableStatements => [
+    'DROP TABLE IF EXISTS $tableSyncQueue',
     'DROP TABLE IF EXISTS $tableTransactions',
     'DROP TABLE IF EXISTS $tablePaymentSources',
     'DROP TABLE IF EXISTS $tableCategories',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'preferences_service.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/app_theme.dart';
 
 enum AppThemeMode { light, dark, system }
 
@@ -67,23 +68,11 @@ class ThemeService extends ChangeNotifier {
   }
 
   ThemeData get lightTheme {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
-        brightness: Brightness.light,
-      ),
-      useMaterial3: true,
-    );
+    return AppTheme.lightTheme;
   }
 
   ThemeData get darkTheme {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-    );
+    return AppTheme.darkTheme;
   }
 
   String getThemeDisplayName(AppThemeMode theme, AppLocalizations l10n) {

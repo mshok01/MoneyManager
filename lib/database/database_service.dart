@@ -7,6 +7,7 @@ import 'dao/account_dao.dart';
 import 'dao/category_dao.dart';
 import 'dao/payment_source_dao.dart';
 import 'dao/transaction_dao.dart';
+import 'dao/sync_queue_dao.dart';
 
 /// Central database service that manages database connections and provides access to DAOs
 class DatabaseService {
@@ -27,6 +28,7 @@ class DatabaseService {
   late final CategoryDao _categoryDao;
   late final PaymentSourceDao _paymentSourceDao;
   late final TransactionDao _transactionDao;
+  late final SyncQueueDao _syncQueueDao;
 
   bool _isInitialized = false;
 
@@ -66,6 +68,12 @@ class DatabaseService {
     return _transactionDao;
   }
 
+  /// Get SyncQueueDao instance
+  SyncQueueDao get syncQueueDao {
+    _ensureInitialized();
+    return _syncQueueDao;
+  }
+
   /// Initialize the database service
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -80,6 +88,7 @@ class DatabaseService {
       _categoryDao = CategoryDao();
       _paymentSourceDao = PaymentSourceDao();
       _transactionDao = TransactionDao();
+      _syncQueueDao = SyncQueueDao();
 
       _isInitialized = true;
 

@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:money_manager/services/firebase_auth_service.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/intro_screen.dart';
 import 'screens/home_screen.dart';
@@ -21,13 +24,22 @@ import 'services/account_service.dart';
 import 'services/nudge_service.dart';
 import 'services/category_service.dart';
 import 'services/payment_source_service.dart';
+import 'services/firebase_service.dart';
+import 'services/logging_service.dart';
+import 'services/sync_service.dart';
 import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Initialize core services first
+    // Initialize logging service first
+    LoggingService.initialize();
+
+    // Initialize Firebase first
+    await FirebaseService.instance.initialize();
+
+    // Initialize core services
     await ThemeService.instance.initialize();
 
     // Initialize database and wait for it to complete
@@ -43,10 +55,29 @@ void main() async {
     await UserService.instance.initialize();
     await AccountService.instance.initialize();
     await NudgeService.instance.initialize();
+    await SyncService.instance.initialize();
+
+    // Set up Firebase token refresh callback (for when user grants permission later)
+    FirebaseService.instance.setOnTokenRefresh((newToken) {
+      DeviceRecordService.instance.updateFcmToken(newToken);
+    });
+
+    // log jwt
+    log('JWT: ${(await FirebaseAuthService.instance.getIdToken()).toString()}');
+
+    // Note: FCM token will be fetched only when user grants notification permission
+
+    // Schedule sync of pending transactions after app startup (non-blocking)
+    // Delay by 2 seconds to allow app to fully initialize and render
+    Future.delayed(const Duration(seconds: 2), () {
+      SyncService.instance.syncPendingTransactions();
+    });
 
     runApp(const MoneyManagerApp());
   } catch (e) {
-    debugPrint('Failed to initialize app: $e');
+    // Use logging service for app initialization errors
+    final log = LoggingService.getLogger('Main');
+    log.e('Failed to initialize app', error: e);
     // Run app anyway with error handling
     runApp(const MoneyManagerApp());
   }
