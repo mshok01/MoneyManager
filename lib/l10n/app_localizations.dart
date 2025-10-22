@@ -1150,6 +1150,24 @@ abstract class AppLocalizations {
   /// **'Edit Payment Source'**
   String get editPaymentSource;
 
+  /// Success message when payment source is created
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source created successfully'**
+  String get paymentSourceCreatedSuccessfully;
+
+  /// Success message when payment source is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source updated successfully'**
+  String get paymentSourceUpdatedSuccessfully;
+
+  /// Success message when payment source is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source deleted successfully'**
+  String get paymentSourceDeleted;
+
   /// Name field label
   ///
   /// In en, this message translates to:
@@ -1971,6 +1989,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to sync categories: {error}'**
   String failedToSync(String error);
+
+  /// Tooltip for sync payment sources button
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Payment Sources'**
+  String get syncPaymentSources;
+
+  /// Success message when payment sources sync is completed
+  ///
+  /// In en, this message translates to:
+  /// **'Payment sources synced successfully'**
+  String get paymentSourcesSyncCompleted;
+
+  /// Error message when payment sources sync fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync payment sources: {error}'**
+  String failedToSyncPaymentSources(String error);
 }
 
 class _AppLocalizationsDelegate

@@ -1,35 +1,36 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/category_item.dart';
+import '../models/payment_source.dart';
 import 'logging_service.dart';
 import 'firebase_auth_service.dart';
 
-/// Service to handle category API calls to the backend
-class CategoryApiService {
-  static final CategoryApiService _instance = CategoryApiService._internal();
-  static CategoryApiService get instance => _instance;
-  CategoryApiService._internal();
+/// Service to handle payment source API calls to the backend
+class PaymentSourceApiService {
+  static final PaymentSourceApiService _instance =
+      PaymentSourceApiService._internal();
+  static PaymentSourceApiService get instance => _instance;
+  PaymentSourceApiService._internal();
 
-  static final _log = LoggingService.getLogger('CategoryApiService');
+  static final _log = LoggingService.getLogger('PaymentSourceApiService');
 
   // Backend base URL - should be configured from environment
   static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
-  /// Get all categories for the current user (requires JWT)
-  /// Returns list of categories accessible to the user
-  Future<List<CategoryItem>> getCategories() async {
-    _log.entering('getCategories');
+  /// Get all payment sources for the current user (requires JWT)
+  /// Returns list of payment sources accessible to the user
+  Future<List<PaymentSource>> getPaymentSources() async {
+    _log.entering('getPaymentSources');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
         throw Exception('Failed to get JWT token');
       }
 
-      _log.d('Fetching categories from backend');
+      _log.d('Fetching payment sources from backend');
 
       final response = await http
           .get(
-            Uri.parse('$_baseUrl/categories'),
+            Uri.parse('$_baseUrl/paymentSources'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -48,34 +49,35 @@ class CategoryApiService {
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as List<dynamic>;
         _log.d(
-          'Categories retrieved successfully, count: ${jsonResponse.length}',
+          'Payment sources retrieved successfully, count: ${jsonResponse.length}',
         );
         return jsonResponse
-            .map((cat) => CategoryItem.fromJson(cat as Map<String, dynamic>))
+            .map((ps) => PaymentSource.fromJson(ps as Map<String, dynamic>))
             .toList();
       } else {
         final errorBody = response.body;
-        _log.e('Failed to get categories: $errorBody');
-        throw Exception('Failed to get categories: ${response.statusCode}');
+        _log.e('Failed to get payment sources: $errorBody');
+        throw Exception(
+          'Failed to get payment sources: ${response.statusCode}',
+        );
       }
     } catch (e) {
-      _log.e('Exception during getCategories', error: e);
+      _log.e('Exception during getPaymentSources', error: e);
       rethrow;
     }
   }
 
-  /// Create a new category (requires JWT)
-  Future<CategoryItem> createCategory({
+  /// Create a new payment source (requires JWT)
+  Future<PaymentSource> createPaymentSource({
     required String name,
     required String description,
     required String icon,
     required String color,
-    required int categoryType, // 0 for expense, 1 for income
     required String createdBy,
     List<String>? accessTo,
     required String id,
   }) async {
-    _log.entering('createCategory');
+    _log.entering('createPaymentSource');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -87,7 +89,6 @@ class CategoryApiService {
         'description': description,
         'icon': icon,
         'color': color,
-        'categoryType': categoryType,
         'createdBy': createdBy,
         'isDefault': false,
         'isActive': 1,
@@ -95,12 +96,12 @@ class CategoryApiService {
         if (accessTo != null) 'accessTo': accessTo,
       };
 
-      _log.d('Sending create category request to backend');
+      _log.d('Sending create payment source request to backend');
       _log.d('Request body: ${jsonEncode(requestBody)}');
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/categories'),
+            Uri.parse('$_baseUrl/paymentSources'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -119,25 +120,81 @@ class CategoryApiService {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category created successfully: ${jsonResponse['id']}');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source created successfully: ${jsonResponse['id']}');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to create category: $errorBody');
-        throw Exception('Failed to create category: ${response.statusCode}');
+        _log.e('Failed to create payment source: $errorBody');
+        throw Exception(
+          'Failed to create payment source: ${response.statusCode}',
+        );
       }
     } catch (e) {
-      _log.e('Exception during createCategory', error: e);
+      _log.e('Exception during createPaymentSource', error: e);
       rethrow;
     }
   }
 
-  /// Delete a category (requires JWT)
-  Future<void> deleteCategory({
-    required String categoryId,
+  /// Bulk create payment sources (requires JWT)
+  Future<Map<String, dynamic>> bulkCreatePaymentSources({
+    required List<Map<String, dynamic>> paymentSources,
+  }) async {
+    _log.entering('bulkCreatePaymentSources');
+    try {
+      final jwtToken = await FirebaseAuthService.instance.getIdToken();
+      if (jwtToken == null || jwtToken.isEmpty) {
+        throw Exception('Failed to get JWT token');
+      }
+
+      final requestBody = {'paymentSources': paymentSources};
+
+      _log.d('Sending bulk create payment sources request to backend');
+      _log.d('Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/paymentSources/bulk'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+            body: jsonEncode(requestBody),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              _log.e('Request timeout');
+              throw Exception('Request timeout');
+            },
+          );
+
+      _log.d('Response status: ${response.statusCode}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+        _log.d(
+          'Bulk create payment sources completed: ${jsonResponse['createdCount']} created, ${jsonResponse['failedCount']} failed',
+        );
+        return jsonResponse;
+      } else {
+        final errorBody = response.body;
+        _log.e('Failed to bulk create payment sources: $errorBody');
+        throw Exception(
+          'Failed to bulk create payment sources: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      _log.e('Exception during bulkCreatePaymentSources', error: e);
+      rethrow;
+    }
+  }
+
+  /// Delete a payment source (requires JWT)
+  Future<void> deletePaymentSource({
+    required String paymentSourceId,
     required String userId,
   }) async {
-    _log.entering('deleteCategory');
+    _log.entering('deletePaymentSource');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -146,11 +203,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId};
 
-      _log.d('Sending delete category request to backend');
+      _log.d('Sending delete payment source request to backend');
 
       final response = await http
           .delete(
-            Uri.parse('$_baseUrl/categories/$categoryId'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -169,24 +226,26 @@ class CategoryApiService {
 
       if (response.statusCode != 200) {
         final errorBody = response.body;
-        _log.e('Failed to delete category: $errorBody');
-        throw Exception('Failed to delete category: ${response.statusCode}');
+        _log.e('Failed to delete payment source: $errorBody');
+        throw Exception(
+          'Failed to delete payment source: ${response.statusCode}',
+        );
       }
 
-      _log.d('Category deleted successfully');
+      _log.d('Payment source deleted successfully');
     } catch (e) {
-      _log.e('Exception during deleteCategory', error: e);
+      _log.e('Exception during deletePaymentSource', error: e);
       rethrow;
     }
   }
 
-  /// Update category name (requires JWT)
-  Future<CategoryItem> updateCategoryName({
-    required String categoryId,
+  /// Update payment source name (requires JWT)
+  Future<PaymentSource> updatePaymentSourceName({
+    required String paymentSourceId,
     required String userId,
     required String name,
   }) async {
-    _log.entering('updateCategoryName');
+    _log.entering('updatePaymentSourceName');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -195,11 +254,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId, 'name': name};
 
-      _log.d('Sending update category name request to backend');
+      _log.d('Sending update payment source name request to backend');
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/name'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/name'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -218,28 +277,28 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category name updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source name updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category name: $errorBody');
+        _log.e('Failed to update payment source name: $errorBody');
         throw Exception(
-          'Failed to update category name: ${response.statusCode}',
+          'Failed to update payment source name: ${response.statusCode}',
         );
       }
     } catch (e) {
-      _log.e('Exception during updateCategoryName', error: e);
+      _log.e('Exception during updatePaymentSourceName', error: e);
       rethrow;
     }
   }
 
-  /// Update category description (requires JWT)
-  Future<CategoryItem> updateCategoryDescription({
-    required String categoryId,
+  /// Update payment source description (requires JWT)
+  Future<PaymentSource> updatePaymentSourceDescription({
+    required String paymentSourceId,
     required String userId,
     required String description,
   }) async {
-    _log.entering('updateCategoryDescription');
+    _log.entering('updatePaymentSourceDescription');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -248,11 +307,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId, 'description': description};
 
-      _log.d('Sending update category description request to backend');
+      _log.d('Sending update payment source description request to backend');
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/description'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/description'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -271,28 +330,28 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category description updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source description updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category description: $errorBody');
+        _log.e('Failed to update payment source description: $errorBody');
         throw Exception(
-          'Failed to update category description: ${response.statusCode}',
+          'Failed to update payment source description: ${response.statusCode}',
         );
       }
     } catch (e) {
-      _log.e('Exception during updateCategoryDescription', error: e);
+      _log.e('Exception during updatePaymentSourceDescription', error: e);
       rethrow;
     }
   }
 
-  /// Update category icon (requires JWT)
-  Future<CategoryItem> updateCategoryIcon({
-    required String categoryId,
+  /// Update payment source icon (requires JWT)
+  Future<PaymentSource> updatePaymentSourceIcon({
+    required String paymentSourceId,
     required String userId,
     required String icon,
   }) async {
-    _log.entering('updateCategoryIcon');
+    _log.entering('updatePaymentSourceIcon');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -301,11 +360,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId, 'icon': icon};
 
-      _log.d('Sending update category icon request to backend');
+      _log.d('Sending update payment source icon request to backend');
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/icon'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/icon'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -324,28 +383,28 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category icon updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source icon updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category icon: $errorBody');
+        _log.e('Failed to update payment source icon: $errorBody');
         throw Exception(
-          'Failed to update category icon: ${response.statusCode}',
+          'Failed to update payment source icon: ${response.statusCode}',
         );
       }
     } catch (e) {
-      _log.e('Exception during updateCategoryIcon', error: e);
+      _log.e('Exception during updatePaymentSourceIcon', error: e);
       rethrow;
     }
   }
 
-  /// Update category color (requires JWT)
-  Future<CategoryItem> updateCategoryColor({
-    required String categoryId,
+  /// Update payment source color (requires JWT)
+  Future<PaymentSource> updatePaymentSourceColor({
+    required String paymentSourceId,
     required String userId,
     required String color,
   }) async {
-    _log.entering('updateCategoryColor');
+    _log.entering('updatePaymentSourceColor');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -354,11 +413,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId, 'color': color};
 
-      _log.d('Sending update category color request to backend');
+      _log.d('Sending update payment source color request to backend');
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/color'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/color'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -377,28 +436,28 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category color updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source color updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category color: $errorBody');
+        _log.e('Failed to update payment source color: $errorBody');
         throw Exception(
-          'Failed to update category color: ${response.statusCode}',
+          'Failed to update payment source color: ${response.statusCode}',
         );
       }
     } catch (e) {
-      _log.e('Exception during updateCategoryColor', error: e);
+      _log.e('Exception during updatePaymentSourceColor', error: e);
       rethrow;
     }
   }
 
-  /// Update category accessTo (requires JWT)
-  Future<CategoryItem> updateCategoryAccessTo({
-    required String categoryId,
+  /// Update payment source accessTo (requires JWT)
+  Future<PaymentSource> updatePaymentSourceAccessTo({
+    required String paymentSourceId,
     required String userId,
     required List<String> accessTo,
   }) async {
-    _log.entering('updateCategoryAccessTo');
+    _log.entering('updatePaymentSourceAccessTo');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -407,11 +466,11 @@ class CategoryApiService {
 
       final requestBody = {'userId': userId, 'accessTo': accessTo};
 
-      _log.d('Sending update category accessTo request to backend');
+      _log.d('Sending update payment source accessTo request to backend');
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/accessTo'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/accessTo'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -430,24 +489,24 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category accessTo updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source accessTo updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category accessTo: $errorBody');
+        _log.e('Failed to update payment source accessTo: $errorBody');
         throw Exception(
-          'Failed to update category accessTo: ${response.statusCode}',
+          'Failed to update payment source accessTo: ${response.statusCode}',
         );
       }
     } catch (e) {
-      _log.e('Exception during updateCategoryAccessTo', error: e);
+      _log.e('Exception during updatePaymentSourceAccessTo', error: e);
       rethrow;
     }
   }
 
-  /// Update category with all fields (requires JWT)
-  Future<CategoryItem> updateCategory({
-    required String categoryId,
+  /// Update payment source with all fields (requires JWT)
+  Future<PaymentSource> updatePaymentSource({
+    required String paymentSourceId,
     required String userId,
     String? name,
     String? description,
@@ -455,7 +514,7 @@ class CategoryApiService {
     String? color,
     List<String>? accessTo,
   }) async {
-    _log.entering('updateCategory');
+    _log.entering('updatePaymentSource');
     try {
       final jwtToken = await FirebaseAuthService.instance.getIdToken();
       if (jwtToken == null || jwtToken.isEmpty) {
@@ -471,12 +530,12 @@ class CategoryApiService {
         'accessTo': accessTo,
       };
 
-      _log.d('Sending update category request to backend');
+      _log.d('Sending update payment source request to backend');
       _log.d('Request body: ${jsonEncode(requestBody)}');
 
       final response = await http
           .put(
-            Uri.parse('$_baseUrl/categories/$categoryId'),
+            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -495,15 +554,17 @@ class CategoryApiService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
-        _log.d('Category updated successfully');
-        return CategoryItem.fromJson(jsonResponse);
+        _log.d('Payment source updated successfully');
+        return PaymentSource.fromJson(jsonResponse);
       } else {
         final errorBody = response.body;
-        _log.e('Failed to update category: $errorBody');
-        throw Exception('Failed to update category: ${response.statusCode}');
+        _log.e('Failed to update payment source: $errorBody');
+        throw Exception(
+          'Failed to update payment source: ${response.statusCode}',
+        );
       }
     } catch (e) {
-      _log.e('Exception during updateCategory', error: e);
+      _log.e('Exception during updatePaymentSource', error: e);
       rethrow;
     }
   }
