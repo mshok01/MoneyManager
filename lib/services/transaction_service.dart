@@ -1,6 +1,7 @@
 import 'package:money_manager/utils/utils.dart';
 import '../database/database_service.dart';
 import '../models/transaction.dart';
+import '../models/sync_queue_entry.dart';
 import '../models/transaction_summary.dart';
 import '../models/monthly_summary.dart';
 import '../models/daily_summary.dart';
@@ -9,6 +10,7 @@ import '../utils/user_utils.dart';
 import 'user_service.dart';
 import 'account_service.dart';
 import 'transaction_api_service.dart';
+import 'sync_service.dart';
 
 /// Service for managing transactions with business logic and currency conversion
 class TransactionService {
@@ -115,7 +117,13 @@ class TransactionService {
 
     // Call backend API asynchronously (don't wait for response)
     // This allows the UI to respond immediately while the API call happens in the background
-    TransactionApiService.instance.addTransaction(transaction: transaction);
+    _syncTransactionAsync(
+      transactionId: transaction.id,
+      operation: SyncOperation.create,
+      syncFn: () => TransactionApiService.instance.addTransaction(
+        transaction: transaction,
+      ),
+    );
 
     return transaction;
   }
@@ -187,9 +195,13 @@ class TransactionService {
 
     // Call backend API asynchronously (don't wait for response)
     // This allows the UI to respond immediately while the API call happens in the background
-    TransactionApiService.instance.updateTransaction(
+    _syncTransactionAsync(
       transactionId: transactionId,
-      transaction: updatedTransaction,
+      operation: SyncOperation.update,
+      syncFn: () => TransactionApiService.instance.updateTransaction(
+        transactionId: transactionId,
+        transaction: updatedTransaction,
+      ),
     );
 
     return updatedTransaction;
@@ -223,9 +235,13 @@ class TransactionService {
 
     // Call backend API asynchronously (don't wait for response)
     // This allows the UI to respond immediately while the API call happens in the background
-    TransactionApiService.instance.deleteTransaction(
+    _syncTransactionAsync(
       transactionId: transactionId,
-      createdBy: transaction.createdBy,
+      operation: SyncOperation.delete,
+      syncFn: () => TransactionApiService.instance.deleteTransaction(
+        transactionId: transactionId,
+        createdBy: transaction.createdBy,
+      ),
     );
   }
 
@@ -609,5 +625,27 @@ class TransactionService {
           dateRange['start']!,
           dateRange['end']!,
         );
+  }
+
+  /// Helper method to sync transaction asynchronously
+  /// Attempts to sync, and adds to queue if it fails
+  void _syncTransactionAsync({
+    required String transactionId,
+    required String operation,
+    required Future<void> Function() syncFn,
+  }) {
+    // Fire and forget - don't block the caller
+    Future.microtask(() async {
+      try {
+        await syncFn();
+      } catch (e) {
+        // Add to sync queue on failure
+        await SyncService.instance.addToSyncQueue(
+          transactionId: transactionId,
+          operation: operation,
+          lastError: e.toString(),
+        );
+      }
+    });
   }
 }

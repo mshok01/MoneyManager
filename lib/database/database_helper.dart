@@ -59,6 +59,7 @@ class DatabaseHelper {
     await _createCategoriesTable(db);
     await _createPaymentSourcesTable(db);
     await _createTransactionsTable(db);
+    await _createSyncQueueTable(db);
     await _createIndexes(db);
 
     // Note: Default data migration will be handled by DatabaseService after initialization
@@ -75,6 +76,12 @@ class DatabaseHelper {
     if (oldVersion < 3 && newVersion >= 3) {
       // Add transactions table
       await AddTransactionsTableMigration.migrate(db);
+    }
+
+    if (oldVersion < 4 && newVersion >= 4) {
+      // Add sync queue table
+      await _createSyncQueueTable(db);
+      await _createSyncQueueIndexes(db);
     }
 
     // Add future migrations here as needed
@@ -103,6 +110,21 @@ class DatabaseHelper {
   /// Create transactions table
   Future<void> _createTransactionsTable(Database db) async {
     await db.execute(DatabaseSchema.createTransactionsTable);
+  }
+
+  /// Create sync queue table
+  Future<void> _createSyncQueueTable(Database db) async {
+    await db.execute(DatabaseSchema.createSyncQueueTable);
+  }
+
+  /// Create sync queue indexes
+  Future<void> _createSyncQueueIndexes(Database db) async {
+    await db.execute(
+      'CREATE INDEX idx_sync_queue_transaction_id ON ${DatabaseSchema.tableSyncQueue} (${DatabaseSchema.syncQueueTransactionId})',
+    );
+    await db.execute(
+      'CREATE INDEX idx_sync_queue_created_at ON ${DatabaseSchema.tableSyncQueue} (${DatabaseSchema.syncQueueCreatedAt})',
+    );
   }
 
   /// Create database indexes for better performance

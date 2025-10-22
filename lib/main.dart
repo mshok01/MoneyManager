@@ -26,6 +26,7 @@ import 'services/category_service.dart';
 import 'services/payment_source_service.dart';
 import 'services/firebase_service.dart';
 import 'services/logging_service.dart';
+import 'services/sync_service.dart';
 import 'database/database_service.dart';
 
 void main() async {
@@ -54,6 +55,7 @@ void main() async {
     await UserService.instance.initialize();
     await AccountService.instance.initialize();
     await NudgeService.instance.initialize();
+    await SyncService.instance.initialize();
 
     // Set up Firebase token refresh callback (for when user grants permission later)
     FirebaseService.instance.setOnTokenRefresh((newToken) {
@@ -64,6 +66,12 @@ void main() async {
     log('JWT: ${(await FirebaseAuthService.instance.getIdToken()).toString()}');
 
     // Note: FCM token will be fetched only when user grants notification permission
+
+    // Schedule sync of pending transactions after app startup (non-blocking)
+    // Delay by 2 seconds to allow app to fully initialize and render
+    Future.delayed(const Duration(seconds: 2), () {
+      SyncService.instance.syncPendingTransactions();
+    });
 
     runApp(const MoneyManagerApp());
   } catch (e) {

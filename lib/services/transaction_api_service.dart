@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/transaction.dart';
 import 'logging_service.dart';
+import 'firebase_auth_service.dart';
 
 /// Service to handle transaction API calls to the backend
 class TransactionApiService {
@@ -14,13 +15,17 @@ class TransactionApiService {
 
   // Backend base URL - should be configured from environment
   static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
-  static const String _apiKey = '60FDDA';
 
   /// Add a transaction to the backend
-  /// This method is called asynchronously and doesn't wait for response
+  /// Throws exception on failure so caller can handle retry logic
   Future<void> addTransaction({required Transaction transaction}) async {
     _log.entering('addTransaction');
     try {
+      final jwtToken = await FirebaseAuthService.instance.getIdToken();
+      if (jwtToken == null || jwtToken.isEmpty) {
+        throw Exception('Failed to get JWT token');
+      }
+
       final requestBody = {
         'id': transaction.id,
         'accountId': transaction.accountId,
@@ -40,7 +45,10 @@ class TransactionApiService {
       final response = await http
           .post(
             Uri.parse('$_baseUrl/transactions'),
-            headers: {'Content-Type': 'application/json', 'X-API-Key': _apiKey},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
             body: jsonEncode(requestBody),
           )
           .timeout(
@@ -55,25 +63,31 @@ class TransactionApiService {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         _log.d('Transaction added successfully to backend');
+        _log.exiting('addTransaction');
       } else {
         final errorBody = response.body;
         _log.e('Failed to add transaction: $errorBody');
-        // Don't throw - we want this to fail silently since local DB already has it
+        throw Exception('Failed to add transaction: ${response.statusCode}');
       }
     } catch (e) {
       _log.e('Exception during add transaction', error: e);
-      // Don't throw - we want this to fail silently since local DB already has it
+      rethrow;
     }
   }
 
   /// Update a transaction on the backend
-  /// This method is called asynchronously and doesn't wait for response
+  /// Throws exception on failure so caller can handle retry logic
   Future<void> updateTransaction({
     required String transactionId,
     required Transaction transaction,
   }) async {
     _log.entering('updateTransaction');
     try {
+      final jwtToken = await FirebaseAuthService.instance.getIdToken();
+      if (jwtToken == null || jwtToken.isEmpty) {
+        throw Exception('Failed to get JWT token');
+      }
+
       final requestBody = {
         'categoryId': transaction.categoryId,
         'paymentSourceId': transaction.paymentSourceId,
@@ -91,7 +105,10 @@ class TransactionApiService {
       final response = await http
           .put(
             Uri.parse('$_baseUrl/transactions/$transactionId'),
-            headers: {'Content-Type': 'application/json', 'X-API-Key': _apiKey},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
             body: jsonEncode(requestBody),
           )
           .timeout(
@@ -106,25 +123,31 @@ class TransactionApiService {
 
       if (response.statusCode == 200) {
         _log.d('Transaction updated successfully on backend');
+        _log.exiting('updateTransaction');
       } else {
         final errorBody = response.body;
         _log.e('Failed to update transaction: $errorBody');
-        // Don't throw - we want this to fail silently since local DB already has it
+        throw Exception('Failed to update transaction: ${response.statusCode}');
       }
     } catch (e) {
       _log.e('Exception during update transaction', error: e);
-      // Don't throw - we want this to fail silently since local DB already has it
+      rethrow;
     }
   }
 
   /// Delete a transaction from the backend
-  /// This method is called asynchronously and doesn't wait for response
+  /// Throws exception on failure so caller can handle retry logic
   Future<void> deleteTransaction({
     required String transactionId,
     required String createdBy,
   }) async {
     _log.entering('deleteTransaction');
     try {
+      final jwtToken = await FirebaseAuthService.instance.getIdToken();
+      if (jwtToken == null || jwtToken.isEmpty) {
+        throw Exception('Failed to get JWT token');
+      }
+
       final requestBody = {'createdBy': createdBy};
 
       _log.d('Sending delete transaction request to backend');
@@ -132,7 +155,10 @@ class TransactionApiService {
       final response = await http
           .delete(
             Uri.parse('$_baseUrl/transactions/$transactionId'),
-            headers: {'Content-Type': 'application/json', 'X-API-Key': _apiKey},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
             body: jsonEncode(requestBody),
           )
           .timeout(
@@ -147,14 +173,15 @@ class TransactionApiService {
 
       if (response.statusCode == 200) {
         _log.d('Transaction deleted successfully from backend');
+        _log.exiting('deleteTransaction');
       } else {
         final errorBody = response.body;
         _log.e('Failed to delete transaction: $errorBody');
-        // Don't throw - we want this to fail silently since local DB already has it
+        throw Exception('Failed to delete transaction: ${response.statusCode}');
       }
     } catch (e) {
       _log.e('Exception during delete transaction', error: e);
-      // Don't throw - we want this to fail silently since local DB already has it
+      rethrow;
     }
   }
 
