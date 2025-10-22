@@ -117,32 +117,39 @@ class CategoryScreen extends ConsumerWidget {
                 ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) =>
-                  _handleCategoryAction(value, category, type, context, ref),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit),
-                      const SizedBox(width: 8),
-                      Text(AppLocalizations.of(context)!.edit),
+            trailing: category.isDefault
+                ? null // No menu for default categories
+                : PopupMenuButton<String>(
+                    onSelected: (value) => _handleCategoryAction(
+                      value,
+                      category,
+                      type,
+                      context,
+                      ref,
+                    ),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit),
+                            const SizedBox(width: 8),
+                            Text(AppLocalizations.of(context)!.edit),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete),
+                            const SizedBox(width: 8),
+                            Text(AppLocalizations.of(context)!.delete),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete),
-                      const SizedBox(width: 8),
-                      Text(AppLocalizations.of(context)!.delete),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
         );
       },
