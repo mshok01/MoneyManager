@@ -12,7 +12,7 @@ import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/categories/category_screen.dart';
-import 'screens/payment_sources_screen.dart';
+import 'screens/payment_sources/payment_sources_screen.dart';
 import 'screens/manage_accounts_screen.dart';
 import 'screens/account_details_screen.dart';
 import 'screens/add_account_screen.dart';
@@ -133,6 +133,7 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
       home: _getInitialScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
+        '/intro': (context) => const IntroScreen(),
         '/auth-choice': (context) => const AuthChoiceScreen(),
         '/currency-selection': (context) => const CurrencySelectionScreen(),
         '/backup-account': (context) => const BackupAccountScreen(),

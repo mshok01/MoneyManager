@@ -427,10 +427,10 @@ class SignInScreen extends StatelessWidget {
       log.i('Firebase sign out successful');
 
       if (context.mounted) {
-        // Navigate back to getting started screen
+        // Navigate back to intro screen
         Navigator.of(
           context,
-        ).pushNamedAndRemoveUntil('/auth-choice', (route) => false);
+        ).pushNamedAndRemoveUntil('/intro', (route) => false);
       }
     } catch (e) {
       log.e('Failed to sign out', error: e);

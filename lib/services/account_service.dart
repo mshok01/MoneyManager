@@ -260,13 +260,15 @@ class AccountService {
     return account;
   }
 
-  /// Clear all account data (useful for testing or reset)
+  /// Clear all account data (useful for logout or reset)
+  /// Note: Does NOT reset initialization state to allow service reuse after logout
   Future<void> clearAccountData() async {
     try {
       if (_isInitialized) {
         await DatabaseService.instance.accountDao.clear();
       }
-      _isInitialized = false;
+      // Note: We intentionally do NOT set _isInitialized = false here
+      // This allows the service to be reused after logout without re-initialization
     } catch (e) {
       throw Exception('Failed to clear account data: $e');
     }

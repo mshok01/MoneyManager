@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/payment_source.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/payment_source_providers.dart';
-import '../services/payment_source_service.dart';
-import 'payment_sources/add_payment_source_screen.dart';
-import 'payment_sources/edit_payment_source_screen.dart';
+import '../../models/payment_source.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/payment_source_providers.dart';
+import '../../services/payment_source_service.dart';
+import 'add_payment_source_screen.dart';
+import 'edit_payment_source_screen.dart';
 
 class PaymentSourcesScreen extends ConsumerStatefulWidget {
   const PaymentSourcesScreen({super.key});
@@ -229,3 +229,4 @@ class _PaymentSourcesScreenState extends ConsumerState<PaymentSourcesScreen> {
     );
   }
 }
+

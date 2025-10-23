@@ -627,6 +627,21 @@ class TransactionService {
         );
   }
 
+  /// Clear all transaction data (useful for logout or reset)
+  Future<void> clearAllTransactions() async {
+    if (!_isInitialized) {
+      throw Exception(
+        'TransactionService not initialized. Call initialize() first.',
+      );
+    }
+
+    try {
+      await DatabaseService.instance.transactionDao.clear();
+    } catch (e) {
+      throw Exception('Failed to clear all transactions: $e');
+    }
+  }
+
   /// Helper method to sync transaction asynchronously
   /// Attempts to sync, and adds to queue if it fails
   void _syncTransactionAsync({

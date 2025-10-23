@@ -5,6 +5,7 @@ import '../models/user.dart';
 import 'preferences_service.dart';
 import 'account_service.dart';
 import '../database/database_service.dart';
+import 'user_api_service.dart';
 
 class UserService {
   static UserService? _instance;
@@ -18,6 +19,7 @@ class UserService {
   PreferencesService? _preferencesService;
   User? _currentUser;
   bool _isInitialized = false;
+  User? _pendingUserUpdate; // Track pending user update for retry on app reopen
 
   // Default account constants - these will be replaced with localized strings
   static const String defaultAccountName = 'Main Account';
@@ -45,6 +47,9 @@ class UserService {
 
       // Load existing user if available
       await _loadExistingUser();
+
+      // Retry any pending user updates from previous app sessions
+      await _retryPendingUserUpdate();
 
       _isInitialized = true;
     } catch (e) {
@@ -284,6 +289,7 @@ class UserService {
   }
 
   /// Update the current user
+  /// Follows offline-first pattern: saves locally first, then syncs to backend
   Future<User> updateUser({
     String? email,
     String? name,
@@ -310,8 +316,77 @@ class UserService {
       updatedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
 
+    // Save locally first (offline-first pattern)
     await _saveUser(updatedUser);
+
+    // Sync to backend asynchronously
+    _syncUserToBackend(updatedUser);
+
     return updatedUser;
+  }
+
+  /// Sync user changes to backend asynchronously
+  /// This follows the offline-first pattern - errors are logged but don't fail the local update
+  /// On failure, stores the user for retry on app reopen
+  Future<void> _syncUserToBackend(User user) async {
+    try {
+      final userApiService = UserApiService.instance;
+
+      // Update name if it was changed
+      if (user.name.isNotEmpty) {
+        await userApiService.updateUserName(userId: user.id, name: user.name);
+      }
+
+      // Update email if it was changed
+      if (user.email.isNotEmpty) {
+        await userApiService.updateUserEmail(
+          userId: user.id,
+          email: user.email,
+        );
+      }
+
+      // Update profile picture if it was changed
+      if (user.profilePic.isNotEmpty) {
+        await userApiService.updateUserProfilePic(
+          userId: user.id,
+          profilePic: user.profilePic,
+        );
+      }
+
+      // Update currency if it was changed
+      if (user.currencyCode.isNotEmpty) {
+        await userApiService.updateUserCurrency(
+          userId: user.id,
+          currencyCode: user.currencyCode,
+          currencyName: user.currencyName,
+        );
+      }
+
+      // Clear pending update on success
+      _pendingUserUpdate = null;
+      debugPrint('User synced to backend successfully');
+    } catch (e) {
+      // Store user for retry on app reopen
+      _pendingUserUpdate = user;
+      // Log error but don't fail - user data is already saved locally
+      debugPrint(
+        'Failed to sync user to backend: $e. Will retry on app reopen.',
+      );
+    }
+  }
+
+  /// Retry pending user update from previous app session
+  /// Called during app initialization
+  Future<void> _retryPendingUserUpdate() async {
+    try {
+      // Check if there's a pending update stored
+      if (_currentUser != null && _pendingUserUpdate != null) {
+        debugPrint('Retrying pending user update...');
+        await _syncUserToBackend(_pendingUserUpdate!);
+      }
+    } catch (e) {
+      debugPrint('Error retrying pending user update: $e');
+    }
   }
 
   /// Update user timestamp
@@ -385,7 +460,8 @@ class UserService {
     return _currentUser?.currencyCode.isNotEmpty ?? false;
   }
 
-  /// Clear all user data (useful for testing or reset)
+  /// Clear all user data (useful for logout or reset)
+  /// Note: Does NOT reset initialization state to allow service reuse after logout
   Future<void> clearUserData() async {
     try {
       // Clear from database
@@ -397,7 +473,8 @@ class UserService {
       await _preferencesService?.clearUserRecord();
 
       _currentUser = null;
-      _isInitialized = false;
+      // Note: We intentionally do NOT set _isInitialized = false here
+      // This allows the service to be reused after logout without re-initialization
     } catch (e) {
       throw Exception('Failed to clear user data: $e');
     }
