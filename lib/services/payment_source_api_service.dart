@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:money_manager/services/firebase_auth_service.dart';
 import '../models/payment_source.dart';
 import 'logging_service.dart';
-import 'firebase_auth_service.dart';
+import '../config/api_config.dart';
 
 /// Service to handle payment source API calls to the backend
 class PaymentSourceApiService {
@@ -14,7 +15,6 @@ class PaymentSourceApiService {
   static final _log = LoggingService.getLogger('PaymentSourceApiService');
 
   // Backend base URL - should be configured from environment
-  static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
   /// Get all payment sources for the current user (requires JWT)
   /// Returns list of payment sources accessible to the user
@@ -30,7 +30,7 @@ class PaymentSourceApiService {
 
       final response = await http
           .get(
-            Uri.parse('$_baseUrl/paymentSources'),
+            Uri.parse('${ApiConfig.baseUrl}/paymentSources'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -101,7 +101,7 @@ class PaymentSourceApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/paymentSources'),
+            Uri.parse('${ApiConfig.baseUrl}/paymentSources'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -153,7 +153,7 @@ class PaymentSourceApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/paymentSources/bulk'),
+            Uri.parse('${ApiConfig.baseUrl}/paymentSources/bulk'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -207,7 +207,7 @@ class PaymentSourceApiService {
 
       final response = await http
           .delete(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId'),
+            Uri.parse('${ApiConfig.baseUrl}/paymentSources/$paymentSourceId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -258,7 +258,9 @@ class PaymentSourceApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/name'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/paymentSources/$paymentSourceId/name',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -311,7 +313,9 @@ class PaymentSourceApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/description'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/paymentSources/$paymentSourceId/description',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -364,7 +368,9 @@ class PaymentSourceApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/icon'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/paymentSources/$paymentSourceId/icon',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -417,7 +423,9 @@ class PaymentSourceApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/color'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/paymentSources/$paymentSourceId/color',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -470,7 +478,9 @@ class PaymentSourceApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId/accessTo'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/paymentSources/$paymentSourceId/accessTo',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -535,7 +545,7 @@ class PaymentSourceApiService {
 
       final response = await http
           .put(
-            Uri.parse('$_baseUrl/paymentSources/$paymentSourceId'),
+            Uri.parse('${ApiConfig.baseUrl}/paymentSources/$paymentSourceId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',

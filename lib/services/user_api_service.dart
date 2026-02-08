@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:money_manager/services/firebase_auth_service.dart';
 import '../models/user.dart';
 import 'logging_service.dart';
-import 'firebase_auth_service.dart';
+import '../config/api_config.dart';
 
 /// Service to handle user API calls to the backend
 class UserApiService {
@@ -13,7 +14,6 @@ class UserApiService {
   static final _log = LoggingService.getLogger('UserApiService');
 
   // Backend base URL - should be configured from environment
-  static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
   /// Update user name (PATCH /users/:id/name)
   /// Requires JWT authentication
@@ -35,7 +35,7 @@ class UserApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/users/$userId/name'),
+            Uri.parse('${ApiConfig.baseUrl}/users/$userId/name'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -87,7 +87,7 @@ class UserApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/users/$userId/email'),
+            Uri.parse('${ApiConfig.baseUrl}/users/$userId/email'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -139,7 +139,7 @@ class UserApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/users/$userId/profilePic'),
+            Uri.parse('${ApiConfig.baseUrl}/users/$userId/profilePic'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -197,7 +197,7 @@ class UserApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/users/$userId/currency'),
+            Uri.parse('${ApiConfig.baseUrl}/users/$userId/currency'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -246,7 +246,7 @@ class UserApiService {
 
       final response = await http
           .delete(
-            Uri.parse('$_baseUrl/users/$userId'),
+            Uri.parse('${ApiConfig.baseUrl}/users/$userId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',

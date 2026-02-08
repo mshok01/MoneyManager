@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:money_manager/services/firebase_auth_service.dart';
 import '../models/category_item.dart';
 import 'logging_service.dart';
-import 'firebase_auth_service.dart';
+import '../config/api_config.dart';
 
 /// Service to handle category API calls to the backend
 class CategoryApiService {
@@ -13,7 +14,6 @@ class CategoryApiService {
   static final _log = LoggingService.getLogger('CategoryApiService');
 
   // Backend base URL - should be configured from environment
-  static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
   /// Get all categories for the current user (requires JWT)
   /// Returns list of categories accessible to the user
@@ -29,7 +29,7 @@ class CategoryApiService {
 
       final response = await http
           .get(
-            Uri.parse('$_baseUrl/categories'),
+            Uri.parse('${ApiConfig.baseUrl}/categories'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -100,7 +100,7 @@ class CategoryApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/categories'),
+            Uri.parse('${ApiConfig.baseUrl}/categories'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -150,7 +150,7 @@ class CategoryApiService {
 
       final response = await http
           .delete(
-            Uri.parse('$_baseUrl/categories/$categoryId'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -199,7 +199,7 @@ class CategoryApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/name'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId/name'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -252,7 +252,9 @@ class CategoryApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/description'),
+            Uri.parse(
+              '${ApiConfig.baseUrl}/categories/$categoryId/description',
+            ),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -305,7 +307,7 @@ class CategoryApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/icon'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId/icon'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -358,7 +360,7 @@ class CategoryApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/color'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId/color'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -411,7 +413,7 @@ class CategoryApiService {
 
       final response = await http
           .patch(
-            Uri.parse('$_baseUrl/categories/$categoryId/accessTo'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId/accessTo'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -476,7 +478,7 @@ class CategoryApiService {
 
       final response = await http
           .put(
-            Uri.parse('$_baseUrl/categories/$categoryId'),
+            Uri.parse('${ApiConfig.baseUrl}/categories/$categoryId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
