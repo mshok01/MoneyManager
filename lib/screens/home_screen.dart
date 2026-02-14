@@ -7,17 +7,18 @@ import '../widgets/transaction_summary_card.dart';
 import '../services/nudge_service.dart';
 import '../services/account_service.dart';
 import '../services/preferences_service.dart';
-import '../services/transaction_service.dart';
 import '../models/account.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/transaction_providers.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _showWelcomeNudge = true;
   String? _selectedAccountId;
 
@@ -363,78 +364,81 @@ class _HomeScreenState extends State<HomeScreen> {
           // Main content
           Expanded(
             child: currentAccount != null
-                ? FutureBuilder<bool>(
-                    future: TransactionService.instance.hasTransactions(
-                      currentAccount.id,
-                    ),
-                    builder: (context, hasTransactionsSnapshot) {
-                      if (hasTransactionsSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      final hasTransactions =
-                          hasTransactionsSnapshot.data ?? false;
-
-                      if (hasTransactions) {
-                        // Show transaction summary
-                        return SafeArea(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TransactionSummaryCard(account: currentAccount),
-                              HomeBottomBarWidget(account: currentAccount),
-                            ],
-                          ),
-                        );
-                      } else {
-                        // Show empty state
-                        return SafeArea(
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.trending_up,
-                                      size: 64,
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      l10n.readyToTrackFinances,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      l10n.startByAddingTransaction,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                ? ref
+                      .watch(accountHasTransactionsProvider(currentAccount.id))
+                      .when(
+                        data: (hasTransactions) {
+                          if (hasTransactions) {
+                            // Show transaction summary
+                            return SafeArea(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TransactionSummaryCard(
+                                    account: currentAccount,
+                                  ),
+                                  HomeBottomBarWidget(account: currentAccount),
+                                ],
                               ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: HomeBottomBarWidget(
-                                  account: currentAccount,
-                                ),
+                            );
+                          } else {
+                            // Show empty state
+                            return SafeArea(
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.trending_up,
+                                          size: 64,
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          l10n.readyToTrackFinances,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          l10n.startByAddingTransaction,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: HomeBottomBarWidget(
+                                      account: currentAccount,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            );
+                          }
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, stack) => Center(
+                          child: Text(
+                            'Error loading data: $error',
+                            style: TextStyle(color: theme.colorScheme.error),
                           ),
-                        );
-                      }
-                    },
-                  )
+                        ),
+                      )
                 : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

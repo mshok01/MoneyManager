@@ -12,8 +12,10 @@ import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../widgets/category_bottom_sheet.dart';
 import '../widgets/payment_source_bottom_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/transaction_providers.dart';
 
-class AddEditTransactionScreen extends StatefulWidget {
+class AddEditTransactionScreen extends ConsumerStatefulWidget {
   final Account account;
   final Transaction? transaction; // null for add, non-null for edit
 
@@ -24,11 +26,11 @@ class AddEditTransactionScreen extends StatefulWidget {
   });
 
   @override
-  State<AddEditTransactionScreen> createState() =>
+  ConsumerState<AddEditTransactionScreen> createState() =>
       _AddEditTransactionScreenState();
 }
 
-class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
+class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -184,7 +186,71 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
         );
       }
 
+    } catch (e) {
       if (mounted) {
+        // Invalidate providers to ensure UI updates
+        ref.invalidate(
+          accountHasTransactionsProvider(widget.account.id),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'today',
+          )),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'month',
+          )),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'year',
+          )),
+        );
+        ref.invalidate(
+          accountTransactionsProvider(widget.account.id),
+        );
+        ref.invalidate(accountBalanceProvider(widget.account.id));
+        
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToSaveTransaction(e.toString()))),
+        );
+      }
+    }
+
+    if (mounted) {
+       // Invalidate providers to ensure UI updates (Success path)
+       // We do this before popping to ensure the previous screen gets the update signal
+        ref.invalidate(
+          accountHasTransactionsProvider(widget.account.id),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'today',
+          )),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'month',
+          )),
+        );
+        ref.invalidate(
+          transactionSummaryProvider((
+            accountId: widget.account.id,
+            period: 'year',
+          )),
+        );
+        ref.invalidate(
+          accountTransactionsProvider(widget.account.id),
+        );
+        ref.invalidate(accountBalanceProvider(widget.account.id));
+
         Navigator.of(context).pop(true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -195,14 +261,6 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
             ),
           ),
         );
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.failedToSaveTransaction(e.toString()))),
-        );
-      }
     }
   }
 

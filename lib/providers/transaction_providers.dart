@@ -1,3 +1,4 @@
+import 'package:money_manager/models/transaction_summary.dart';
 import 'package:riverpod/riverpod.dart';
 import '../models/transaction.dart';
 import '../services/transaction_service.dart';
@@ -157,4 +158,34 @@ final allAccountTransactionsProvider =
     FutureProvider.family<List<Transaction>, String>((ref, accountId) async {
       final transactionService = ref.watch(transactionServiceProvider);
       return transactionService.getAccountTransactions(accountId);
+    });
+
+/// Provider to check if an account has any transactions
+/// Usage: ref.watch(accountHasTransactionsProvider(accountId))
+final accountHasTransactionsProvider = FutureProvider.family<bool, String>((
+  ref,
+  accountId,
+) async {
+  final transactionService = ref.watch(transactionServiceProvider);
+  return transactionService.hasTransactions(accountId);
+});
+
+/// Provider to get transaction summary for a specific period
+/// Usage: ref.watch(transactionSummaryProvider((accountId: id, period: 'today'/'month'/'year')))
+final transactionSummaryProvider =
+    FutureProvider.family<
+      TransactionSummary,
+      ({String accountId, String period})
+    >((ref, params) async {
+      final transactionService = ref.watch(transactionServiceProvider);
+      switch (params.period) {
+        case 'today':
+          return transactionService.getTodaySummary(params.accountId);
+        case 'month':
+          return transactionService.getThisMonthSummary(params.accountId);
+        case 'year':
+          return transactionService.getThisYearSummary(params.accountId);
+        default:
+          throw Exception('Invalid period: ${params.period}');
+      }
     });
