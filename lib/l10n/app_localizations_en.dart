@@ -1184,4 +1184,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourName => 'Your Name';
+
+  @override
+  String get analyticsComingSoon => 'Analytics coming soon!';
+
+  @override
+  String get noTransactions => 'No transactions';
 }

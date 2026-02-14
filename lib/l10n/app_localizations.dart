@@ -2199,6 +2199,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Name'**
   String get yourName;
+
+  /// Message shown when analytics feature is not yet implemented
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics coming soon!'**
+  String get analyticsComingSoon;
+
+  /// Message shown when there are no transactions
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions'**
+  String get noTransactions;
 }
 
 class _AppLocalizationsDelegate

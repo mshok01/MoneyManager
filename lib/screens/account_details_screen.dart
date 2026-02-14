@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import '../services/account_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/user_service.dart';
 import '../services/transaction_service.dart';
 import '../models/account.dart';
 import '../models/transaction.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/currency_utils.dart';
+import '../providers/account_providers.dart';
 import 'transaction_list_screen.dart';
 import 'add_edit_transaction_screen.dart';
 
-class AccountDetailsScreen extends StatefulWidget {
+class AccountDetailsScreen extends ConsumerStatefulWidget {
   final Account account;
 
   const AccountDetailsScreen({super.key, required this.account});
 
   @override
-  State<AccountDetailsScreen> createState() => _AccountDetailsScreenState();
+  ConsumerState<AccountDetailsScreen> createState() =>
+      _AccountDetailsScreenState();
 }
 
-class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
+class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -58,60 +60,49 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   }
 
   /// Format amount with user's preferred currency symbol
-  String _formatAmount(double amount) {
+  String _formatAmount(double amount, Account account) {
     final currentUser = UserService.instance.currentUser;
-    final userCurrency =
-        currentUser?.currencyCode ?? widget.account.baseCurrency;
+    final userCurrency = currentUser?.currencyCode ?? account.baseCurrency;
     final currencySymbol = CurrencyUtils.getCurrencySymbol(userCurrency);
 
-    // For now, we're storing amounts in account currency, so we show them as-is
-    // In the future, this would convert from account currency to user currency
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
   void _onFieldChanged() {
-    final hasChanges =
-        _nameController.text != widget.account.name ||
-        _descriptionController.text != widget.account.description;
-
-    if (hasChanges != _hasChanges) {
-      setState(() {
-        _hasChanges = hasChanges;
-      });
-    }
+    // We defer the check to logic using the account data from provider
   }
 
   bool _hasAccountSettings() {
-    // Currently no account settings are implemented
     return false;
   }
 
-  bool _hasActions() {
+  bool _hasActions(Account account) {
     if (_currentUserId == null) return false;
 
-    final hasMultipleMembers = widget.account.memberCount > 1;
+    final hasMultipleMembers = account.memberCount > 1;
     final hasOtherAdmins =
-        widget.account.adminCount > 1 ||
-        (widget.account.adminCount == 1 &&
-            !widget.account.isAdmin(_currentUserId!));
-
+        account.adminCount > 1 ||
+        (account.adminCount == 1 && !account.isAdmin(_currentUserId!));
+    
     // Only show actions if there are actions to display
     return hasMultipleMembers && hasOtherAdmins;
   }
 
-  void _toggleEdit() {
+  void _toggleEdit(Account account) {
     setState(() {
       _isEditing = !_isEditing;
-      if (!_isEditing) {
-        // Reset fields if canceling edit
-        _nameController.text = widget.account.name;
-        _descriptionController.text = widget.account.description;
+      if (_isEditing) {
+        // Start editing: set controllers to current account values
+        _nameController.text = account.name;
+        _descriptionController.text = account.description;
+      } else {
+        // Cancel edit: reset checks
         _hasChanges = false;
       }
     });
   }
 
-  Future<void> _saveChanges() async {
+  Future<void> _saveChanges(Account account) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -119,10 +110,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     });
 
     try {
-      await AccountService.instance.updateAccount(
-        widget.account.id,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
+      await ref.read(
+        updateAccountProvider((
+          accountId: account.id,
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          pic: null,
+          isActive: null,
+          members: null,
+          admins: null,
+          baseCurrency: null,
+          baseCurrencyName: null,
+        )).future,
       );
 
       setState(() {
@@ -160,27 +159,28 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   Future<void> _deleteAccount() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteAccount),
-        content: Text(
-          AppLocalizations.of(
-            context,
-          )!.deleteAccountConfirmation(widget.account.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+      builder:
+          (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.deleteAccount),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.deleteAccountConfirmation(widget.account.name),
             ),
-            child: Text(AppLocalizations.of(context)!.delete),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: Text(AppLocalizations.of(context)!.delete),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
@@ -189,10 +189,10 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       });
 
       try {
-        await AccountService.instance.deleteAccount(widget.account.id);
+        await ref.read(deleteAccountProvider(widget.account.id).future);
 
         if (mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(); // Perform pop before snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -221,16 +221,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     }
   }
 
-  List<Widget> _buildActionButtons() {
+  List<Widget> _buildActionButtons(Account account) {
     if (_currentUserId == null) return [];
 
-    final isAdmin = widget.account.hasAdminPrivileges(_currentUserId!);
-    final isOnlyMember = widget.account.memberCount == 1;
-    final hasMultipleMembers = widget.account.memberCount > 1;
+    final isAdmin = account.hasAdminPrivileges(_currentUserId!);
+    final isOnlyMember = account.memberCount == 1;
+    final hasMultipleMembers = account.memberCount > 1;
     final hasOtherAdmins =
-        widget.account.adminCount > 1 ||
-        (widget.account.adminCount == 1 &&
-            !widget.account.isAdmin(_currentUserId!));
+        account.adminCount > 1 ||
+        (account.adminCount == 1 && !account.isAdmin(_currentUserId!));
 
     List<Widget> actions = [];
 
@@ -238,7 +237,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     if (hasMultipleMembers && hasOtherAdmins) {
       actions.add(
         IconButton(
-          onPressed: _exitAccount,
+          onPressed: () => _exitAccount(account),
           icon: const Icon(Icons.exit_to_app),
           tooltip: AppLocalizations.of(context)!.exitAccount,
         ),
@@ -259,56 +258,59 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     return actions;
   }
 
-  Future<void> _exitAccount() async {
+  Future<void> _exitAccount(Account account) async {
     if (_currentUserId == null) return;
 
-    final isAdmin = widget.account.isAdmin(_currentUserId!);
+    final isAdmin = account.isAdmin(_currentUserId!);
     final hasOtherAdmins =
-        widget.account.adminCount > 1 ||
-        (widget.account.adminCount == 1 &&
-            !widget.account.isAdmin(_currentUserId!));
+        account.adminCount > 1 ||
+        (account.adminCount == 1 && !account.isAdmin(_currentUserId!));
 
     // Check if admin is trying to exit without other admins
     if (isAdmin && !hasOtherAdmins) {
       await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!.cannotExitAccount),
-          content: Text(AppLocalizations.of(context)!.cannotExitAccountMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(AppLocalizations.of(context)!.ok),
+        builder:
+            (context) => AlertDialog(
+              title: Text(AppLocalizations.of(context)!.cannotExitAccount),
+              content: Text(
+                AppLocalizations.of(context)!.cannotExitAccountMessage,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppLocalizations.of(context)!.ok),
+                ),
+              ],
             ),
-          ],
-        ),
       );
       return;
     }
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.exitAccount),
-        content: Text(
-          AppLocalizations.of(
-            context,
-          )!.exitAccountConfirmation(widget.account.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+      builder:
+          (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.exitAccount),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.exitAccountConfirmation(account.name),
             ),
-            child: Text(AppLocalizations.of(context)!.exit),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: Text(AppLocalizations.of(context)!.exit),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmed == true && mounted) {
@@ -317,10 +319,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       });
 
       try {
-        await AccountService.instance.removeMemberFromAccount(
-          widget.account.id,
-          _currentUserId!,
-        );
+        await ref
+            .read(accountServiceProvider)
+            .removeMemberFromAccount(account.id, _currentUserId!);
+
+        ref.invalidate(accountDetailsProvider(account.id));
+        ref.invalidate(accountsProvider);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -353,80 +357,122 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final currentUser = UserService.instance.currentUser;
+    final accountAsync = ref.watch(accountDetailsProvider(widget.account.id));
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
-        ),
-        title: Row(
-          children: [
-            // Account Avatar
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              child: Text(
-                widget.account.name.isNotEmpty
-                    ? widget.account.name.substring(0, 2).toUpperCase()
-                    : 'AC',
-                style: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+    return accountAsync.when(
+      data: (account) {
+        if (account == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Account Not Found')),
+            body: const Center(child: Text('Account has been deleted')),
+          );
+        }
+
+        // Check for changes whenever build runs (if editing)
+        if (_isEditing) {
+          final hasChanges =
+              _nameController.text != account.name ||
+              _descriptionController.text != account.description;
+          if (hasChanges != _hasChanges) {
+             WidgetsBinding.instance.addPostFrameCallback((_) {
+               if (mounted) {
+                 setState(() {
+                   _hasChanges = hasChanges;
+                 });
+               }
+             });
+          }
+        }
+
+        return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
+          appBar: AppBar(
+            backgroundColor: theme.colorScheme.surface,
+            elevation: 0,
+            leading: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+            ),
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.1,
+                  ),
+                  child: Text(
+                    account.name.isNotEmpty
+                        ? account.name.substring(0, 2).toUpperCase()
+                        : 'AC',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                widget.account.name,
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    account.name,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          if (_isEditing) ...[
-            IconButton(
-              onPressed: _isLoading ? null : _saveChanges,
-              icon: _isLoading
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: theme.colorScheme.primary,
-                      ),
-                    )
-                  : Icon(Icons.check, color: theme.colorScheme.primary),
-              tooltip: AppLocalizations.of(context)!.save,
-            ),
-            IconButton(
-              onPressed: _isLoading ? null : _toggleEdit,
-              icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
-              tooltip: AppLocalizations.of(context)!.cancel,
-            ),
-          ] else ...[
-            IconButton(
-              onPressed: _toggleEdit,
-              icon: Icon(Icons.edit, color: theme.colorScheme.primary),
-              tooltip: AppLocalizations.of(context)!.edit,
-            ),
-            ..._buildActionButtons(),
-          ],
-        ],
-      ),
-      body: _isEditing
-          ? _buildEditForm(theme)
-          : _buildViewContent(theme, currentUser),
+            actions: [
+              if (_isEditing) ...[
+                IconButton(
+                  onPressed: _isLoading ? null : () => _saveChanges(account),
+                  icon:
+                      _isLoading
+                          ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: theme.colorScheme.primary,
+                            ),
+                          )
+                          : Icon(Icons.check, color: theme.colorScheme.primary),
+                  tooltip: AppLocalizations.of(context)!.save,
+                ),
+                IconButton(
+                  onPressed:
+                      _isLoading ? null : () => _toggleEdit(account),
+                  icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
+                  tooltip: AppLocalizations.of(context)!.cancel,
+                ),
+              ] else ...[
+                IconButton(
+                  onPressed: () => _toggleEdit(account),
+                  icon: Icon(Icons.edit, color: theme.colorScheme.primary),
+                  tooltip: AppLocalizations.of(context)!.edit,
+                ),
+                ..._buildActionButtons(account),
+              ],
+            ],
+          ),
+          body:
+              _isEditing
+                  ? _buildEditForm(theme)
+                  : _buildViewContent(theme, currentUser, account),
+        );
+      },
+      loading:
+          () => Scaffold(
+            appBar: AppBar(),
+            body: const Center(child: CircularProgressIndicator()),
+          ),
+      error:
+          (error, stack) => Scaffold(
+            appBar: AppBar(),
+            body: Center(child: Text('Error: $error')),
+          ),
     );
   }
 
@@ -436,7 +482,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Account Name
           TextFormField(
             controller: _nameController,
             decoration: InputDecoration(
@@ -455,7 +500,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             },
           ),
           const SizedBox(height: 16),
-          // Account Description
           TextFormField(
             controller: _descriptionController,
             maxLines: 3,
@@ -474,48 +518,33 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     );
   }
 
-  Widget _buildViewContent(ThemeData theme, currentUser) {
+  Widget _buildViewContent(ThemeData theme, currentUser, Account account) {
     return ListView(
       children: [
-        // Account Profile Section
-        _buildAccountProfileSection(theme),
-
-        // Transaction Summary Section
-        _buildTransactionSummarySection(theme),
-
-        // Quick Actions Section
-        _buildQuickActionsSection(theme),
-
-        // Recent Transactions Section
-        _buildRecentTransactionsSection(theme),
-
-        // Members Section
-        _buildMembersSection(theme, currentUser),
-
-        // Add Member Section
+        _buildAccountProfileSection(theme, account),
+        _buildTransactionSummarySection(theme, account),
+        _buildQuickActionsSection(theme, account),
+        _buildRecentTransactionsSection(theme, account),
+        _buildMembersSection(theme, currentUser, account),
         _buildAddMemberSection(theme),
-
-        // Account Settings Section (only show if has content)
         if (_hasAccountSettings()) _buildAccountSettingsSection(theme),
-
-        // Actions Section (only show if has content)
-        if (_hasActions()) _buildActionsSection(theme),
+        if (_hasActions(account))
+          _buildActionsSection(theme, currentUser, account),
       ],
     );
   }
 
-  Widget _buildAccountProfileSection(ThemeData theme) {
+  Widget _buildAccountProfileSection(ThemeData theme, Account account) {
     return Container(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Large Account Avatar
           CircleAvatar(
             radius: 60,
             backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             child: Text(
-              widget.account.name.isNotEmpty
-                  ? widget.account.name.substring(0, 2).toUpperCase()
+              account.name.isNotEmpty
+                  ? account.name.substring(0, 2).toUpperCase()
                   : 'AC',
               style: TextStyle(
                 color: theme.colorScheme.primary,
@@ -525,22 +554,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Account Name
           Text(
-            widget.account.name,
+            account.name,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: theme.colorScheme.onSurface,
             ),
           ),
-
-          // Account Description
-          if (widget.account.description.isNotEmpty) ...[
+          if (account.description.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              widget.account.description,
+              account.description,
               style: TextStyle(
                 fontSize: 16,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -553,14 +578,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     );
   }
 
-  Widget _buildMembersSection(ThemeData theme, currentUser) {
+  Widget _buildMembersSection(
+    ThemeData theme,
+    currentUser,
+    Account account,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Text(
-            AppLocalizations.of(context)!.members(widget.account.memberCount),
+            AppLocalizations.of(context)!.members(account.memberCount),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -575,87 +604,87 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                children: widget.account.members.map((memberId) {
-                  final isCurrentUser = memberId == _currentUserId;
-                  final isCreator = widget.account.isCreator(memberId);
-                  final isAdmin = widget.account.isAdmin(memberId);
+                children:
+                    account.members.map((memberId) {
+                      final isCurrentUser = memberId == _currentUserId;
+                      final isCreator = account.isCreator(memberId);
+                      final isAdmin = account.isAdmin(memberId);
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: theme.colorScheme.primary.withValues(
-                            alpha: 0.1,
-                          ),
-                          child: Icon(
-                            Icons.person,
-                            size: 16,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Text(
-                                isCurrentUser
-                                    ? AppLocalizations.of(context)!.you
-                                    : AppLocalizations.of(context)!.member,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: theme.colorScheme.primary
+                                  .withValues(alpha: 0.1),
+                              child: Icon(
+                                Icons.person,
+                                size: 16,
+                                color: theme.colorScheme.primary,
                               ),
-                              if (isCreator) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.creator,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onPrimary,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Text(
+                                    isCurrentUser
+                                        ? AppLocalizations.of(context)!.you
+                                        : AppLocalizations.of(context)!.member,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ),
-                              ],
-                              if (isAdmin && !isCreator) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.secondary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.admin,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onSecondary,
+                                  if (isCreator) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.creator,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.onPrimary,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                                  ],
+                                  if (isAdmin && !isCreator) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.secondary,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.admin,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.onSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ),
           ),
@@ -687,7 +716,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
         ),
         onTap: () {
-          // TODO: Implement add member functionality
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.addMemberComingSoon),
@@ -702,7 +730,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
@@ -714,26 +741,25 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             ),
           ),
         ),
-
-        // Settings items would go here if needed
-        // For now, we'll keep it minimal
       ],
     );
   }
 
-  Widget _buildActionsSection(ThemeData theme) {
+  Widget _buildActionsSection(
+    ThemeData theme,
+    currentUser,
+    Account account,
+  ) {
     if (_currentUserId == null) return const SizedBox.shrink();
 
-    final hasMultipleMembers = widget.account.memberCount > 1;
+    final hasMultipleMembers = account.memberCount > 1;
     final hasOtherAdmins =
-        widget.account.adminCount > 1 ||
-        (widget.account.adminCount == 1 &&
-            !widget.account.isAdmin(_currentUserId!));
+        account.adminCount > 1 ||
+        (account.adminCount == 1 && !account.isAdmin(_currentUserId!));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Actions Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
@@ -745,8 +771,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             ),
           ),
         ),
-
-        // Exit Account (if conditions are met)
         if (hasMultipleMembers && hasOtherAdmins)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -768,14 +792,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   fontSize: 16,
                 ),
               ),
-              onTap: _exitAccount,
+              onTap: () => _exitAccount(account),
             ),
           ),
       ],
     );
   }
 
-  // Transaction-related methods
   Future<void> _loadTransactionData() async {
     if (!mounted) return;
 
@@ -808,321 +831,322 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         setState(() {
           _isLoadingTransactions = false;
         });
+        debugPrint('Error loading transaction data: $e');
       }
     }
   }
 
-  Widget _buildTransactionSummarySection(ThemeData theme) {
+  Widget _buildTransactionSummarySection(ThemeData theme, Account account) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.account_balance, color: theme.colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppLocalizations.of(context)!.accountBalance,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              Text(
+                AppLocalizations.of(context)!.balance,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
-              const SizedBox(height: 16),
               if (_isLoadingTransactions)
-                const Center(child: CircularProgressIndicator())
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               else
-                Column(
+                Text(
+                  _formatAmount(_accountBalance, account),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        _accountBalance >= 0
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.error,
+                  ),
+                ),
+            ],
+          ),
+          const Divider(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Balance
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: _accountBalance >= 0
-                            ? Colors.green.withValues(alpha: 0.1)
-                            : Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.currentBalance,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.7,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatAmount(_accountBalance),
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: _accountBalance >= 0
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Income and Expenses
                     Row(
                       children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.trending_up, color: Colors.green),
-                                const SizedBox(height: 4),
-                                Text(
-                                  AppLocalizations.of(context)!.income,
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                                Text(
-                                  _formatAmount(_totalIncome),
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        Icon(
+                          Icons.arrow_downward,
+                          size: 16,
+                          color: Colors.green,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.trending_down, color: Colors.red),
-                                const SizedBox(height: 4),
-                                Text(
-                                  AppLocalizations.of(context)!.expensesTab,
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                                Text(
-                                  _formatAmount(_totalExpenses),
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ],
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocalizations.of(context)!.income,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatAmount(_totalIncome, account),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
+                    ),
                   ],
                 ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: theme.colorScheme.outlineVariant,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.expense,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.arrow_upward, size: 16, color: Colors.red),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatAmount(_totalExpenses, account),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildQuickActionsSection(ThemeData theme) {
+  Widget _buildQuickActionsSection(ThemeData theme, Account account) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      height: 100,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          _buildQuickActionButton(
+            theme,
+            icon: Icons.add,
+            label: AppLocalizations.of(context)!.addTransaction,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => AddEditTransactionScreen(account: account),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+          _buildQuickActionButton(
+            theme,
+            icon: Icons.list,
+            label: AppLocalizations.of(context)!.transactions,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TransactionListScreen(account: account),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+          _buildQuickActionButton(
+            theme,
+            icon: Icons.pie_chart,
+            label: AppLocalizations.of(context)!.analytics,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(context)!.analyticsComingSoon,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactionsSection(ThemeData theme, Account account) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.quickActions,
-                style: theme.textTheme.titleMedium?.copyWith(
+                AppLocalizations.of(context)!.recentTransactions,
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _addTransaction(),
-                      icon: const Icon(Icons.add),
-                      label: Text(AppLocalizations.of(context)!.addTransaction),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => TransactionListScreen(account: account),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _viewAllTransactions(),
-                      icon: const Icon(Icons.list),
-                      label: Text(AppLocalizations.of(context)!.viewAll),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
+                  );
+                },
+                child: Text(AppLocalizations.of(context)!.viewAll),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRecentTransactionsSection(ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.recentTransactions,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (_recentTransactions.isNotEmpty)
-                    TextButton(
-                      onPressed: () => _viewAllTransactions(),
-                      child: Text(AppLocalizations.of(context)!.viewAll),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (_isLoadingTransactions)
-                const Center(child: CircularProgressIndicator())
-              else if (_recentTransactions.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.receipt_long,
-                        size: 48,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppLocalizations.of(context)!.noTransactionsYet,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.6,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.addFirstTransactionToGetStarted,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Column(
-                  children: _recentTransactions.map((transaction) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: transaction.isIncome
-                            ? Colors.green.withValues(alpha: 0.2)
-                            : Colors.red.withValues(alpha: 0.2),
-                        child: Icon(
-                          transaction.isIncome
-                              ? Icons.trending_up
-                              : Icons.trending_down,
-                          size: 16,
-                          color: transaction.isIncome
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                      title: Text(
-                        transaction.description.isNotEmpty
-                            ? transaction.description
-                            : AppLocalizations.of(context)!.transaction,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Text(
-                        '${transaction.transactionDateTime.day}/${transaction.transactionDateTime.month}/${transaction.transactionDateTime.year}',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.6,
-                          ),
-                        ),
-                      ),
-                      trailing: Text(
-                        '${transaction.isIncome ? '+' : '-'}${_formatAmount(transaction.amount)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: transaction.isIncome
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+        if (_isLoadingTransactions)
+          const Center(child: CircularProgressIndicator())
+        else if (_recentTransactions.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(32),
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                Icon(
+                  Icons.receipt_long_outlined,
+                  size: 48,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context)!.noTransactions,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _recentTransactions.length,
+            itemBuilder: (context, index) {
+              final transaction = _recentTransactions[index];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor:
+                      transaction.type == 'income'
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.red.withValues(alpha: 0.1),
+                  child: Icon(
+                    transaction.type == 'income'
+                        ? Icons.arrow_downward
+                        : Icons.arrow_upward,
+                    color: transaction.type == 'income' ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                ),
+                title: Text(transaction.description),
+                subtitle: Text(
+                  transaction.transactionDate.toString().split(' ')[0],
+                ),
+                trailing: Text(
+                  _formatAmount(transaction.amount, account),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color:
+                        transaction.type == 'income' ? Colors.green : Colors.red,
+                  ),
+                ),
+              );
+            },
           ),
-        ),
-      ),
+      ],
     );
-  }
-
-  Future<void> _addTransaction() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(account: widget.account),
-      ),
-    );
-
-    if (result == true) {
-      _loadTransactionData(); // Reload transaction data
-    }
-  }
-
-  Future<void> _viewAllTransactions() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TransactionListScreen(account: widget.account),
-      ),
-    );
-    _loadTransactionData(); // Reload transaction data when returning
   }
 }

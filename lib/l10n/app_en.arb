@@ -1693,5 +1693,13 @@
   "yourName": "Your Name",
   "@yourName": {
     "description": "Label for user name in profile screen"
+  },
+  "analyticsComingSoon": "Analytics coming soon!",
+  "@analyticsComingSoon": {
+    "description": "Message shown when analytics feature is not yet implemented"
+  },
+  "noTransactions": "No transactions",
+  "@noTransactions": {
+    "description": "Message shown when there are no transactions"
   }
 }
