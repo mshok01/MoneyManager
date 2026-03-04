@@ -107,15 +107,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
             .toList();
         break;
       case 'month':
-        final monthAgo = DateTime(now.year, now.month - 1, now.day);
         filtered = _transactions
-            .where((t) => t.transactionDateTime.isAfter(monthAgo))
+            .where(
+              (t) =>
+                  t.transactionDateTime.year == now.year &&
+                  t.transactionDateTime.month == now.month,
+            )
             .toList();
         break;
       case 'year':
-        final yearAgo = DateTime(now.year - 1, now.month, now.day);
         filtered = _transactions
-            .where((t) => t.transactionDateTime.isAfter(yearAgo))
+            .where((t) => t.transactionDateTime.year == now.year)
             .toList();
         break;
       default:

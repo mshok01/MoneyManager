@@ -30,7 +30,8 @@ class AddEditTransactionScreen extends ConsumerStatefulWidget {
       _AddEditTransactionScreenState();
 }
 
-class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScreen> {
+class _AddEditTransactionScreenState
+    extends ConsumerState<AddEditTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -185,13 +186,10 @@ class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScr
           transactionDate: _selectedDate,
         );
       }
-
     } catch (e) {
       if (mounted) {
         // Invalidate providers to ensure UI updates
-        ref.invalidate(
-          accountHasTransactionsProvider(widget.account.id),
-        );
+        ref.invalidate(accountHasTransactionsProvider(widget.account.id));
         ref.invalidate(
           transactionSummaryProvider((
             accountId: widget.account.id,
@@ -210,11 +208,9 @@ class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScr
             period: 'year',
           )),
         );
-        ref.invalidate(
-          accountTransactionsProvider(widget.account.id),
-        );
+        ref.invalidate(accountTransactionsProvider(widget.account.id));
         ref.invalidate(accountBalanceProvider(widget.account.id));
-        
+
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.failedToSaveTransaction(e.toString()))),
@@ -223,44 +219,40 @@ class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScr
     }
 
     if (mounted) {
-       // Invalidate providers to ensure UI updates (Success path)
-       // We do this before popping to ensure the previous screen gets the update signal
-        ref.invalidate(
-          accountHasTransactionsProvider(widget.account.id),
-        );
-        ref.invalidate(
-          transactionSummaryProvider((
-            accountId: widget.account.id,
-            period: 'today',
-          )),
-        );
-        ref.invalidate(
-          transactionSummaryProvider((
-            accountId: widget.account.id,
-            period: 'month',
-          )),
-        );
-        ref.invalidate(
-          transactionSummaryProvider((
-            accountId: widget.account.id,
-            period: 'year',
-          )),
-        );
-        ref.invalidate(
-          accountTransactionsProvider(widget.account.id),
-        );
-        ref.invalidate(accountBalanceProvider(widget.account.id));
+      // Invalidate providers to ensure UI updates (Success path)
+      // We do this before popping to ensure the previous screen gets the update signal
+      ref.invalidate(accountHasTransactionsProvider(widget.account.id));
+      ref.invalidate(
+        transactionSummaryProvider((
+          accountId: widget.account.id,
+          period: 'today',
+        )),
+      );
+      ref.invalidate(
+        transactionSummaryProvider((
+          accountId: widget.account.id,
+          period: 'month',
+        )),
+      );
+      ref.invalidate(
+        transactionSummaryProvider((
+          accountId: widget.account.id,
+          period: 'year',
+        )),
+      );
+      ref.invalidate(accountTransactionsProvider(widget.account.id));
+      ref.invalidate(accountBalanceProvider(widget.account.id));
 
-        Navigator.of(context).pop(true); // Return true to indicate success
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isEditing
-                  ? l10n.transactionUpdatedSuccessfully
-                  : l10n.transactionCreatedSuccessfully,
-            ),
+      Navigator.of(context).pop(true); // Return true to indicate success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isEditing
+                ? l10n.transactionUpdatedSuccessfully
+                : l10n.transactionCreatedSuccessfully,
           ),
-        );
+        ),
+      );
     }
   }
 
@@ -481,6 +473,7 @@ class _AddEditTransactionScreenState extends ConsumerState<AddEditTransactionScr
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _descriptionController,
+                        textInputAction: TextInputAction.done,
                         decoration: InputDecoration(
                           hintText: l10n.notesHint,
                           border: const OutlineInputBorder(),
