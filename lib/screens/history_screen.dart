@@ -28,7 +28,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Map<String, PaymentSource> _paymentSourcesMap = {};
 
   bool _isLoading = true;
-  String _selectedPeriod = 'all'; // 'all', 'week', 'month', 'year'
+  String _selectedPeriod = 'all'; // 'all', 'week', 'month', 'year', 'date'
+
+  DateTime? _customSelectedDate;
+  String? _customDateFilterType; // 'day', 'month', 'year'
 
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
@@ -119,6 +122,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
         filtered = _transactions
             .where((t) => t.transactionDateTime.year == now.year)
             .toList();
+        break;
+      case 'date':
+        if (_customSelectedDate != null && _customDateFilterType != null) {
+          filtered = _transactions.where((t) {
+            final date = t.transactionDateTime;
+            if (_customDateFilterType == 'day') {
+              return date.year == _customSelectedDate!.year &&
+                  date.month == _customSelectedDate!.month &&
+                  date.day == _customSelectedDate!.day;
+            } else if (_customDateFilterType == 'month') {
+              return date.year == _customSelectedDate!.year &&
+                  date.month == _customSelectedDate!.month;
+            } else if (_customDateFilterType == 'year') {
+              return date.year == _customSelectedDate!.year;
+            }
+            return false;
+          }).toList();
+        }
         break;
       default:
         filtered = _transactions;
@@ -230,19 +251,324 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildPeriodSelector() {
     final l10n = AppLocalizations.of(context)!;
 
+    String dateLabel = 'Date';
+    if (_selectedPeriod == 'date' &&
+        _customSelectedDate != null &&
+        _customDateFilterType != null) {
+      if (_customDateFilterType == 'day') {
+        dateLabel =
+            '${_customSelectedDate!.day}/${_customSelectedDate!.month}/${_customSelectedDate!.year}';
+      } else if (_customDateFilterType == 'month') {
+        dateLabel =
+            '${_customSelectedDate!.month}/${_customSelectedDate!.year}';
+      } else if (_customDateFilterType == 'year') {
+        dateLabel = '${_customSelectedDate!.year}';
+      }
+    }
+
     return Container(
-      margin: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _buildPeriodChip('all', l10n.allTime),
-          const SizedBox(width: 8),
-          _buildPeriodChip('week', l10n.week),
-          const SizedBox(width: 8),
-          _buildPeriodChip('month', l10n.month),
-          const SizedBox(width: 8),
-          _buildPeriodChip('year', l10n.year),
-        ],
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildPeriodChip('all', l10n.allTime),
+            const SizedBox(width: 8),
+            _buildPeriodChip('week', l10n.week),
+            const SizedBox(width: 8),
+            _buildPeriodChip('month', l10n.month),
+            const SizedBox(width: 8),
+            _buildPeriodChip('year', l10n.year),
+            const SizedBox(width: 8),
+            _buildDatePeriodChip('date', dateLabel),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildDatePeriodChip(String period, String label) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedPeriod == period;
+
+    return GestureDetector(
+      onTap: _showDateFilterOptions,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.calendar_today,
+              size: 14,
+              color: isSelected
+                  ? theme.colorScheme.onPrimary
+                  : theme.colorScheme.onSurface,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDateFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Filter by Date',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_view_day),
+              title: const Text('Day'),
+              onTap: () {
+                Navigator.pop(context);
+                _showDayPicker();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_view_month),
+              title: const Text('Month'),
+              onTap: () {
+                Navigator.pop(context);
+                _showMonthPicker();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Year'),
+              onTap: () {
+                Navigator.pop(context);
+                _showYearPicker();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDayPicker() async {
+    final now = DateTime.now();
+    final initialDate =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!
+        : now;
+
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isAfter(now) ? now : initialDate,
+      firstDate: DateTime(2000),
+      lastDate: now,
+    );
+
+    if (selectedDate != null) {
+      setState(() {
+        _selectedPeriod = 'date';
+        _customDateFilterType = 'day';
+        _customSelectedDate = selectedDate;
+      });
+    }
+  }
+
+  void _showMonthPicker() {
+    final now = DateTime.now();
+    int selectedYear =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!.year
+        : now.year;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final theme = Theme.of(context);
+            // Build years list
+            final years = List.generate(
+              now.year - 2000 + 1,
+              (index) => now.year - index,
+            );
+
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Select Month'),
+                  DropdownButton<int>(
+                    value: selectedYear,
+                    items: years.map((year) {
+                      return DropdownMenuItem<int>(
+                        value: year,
+                        child: Text(year.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          selectedYear = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  itemCount: 12,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.5,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final month = index + 1;
+                    final isFutureMonth =
+                        selectedYear == now.year && month > now.month;
+                    final isSelected =
+                        _selectedPeriod == 'date' &&
+                        _customDateFilterType == 'month' &&
+                        _customSelectedDate?.month == month &&
+                        _customSelectedDate?.year == selectedYear;
+
+                    final monthNames = [
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec',
+                    ];
+
+                    return InkWell(
+                      onTap: isFutureMonth
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                              setState(() {
+                                _selectedPeriod = 'date';
+                                _customDateFilterType = 'month';
+                                _customSelectedDate = DateTime(
+                                  selectedYear,
+                                  month,
+                                  1,
+                                );
+                              });
+                            },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : (isFutureMonth
+                                    ? theme.colorScheme.surfaceContainerHighest
+                                    : theme.colorScheme.surface),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.outline,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          monthNames[index],
+                          style: TextStyle(
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : (isFutureMonth
+                                      ? theme.colorScheme.onSurface.withValues(
+                                          alpha: 0.3,
+                                        )
+                                      : theme.colorScheme.onSurface),
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showYearPicker() {
+    final now = DateTime.now();
+    final initialDate =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!
+        : now;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Year'),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(2000),
+              lastDate: now,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.pop(context);
+                setState(() {
+                  _selectedPeriod = 'date';
+                  _customDateFilterType = 'year';
+                  _customSelectedDate = dateTime;
+                });
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
