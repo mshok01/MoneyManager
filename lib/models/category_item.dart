@@ -25,6 +25,9 @@ class CategoryItem {
     required this.accessTo,
   });
 
+  bool get isIncome => id.startsWith('income_');
+  bool get isExpense => !isIncome;
+
   // Factory constructor to create CategoryItem from JSON
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
     return CategoryItem(

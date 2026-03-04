@@ -33,6 +33,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   DateTime? _customSelectedDate;
   String? _customDateFilterType; // 'day', 'month', 'year'
 
+  String? _selectedType; // 'income', 'expense'
+  String? _selectedCategoryId;
+  String? _selectedSourceId;
+
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
   String _currentSearchTerm = '';
@@ -143,6 +147,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
         break;
       default:
         filtered = _transactions;
+    }
+
+    // Apply type filter
+    if (_selectedType != null) {
+      final isRequestedIncome = _selectedType == 'income';
+      filtered = filtered
+          .where((t) => t.isIncome == isRequestedIncome)
+          .toList();
+    }
+
+    // Apply category filter
+    if (_selectedCategoryId != null) {
+      filtered = filtered
+          .where((t) => t.categoryId == _selectedCategoryId)
+          .toList();
+    }
+
+    // Apply source filter
+    if (_selectedSourceId != null) {
+      filtered = filtered
+          .where((t) => t.paymentSourceId == _selectedSourceId)
+          .toList();
     }
 
     // Apply search filter
@@ -282,6 +308,338 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _buildPeriodChip('year', l10n.year),
             const SizedBox(width: 8),
             _buildDatePeriodChip('date', dateLabel),
+            const SizedBox(width: 8),
+            Container(
+              width: 1,
+              height: 24,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: _selectedType == 'income'
+                  ? l10n.income
+                  : _selectedType == 'expense'
+                  ? l10n.expensesTab
+                  : 'Type',
+              isActive: _selectedType != null,
+              onTap: _showTypePicker,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label:
+                  _selectedCategoryId != null &&
+                      _categoriesMap.containsKey(_selectedCategoryId)
+                  ? _categoriesMap[_selectedCategoryId!]!.name
+                  : 'Category',
+              isActive: _selectedCategoryId != null,
+              onTap: _showCategoryPicker,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label:
+                  _selectedSourceId != null &&
+                      _paymentSourcesMap.containsKey(_selectedSourceId)
+                  ? _paymentSourcesMap[_selectedSourceId!]!.name
+                  : 'Source',
+              isActive: _selectedSourceId != null,
+              onTap: _showSourcePicker,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? theme.colorScheme.secondaryContainer
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive
+                ? theme.colorScheme.secondary
+                : theme.colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive
+                    ? theme.colorScheme.onSecondaryContainer
+                    : theme.colorScheme.onSurface,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
+              color: isActive
+                  ? theme.colorScheme.onSecondaryContainer
+                  : theme.colorScheme.onSurface,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTypePicker() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Filter by Type',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('All Types'),
+              trailing: _selectedType == null
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = null);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_downward, color: Colors.green),
+              title: Text(l10n.income),
+              trailing: _selectedType == 'income'
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = 'income');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_upward, color: Colors.red),
+              title: Text(l10n.expensesTab),
+              trailing: _selectedType == 'expense'
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = 'expense');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCategoryPicker() {
+    final theme = Theme.of(context);
+
+    // Sort categories: income first, then expense, alphabetically within each
+    final sortedCategories = _categoriesMap.values.toList()
+      ..sort((a, b) {
+        if (a.isIncome != b.isIncome) {
+          return a.isIncome ? -1 : 1;
+        }
+        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filter by Category', style: theme.textTheme.titleLarge),
+                  if (_selectedCategoryId != null)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() => _selectedCategoryId = null);
+                      },
+                      child: const Text('Clear'),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.all_inclusive),
+              ),
+              title: const Text('All Categories'),
+              trailing: _selectedCategoryId == null
+                  ? Icon(Icons.check, color: theme.colorScheme.primary)
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedCategoryId = null);
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: sortedCategories.length,
+                itemBuilder: (context, index) {
+                  final category = sortedCategories[index];
+                  final isSelected = _selectedCategoryId == category.id;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: category.color.withValues(alpha: 0.2),
+                      child: Icon(category.icon, color: category.color),
+                    ),
+                    title: Text(category.name),
+                    subtitle: Text(
+                      category.isIncome ? 'Income' : 'Expense',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: category.isIncome ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() => _selectedCategoryId = category.id);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSourcePicker() {
+    final theme = Theme.of(context);
+
+    // Sort sources alphabetically
+    final sortedSources = _paymentSourcesMap.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.8,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filter by Source', style: theme.textTheme.titleLarge),
+                  if (_selectedSourceId != null)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() => _selectedSourceId = null);
+                      },
+                      child: const Text('Clear'),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.all_inclusive),
+              ),
+              title: const Text('All Sources'),
+              trailing: _selectedSourceId == null
+                  ? Icon(Icons.check, color: theme.colorScheme.primary)
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedSourceId = null);
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: sortedSources.length,
+                itemBuilder: (context, index) {
+                  final source = sortedSources[index];
+                  final isSelected = _selectedSourceId == source.id;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        source.icon,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    title: Text(source.name),
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() => _selectedSourceId = source.id);
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
