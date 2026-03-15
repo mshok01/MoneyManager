@@ -267,7 +267,16 @@ class _AddEditTransactionScreenState
       lastDate: today, // Only allow today and past dates
     );
     if (picked != null) {
-      setState(() => _selectedDate = picked);
+      setState(() {
+        _selectedDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _selectedDate.hour,
+          _selectedDate.minute,
+          _selectedDate.second,
+        );
+      });
     }
   }
 

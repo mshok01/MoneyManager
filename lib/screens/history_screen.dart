@@ -1149,15 +1149,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         ),
                                       ),
                                       child: ListTile(
-                                        onTap: () => Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                TransactionDetailsScreen(
-                                                  transaction: transaction,
-                                                  account: widget.account,
+                                        onTap: () async {
+                                          final result =
+                                              await Navigator.of(
+                                                context,
+                                              ).push<bool>(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      TransactionDetailsScreen(
+                                                        transaction:
+                                                            transaction,
+                                                        account: widget.account,
+                                                      ),
                                                 ),
-                                          ),
-                                        ),
+                                              );
+                                          if (result == true && mounted) {
+                                            _loadData();
+                                          }
+                                        },
                                         leading: Container(
                                           width: 40,
                                           height: 40,
