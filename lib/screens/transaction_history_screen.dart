@@ -232,11 +232,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Future<void> _addTransaction() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(account: widget.account),
-      ),
-    );
+    final result = await AddEditTransactionScreen.push(context, account: widget.account);
 
     if (result == true) {
       _hasChanges = true; // Mark that changes were made
@@ -295,13 +291,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Future<void> _editTransaction(Transaction transaction) async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(
-          account: widget.account,
-          transaction: transaction,
-        ),
-      ),
+    final result = await AddEditTransactionScreen.push(
+      context,
+      account: widget.account,
+      transaction: transaction,
     );
 
     if (result == true) {

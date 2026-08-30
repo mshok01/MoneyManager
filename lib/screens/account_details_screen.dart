@@ -980,14 +980,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
             theme,
             icon: Icons.add,
             label: AppLocalizations.of(context)!.addTransaction,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) => AddEditTransactionScreen(account: account),
-                ),
-              );
-            },
+            onTap: () => AddEditTransactionScreen.push(context, account: account),
           ),
           const SizedBox(width: 16),
           _buildQuickActionButton(
