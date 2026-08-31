@@ -13,6 +13,79 @@ import '../utils/currency_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/transaction_providers.dart';
 
+/// Exact theme definitions matching Figma's design tokens.
+class _FigmaTheme {
+  final Color sheet;
+  final Color bg;
+  final Color bg2;
+  final Color text;
+  final Color textSub;
+  final Color textMuted;
+  final Color handle;
+  final Color border;
+  final Color numKey;
+  final Color numKeyText;
+  final Color notesFieldBg;
+  final Color tagTextInactive;
+  final Color expenseAccent;
+  final Color incomeAccent;
+
+  const _FigmaTheme({
+    required this.sheet,
+    required this.bg,
+    required this.bg2,
+    required this.text,
+    required this.textSub,
+    required this.textMuted,
+    required this.handle,
+    required this.border,
+    required this.numKey,
+    required this.numKeyText,
+    required this.notesFieldBg,
+    required this.tagTextInactive,
+    required this.expenseAccent,
+    required this.incomeAccent,
+  });
+
+  factory _FigmaTheme.of(bool isDark) {
+    if (isDark) {
+      return const _FigmaTheme(
+        sheet: Color(0xFF181818),
+        bg: Color(0x0FFFFFFF), // rgba(255,255,255,0.06)
+        bg2: Color(0x1AFFFFFF), // rgba(255,255,255,0.1)
+        text: Color(0xFFF0F0F0),
+        textSub: Color(0xFFA0A0A0),
+        textMuted: Color(0xFF6B6B6B),
+        handle: Color(0x26FFFFFF), // rgba(255,255,255,0.15)
+        border: Color(0x14FFFFFF), // rgba(255,255,255,0.08)
+        numKey: Color(0x12FFFFFF), // rgba(255,255,255,0.07)
+        numKeyText: Color(0xFFF0F0F0),
+        notesFieldBg: Color(0x0FFFFFFF),
+        tagTextInactive: Color(0xFF6B6B6B),
+        expenseAccent: Color(0xFFFF4D6D),
+        incomeAccent: Color(0xFF00E5A0),
+      );
+    } else {
+      return const _FigmaTheme(
+        sheet: Color(0xFFFFFFFF),
+        bg: Color(0xFFF5F5F7),
+        bg2: Color(0xFFEBEBED),
+        text: Color(0xFF111111),
+        textSub: Color(0xFF6B6B70),
+        textMuted: Color(0xFFADADB5),
+        handle: Color(0x1F000000), // rgba(0,0,0,0.12)
+        border: Color(0x12000000), // rgba(0,0,0,0.07)
+        numKey: Color(0xFFEFEFEF),
+        numKeyText: Color(0xFF111111),
+        notesFieldBg: Color(0xFFF2F3F5),
+        tagTextInactive: Color(0xFF8A8A96),
+        expenseAccent: Color(0xFFE8294A),
+        incomeAccent: Color(0xFF009E76),
+      );
+    }
+  }
+}
+
 class AddEditTransactionScreen extends ConsumerWidget {
   final Account account;
   final Transaction? transaction;
@@ -30,33 +103,12 @@ class AddEditTransactionScreen extends ConsumerWidget {
     required Account account,
     Transaction? transaction,
   }) {
-    // -------------------------------------------------------------
-    // To switch back to a Full Screen Page Route in the future,
-    // uncomment the block below and comment out the Bottom Sheet block.
-    // -------------------------------------------------------------
-    /*
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBg = isDark ? const Color(0xFF181818) : const Color(0xFFFFFFFF);
-    return Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: sheetBg,
-          body: AddEditTransactionContent(
-            account: account,
-            transaction: transaction,
-          ),
-        ),
-      ),
-    );
-    */
-
-    // Bottom Sheet Implementation (Default):
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
+        maxHeight: MediaQuery.of(context).size.height * 0.94,
       ),
       builder: (context) => AddEditTransactionContent(
         account: account,
@@ -68,11 +120,11 @@ class AddEditTransactionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBg = isDark ? const Color(0xFF181818) : const Color(0xFFFFFFFF);
+    final figmaTheme = _FigmaTheme.of(isDark);
 
     // Full screen fallback scaffold
     return Scaffold(
-      backgroundColor: sheetBg,
+      backgroundColor: figmaTheme.sheet,
       body: AddEditTransactionContent(
         account: account,
         transaction: transaction,
@@ -100,6 +152,7 @@ class _AddEditTransactionContentState
     extends ConsumerState<AddEditTransactionContent> {
   final _amountController = TextEditingController(text: '0');
   final _descriptionController = TextEditingController();
+  final List<String> _selectedTags = [];
 
   bool _isLoading = false;
   String _selectedType = TransactionType.expense; // Default to expense
@@ -148,13 +201,11 @@ class _AddEditTransactionContentState
     setState(() => _isLoading = true);
 
     try {
-      // Initialize services
       await TransactionService.instance.initialize();
       await CategoryService.instance.initialize();
       await PaymentSourceService.instance.initialize();
       await AccountService.instance.initialize();
 
-      // Load data lists
       final incomeCategories = await CategoryService.instance.getIncomeCategories();
       final expenseCategories = await CategoryService.instance.getExpenseCategories();
       final paymentSources = await PaymentSourceService.instance.getAllPaymentSources();
@@ -168,27 +219,31 @@ class _AddEditTransactionContentState
         _isLoading = false;
       });
 
-      // Set initial selections for editing or account defaults
       if (_isEditing && widget.transaction != null) {
         final transaction = widget.transaction!;
 
-        // Find and set selected account
         _selectedAccount = _accounts
             .where((acc) => acc.id == transaction.accountId)
             .firstOrNull ?? widget.account;
 
-        // Find and set selected category
         final allCategories = [..._incomeCategories, ..._expenseCategories];
         _selectedCategory = allCategories
             .where((cat) => cat.id == transaction.categoryId)
             .firstOrNull;
 
-        // Find and set selected payment source
         _selectedPaymentSource = _paymentSources
             .where((source) => source.id == transaction.paymentSourceId)
             .firstOrNull;
 
         setState(() {});
+      } else {
+        // Set default category and payment source
+        if (_availableCategories.isNotEmpty) {
+          _selectedCategory = _availableCategories.first;
+        }
+        if (_paymentSources.isNotEmpty) {
+          _selectedPaymentSource = _paymentSources.first;
+        }
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -210,13 +265,12 @@ class _AddEditTransactionContentState
   void _onNumpadPressed(String key) {
     String currentText = _amountController.text;
 
-    if (key == 'backspace') {
+    if (key == 'del') {
       if (currentText.isNotEmpty) {
         setState(() {
-          _amountController.text = currentText.substring(0, currentText.length - 1);
-          if (_amountController.text.isEmpty) {
-            _amountController.text = '0';
-          }
+          _amountController.text = currentText.length <= 1
+              ? '0'
+              : currentText.substring(0, currentText.length - 1);
         });
       }
     } else if (key == '.') {
@@ -226,17 +280,15 @@ class _AddEditTransactionContentState
         });
       }
     } else {
-      // Digit key pressed
       if (currentText == '0') {
         setState(() {
           _amountController.text = key;
         });
       } else {
-        // Limit fractional part to 2 decimal places
         if (currentText.contains('.')) {
           final parts = currentText.split('.');
           if (parts[1].length >= 2) {
-            return; // Reject additional numbers
+            return;
           }
         }
         setState(() {
@@ -265,7 +317,6 @@ class _AddEditTransactionContentState
       return;
     }
 
-    // Validate payment source for expenses
     if (_selectedType == TransactionType.expense && _selectedPaymentSource == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.pleaseSelectPaymentSource)),
@@ -280,7 +331,6 @@ class _AddEditTransactionContentState
     try {
       final description = _descriptionController.text.trim();
 
-      // Income defaults to 'bank_transfer'
       final paymentSourceId = _selectedType == TransactionType.income
           ? 'bank_transfer'
           : _selectedPaymentSource!.id;
@@ -310,7 +360,7 @@ class _AddEditTransactionContentState
 
       _invalidateProviders(targetAccountId);
       if (mounted) {
-        Navigator.of(context).pop(true); // Indication of success
+        Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -340,7 +390,6 @@ class _AddEditTransactionContentState
     ref.invalidate(accountTransactionsProvider(targetAccountId));
     ref.invalidate(accountBalanceProvider(targetAccountId));
 
-    // Also invalidate origin account if switched during edit
     if (widget.account.id != targetAccountId) {
       ref.invalidate(accountHasTransactionsProvider(widget.account.id));
       ref.invalidate(transactionSummaryProvider((accountId: widget.account.id, period: 'today')));
@@ -359,7 +408,7 @@ class _AddEditTransactionContentState
       context: context,
       initialDate: _selectedDate.isAfter(today) ? today : _selectedDate,
       firstDate: DateTime(2020),
-      lastDate: today, // Constraints
+      lastDate: today,
     );
     if (picked != null) {
       setState(() {
@@ -386,35 +435,26 @@ class _AddEditTransactionContentState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = _FigmaTheme.of(isDark);
 
     final isExpense = _selectedType == TransactionType.expense;
+    final accentColor = isExpense ? theme.expenseAccent : theme.incomeAccent;
 
-    // FIGMA Design Tokens (Extracted programmatically from mock pixels)
-    final expenseColor = const Color(0xFFFF4D6D); // Figma pinkish red
-    final incomeColor = const Color(0xFF20C997);  // Figma green/teal
-    final accentColor = isExpense ? expenseColor : incomeColor;
-
-    final sheetBg = isDark ? const Color(0xFF181818) : const Color(0xFFFFFFFF);
-    final surfaceBg = isDark ? const Color(0xFF212121) : const Color(0xFFF5F5F5);
-    final toggleBg = isDark ? const Color(0xFF212121) : const Color(0xFFF5F5F5);
-    final toggleBorderColor = isDark ? const Color(0xFF323232) : const Color(0xFFE5E5E5);
-
-    final textPrimary = isDark ? const Color(0xFFF0F0F0) : const Color(0xFF1A1A1A);
-    final textSecondary = isDark ? const Color(0xFF888888) : const Color(0xFF757575);
-
-    // Active Toggle Segment Backgrounds
-    final activeBg = isExpense
-        ? (isDark ? const Color(0xFF4B292F) : const Color(0xFFFFEEF0))
-        : (isDark ? const Color(0xFF1E3129) : const Color(0xFFE6FCF5));
-
-    final activeBorder = isExpense
-        ? (isDark ? const Color(0xFF5D2E36) : const Color(0xFFFFD1D6))
-        : (isDark ? const Color(0xFF2C4C3E) : const Color(0xFFC3FBEF));
-
-    return Material(
-      color: sheetBg,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.sheet,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: isDark ? Border.all(color: theme.border) : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.18),
+            blurRadius: 40,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
       child: SafeArea(
+        top: false,
         child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -429,177 +469,190 @@ class _AddEditTransactionContentState
                   ),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top Sheet Handle Drag bar
+                      // Top Drag Handle
                       Center(
                         child: Container(
+                          margin: const EdgeInsets.only(top: 12, bottom: 8),
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE0E0E0),
-                            borderRadius: BorderRadius.circular(2),
+                            color: theme.handle,
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
 
-                      // Sheet Header Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _isEditing ? l10n.editTransactionTitle : l10n.addTransaction,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: textPrimary,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF242424) : const Color(0xFFF0F0F0),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(Icons.close, color: textPrimary, size: 18),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Segmented Button Toggle (Income vs. Expense)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: toggleBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: toggleBorderColor,
-                            width: 1.2,
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(4),
+                      // Header Row
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 20),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: _buildTypeButton(
-                                TransactionType.expense,
-                                "↑ Expense",
-                                isExpense,
-                                activeBg,
-                                activeBorder,
-                                expenseColor,
-                                textSecondary,
+                            Text(
+                              _isEditing ? l10n.editTransactionTitle : l10n.addTransaction,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: theme.text,
                               ),
                             ),
-                            Expanded(
-                              child: _buildTypeButton(
-                                TransactionType.income,
-                                "↓ Income",
-                                !isExpense,
-                                activeBg,
-                                activeBorder,
-                                incomeColor,
-                                textSecondary,
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: theme.bg,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: theme.border),
+                                ),
+                                child: Icon(Icons.close, color: theme.textSub, size: 18),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
 
-                      // Amount Text Display & Mode Indicator
-                      Center(
+                      // Segmented Button Toggle (Income vs. Expense)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0x0DFFFFFF) : theme.bg,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildTypeToggleOption(
+                                type: TransactionType.expense,
+                                label: "↑  Expense",
+                                isActive: isExpense,
+                                activeColor: theme.expenseAccent,
+                                theme: theme,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: _buildTypeToggleOption(
+                                type: TransactionType.income,
+                                label: "↓  Income",
+                                isActive: !isExpense,
+                                activeColor: theme.incomeAccent,
+                                theme: theme,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Amount Card Container
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0x0DFFFFFF) : theme.bg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Column(
                           children: [
                             Text(
-                              isExpense ? "EXPENSE" : "INCOME",
+                              isExpense ? "EXPENSE AMOUNT" : "INCOME AMOUNT",
                               style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: textSecondary,
-                                letterSpacing: 1.0,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: theme.textMuted,
+                                letterSpacing: 0.8,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                  _userCurrencySymbol,
-                                  style: TextStyle(
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Text(
+                                    _userCurrencySymbol,
+                                    style: TextStyle(
                                       fontSize: 32,
-                                      fontWeight: FontWeight.w500,
-                                      color: accentColor),
+                                      fontWeight: FontWeight.w300,
+                                      color: accentColor,
+                                      height: 1,
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   _amountController.text,
                                   style: TextStyle(
-                                    fontSize: 56,
-                                    fontWeight: FontWeight.bold,
-                                    color: textPrimary,
+                                    fontSize: 64,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -2,
+                                    height: 1,
+                                    color: isDark
+                                        ? (isExpense ? const Color(0xFFF0F0F0) : const Color(0xFF00E5A0))
+                                        : theme.text,
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 10),
+                            Container(
+                              height: 2,
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Divider(color: accentColor, thickness: 1.5, height: 1),
-                      const SizedBox(height: 20),
 
                       // Custom Keyboard Numpad
-                      _buildNumpad(isDark, textPrimary, surfaceBg),
-                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: _buildNumpad(theme, accentColor),
+                      ),
+
+                      // Divider below numpad
+                      Container(
+                        height: 1,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        color: isDark ? const Color(0x0FFFFFFF) : theme.border,
+                      ),
 
                       // Category Pill Wrap Selection
-                      _buildSectionHeader("CATEGORY", textSecondary),
+                      _buildSectionHeader("CATEGORY", theme.textMuted),
                       const SizedBox(height: 10),
-                      _buildCategoryWrap(isDark, surfaceBg),
-                      const SizedBox(height: 24),
+                      _buildCategoryWrap(theme, accentColor, isDark),
+                      const SizedBox(height: 20),
 
                       // Payment Source Pill Wrap Selection (Only for Expenses)
                       if (isExpense) ...[
-                        _buildSectionHeader("PAYMENT SOURCE", textSecondary),
+                        _buildSectionHeader("PAYMENT SOURCE", theme.textMuted),
                         const SizedBox(height: 10),
-                        _buildPaymentSourceWrap(isDark, surfaceBg),
-                        const SizedBox(height: 24),
+                        _buildPaymentSourceWrap(theme, isDark),
+                        const SizedBox(height: 20),
                       ],
 
-                      /*
-                      // Account Selection Pills
-                      _buildSectionHeader("ACCOUNT", textSecondary),
+                      // Date Selection
+                      _buildSectionHeader("DATE", theme.textMuted),
                       const SizedBox(height: 10),
-                      _buildAccountWrap(isDark, surfaceBg),
-                      const SizedBox(height: 24),
-                      */
+                      _buildDateSelector(theme, accentColor, isDark),
+                      const SizedBox(height: 20),
 
-                      // Date Selection row picker
-                      _buildDateSelector(isDark, textPrimary, textSecondary, accentColor, surfaceBg),
-                      const SizedBox(height: 24),
-
-                      /*
-                      // Future feature - Recurring schedule row switcher
-                      _buildRecurringToggleSwitch(isDark, textPrimary, textSecondary, accentColor, surfaceBg),
-                      const SizedBox(height: 24),
-                      */
-
-                      // Notes details inputs with tag chips
-                      _buildNotesAndTagsField(isDark, textPrimary, textSecondary, surfaceBg),
+                      // Notes with quick hashtags
+                      _buildNotesAndTagsField(theme, accentColor, isDark),
                       const SizedBox(height: 36),
 
                       // Submit CTA Button
-                      _buildSubmitCTAButton(l10n, isDark, accentColor, activeBg),
-                      const SizedBox(height: 24),
+                      _buildSubmitCTAButton(l10n, accentColor, isExpense),
+                      const SizedBox(height: 36),
                     ],
                   ),
                 ),
@@ -608,39 +661,45 @@ class _AddEditTransactionContentState
     );
   }
 
-  Widget _buildTypeButton(
-    String type,
-    String label,
-    bool isActive,
-    Color activeBg,
-    Color activeBorder,
-    Color activeText,
-    Color textSecondary,
-  ) {
+  Widget _buildTypeToggleOption({
+    required String type,
+    required String label,
+    required bool isActive,
+    required Color activeColor,
+    required _FigmaTheme theme,
+  }) {
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedType = type;
-          _selectedCategory = null;
-          _selectedPaymentSource = null;
+          if (_availableCategories.isNotEmpty) {
+            _selectedCategory = _availableCategories.first;
+          }
         });
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: isActive
-            ? BoxDecoration(
-                color: activeBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: activeBorder, width: 1.5),
-              )
-            : const BoxDecoration(),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.27),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: isActive ? activeText : textSecondary,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
+              color: isActive ? Colors.white : theme.textMuted,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
             ),
           ),
         ),
@@ -648,44 +707,48 @@ class _AddEditTransactionContentState
     );
   }
 
-  Widget _buildSectionHeader(String label, Color textSecondary) {
+  Widget _buildSectionHeader(String label, Color color) {
     return Text(
       label,
       style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-        color: textSecondary,
-        letterSpacing: 1.0,
+        fontSize: 10.5,
+        fontWeight: FontWeight.w600,
+        color: color,
+        letterSpacing: 0.9,
       ),
     );
   }
 
-  Widget _buildNumpadButton(
-    String label,
-    bool isDark,
-    Color textPrimary,
-    Color surfaceBg, {
+  Widget _buildNumpadButton({
+    required String keyVal,
+    required _FigmaTheme theme,
+    required Color accentColor,
     IconData? icon,
   }) {
+    final isDel = keyVal == 'del';
+    final bg = isDel ? accentColor.withValues(alpha: 0.08) : theme.numKey;
+    final border = isDel ? accentColor.withValues(alpha: 0.19) : theme.border;
+
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.all(4),
-        height: 58,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        height: 54,
         child: InkWell(
-          onTap: () => _onNumpadPressed(label),
-          borderRadius: BorderRadius.circular(10),
+          onTap: () => _onNumpadPressed(keyVal),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
-              color: surfaceBg,
-              borderRadius: BorderRadius.circular(10),
+              color: bg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: border, width: 1),
             ),
             child: Center(
               child: icon != null
-                  ? Icon(icon, color: textPrimary, size: 22)
+                  ? Icon(icon, color: accentColor, size: 20)
                   : Text(
-                      label,
+                      keyVal,
                       style: TextStyle(
-                        color: textPrimary,
+                        color: theme.numKeyText,
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                       ),
@@ -697,167 +760,70 @@ class _AddEditTransactionContentState
     );
   }
 
-  Widget _buildNumpadRow(List<String> keys, bool isDark, Color textPrimary, Color surfaceBg) {
-    return Row(
-      children: keys.map((key) {
-        if (key == 'backspace') {
-          return _buildNumpadButton(key, isDark, textPrimary, surfaceBg, icon: Icons.backspace_outlined);
-        }
-        return _buildNumpadButton(key, isDark, textPrimary, surfaceBg);
-      }).toList(),
+  Widget _buildNumpadRow(List<String> keys, _FigmaTheme theme, Color accentColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: keys.map((key) {
+          if (key == 'del') {
+            return _buildNumpadButton(
+              keyVal: key,
+              theme: theme,
+              accentColor: accentColor,
+              icon: Icons.backspace_outlined,
+            );
+          }
+          return _buildNumpadButton(keyVal: key, theme: theme, accentColor: accentColor);
+        }).toList(),
+      ),
     );
   }
 
-  Widget _buildNumpad(bool isDark, Color textPrimary, Color surfaceBg) {
+  Widget _buildNumpad(_FigmaTheme theme, Color accentColor) {
     return Column(
       children: [
-        _buildNumpadRow(['1', '2', '3'], isDark, textPrimary, surfaceBg),
-        _buildNumpadRow(['4', '5', '6'], isDark, textPrimary, surfaceBg),
-        _buildNumpadRow(['7', '8', '9'], isDark, textPrimary, surfaceBg),
-        _buildNumpadRow(['.', '0', 'backspace'], isDark, textPrimary, surfaceBg),
+        _buildNumpadRow(['1', '2', '3'], theme, accentColor),
+        _buildNumpadRow(['4', '5', '6'], theme, accentColor),
+        _buildNumpadRow(['7', '8', '9'], theme, accentColor),
+        _buildNumpadRow(['.', '0', 'del'], theme, accentColor),
       ],
     );
   }
 
-  Widget _buildCategoryWrap(bool isDark, Color surfaceBg) {
+  Widget _buildCategoryWrap(_FigmaTheme theme, Color accentColor, bool isDark) {
     final categories = _availableCategories;
     if (categories.isEmpty) {
-      return const Text("No categories configured", style: TextStyle(color: Colors.grey));
+      return Text("No categories configured", style: TextStyle(color: theme.textMuted));
     }
-
-    final inactiveTextColor = isDark ? Colors.grey : const Color(0xFF666666);
 
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: categories.map((cat) {
         final isSelected = _selectedCategory?.id == cat.id;
-        final activeColor = cat.color;
 
         return GestureDetector(
           onTap: () => setState(() => _selectedCategory = cat),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
             decoration: BoxDecoration(
               color: isSelected
-                  ? activeColor.withValues(alpha: 0.12)
-                  : surfaceBg,
-              border: isSelected
-                  ? Border.all(color: activeColor, width: 1.5)
-                  : null,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  cat.icon,
-                  size: 14,
-                  color: isSelected ? activeColor : inactiveTextColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  cat.name,
-                  style: TextStyle(
-                    color: isSelected ? activeColor : inactiveTextColor,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildPaymentSourceWrap(bool isDark, Color surfaceBg) {
-    if (_paymentSources.isEmpty) {
-      return const Text("No payment sources configured", style: TextStyle(color: Colors.grey));
-    }
-
-    final inactiveTextColor = isDark ? Colors.grey : const Color(0xFF666666);
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _paymentSources.map((source) {
-        final isSelected = _selectedPaymentSource?.id == source.id;
-        final activeColor = source.color;
-
-        return GestureDetector(
-          onTap: () => setState(() => _selectedPaymentSource = source),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? activeColor.withValues(alpha: 0.12)
-                  : surfaceBg,
-              border: isSelected
-                  ? Border.all(color: activeColor, width: 1.5)
-                  : null,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  source.icon,
-                  size: 14,
-                  color: isSelected ? activeColor : inactiveTextColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  source.name,
-                  style: TextStyle(
-                    color: isSelected ? activeColor : inactiveTextColor,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  // ignore: unused_element
-  Widget _buildAccountWrap(bool isDark, Color surfaceBg) {
-    if (_accounts.isEmpty) {
-      return const Text("Loading accounts...", style: TextStyle(color: Colors.grey));
-    }
-
-    final inactiveTextColor = isDark ? Colors.grey : const Color(0xFF666666);
-    const activeColor = Color(0xFF8C52FF);
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _accounts.map((acc) {
-        final isSelected = _selectedAccount?.id == acc.id;
-
-        return GestureDetector(
-          onTap: () => setState(() => _selectedAccount = acc),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? activeColor.withValues(alpha: 0.12)
-                  : surfaceBg,
-              border: isSelected
-                  ? Border.all(color: activeColor, width: 1.5)
-                  : null,
+                  ? accentColor.withValues(alpha: isDark ? 0.09 : 0.08)
+                  : (isDark ? const Color(0x0FFFFFFF) : theme.bg),
+              border: Border.all(
+                color: isSelected
+                    ? accentColor.withValues(alpha: 0.33)
+                    : Colors.transparent,
+                width: 1.5,
+              ),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              acc.name,
+              cat.name,
               style: TextStyle(
-                color: isSelected ? activeColor : inactiveTextColor,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
+                color: isSelected ? accentColor : theme.textSub,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
             ),
           ),
@@ -866,49 +832,81 @@ class _AddEditTransactionContentState
     );
   }
 
-  Widget _buildDateSelector(
-    bool isDark,
-    Color textPrimary,
-    Color textSecondary,
-    Color accentColor,
-    Color surfaceBg,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader("DATE", textSecondary),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: _selectDate,
+  Widget _buildPaymentSourceWrap(_FigmaTheme theme, bool isDark) {
+    if (_paymentSources.isEmpty) {
+      return Text("No payment sources configured", style: TextStyle(color: theme.textMuted));
+    }
+
+    const sourceAccent = Color(0xFF0077B6);
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _paymentSources.map((source) {
+        final isSelected = _selectedPaymentSource?.id == source.id;
+
+        return GestureDetector(
+          onTap: () => setState(() => _selectedPaymentSource = source),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
             decoration: BoxDecoration(
-              color: surfaceBg,
-              borderRadius: BorderRadius.circular(10),
+              color: isSelected
+                  ? sourceAccent.withValues(alpha: isDark ? 0.09 : 0.08)
+                  : (isDark ? const Color(0x0FFFFFFF) : theme.bg),
+              border: Border.all(
+                color: isSelected
+                    ? sourceAccent.withValues(alpha: 0.33)
+                    : Colors.transparent,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  color: accentColor,
-                  size: 18,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  _getFormattedDate(_selectedDate),
-                  style: TextStyle(
-                    color: textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(Icons.arrow_drop_down, color: Colors.grey),
-              ],
+            child: Text(
+              source.name,
+              style: TextStyle(
+                color: isSelected ? sourceAccent : theme.textSub,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
             ),
           ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDateSelector(_FigmaTheme theme, Color accentColor, bool isDark) {
+    return InkWell(
+      onTap: _selectDate,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0x0FFFFFFF) : theme.bg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.transparent, width: 1.5),
         ),
-      ],
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              color: accentColor,
+              size: 18,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              _getFormattedDate(_selectedDate),
+              style: TextStyle(
+                color: theme.text,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Icon(Icons.unfold_more, color: theme.textMuted, size: 16),
+          ],
+        ),
+      ),
     );
   }
 
@@ -917,88 +915,45 @@ class _AddEditTransactionContentState
     return "${months[date.month - 1]} ${date.day}, ${date.year}";
   }
 
-  // ignore: unused_element
-  Widget _buildRecurringToggleSwitch(
-    bool isDark,
-    Color textPrimary,
-    Color textSecondary,
-    Color accentColor,
-    Color surfaceBg,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: surfaceBg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.autorenew_outlined, color: textPrimary, size: 20),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Recurring Transaction",
-                style: TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              const Text(
-                "Set a repeat schedule",
-                style: TextStyle(color: Colors.grey, fontSize: 11),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Switch(
-            value: false,
-            onChanged: (val) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Recurring schedules will be added in a future update!"),
-                ),
-              );
-            },
-            activeColor: accentColor,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotesAndTagsField(
-    bool isDark,
-    Color textPrimary,
-    Color textSecondary,
-    Color surfaceBg,
-  ) {
+  Widget _buildNotesAndTagsField(_FigmaTheme theme, Color accentColor, bool isDark) {
     final tags = ['#business', '#family', '#subscription', '#urgent', '#tax', '#personal'];
-    final tagTextColor = isDark ? Colors.grey : const Color(0xFF666666);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader("NOTES · optional", textSecondary),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 3,
-          style: TextStyle(color: textPrimary, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: "Add a note, memo, or reference...",
-            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-            fillColor: surfaceBg,
-            filled: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            _buildSectionHeader("NOTES", theme.textMuted),
+            const SizedBox(width: 4),
+            Text(
+              "· optional",
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFC0C0C8),
+              ),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: theme.notesFieldBg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.transparent, width: 1.5),
+          ),
+          child: TextFormField(
+            controller: _descriptionController,
+            maxLines: 3,
+            style: TextStyle(color: theme.text, fontSize: 13, height: 1.6),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+              hintText: "Add a note, memo, or reference…",
+              hintStyle: TextStyle(color: theme.textMuted, fontSize: 13),
+              border: InputBorder.none,
             ),
           ),
         ),
@@ -1007,25 +962,44 @@ class _AddEditTransactionContentState
           spacing: 8,
           runSpacing: 8,
           children: tags.map((tag) {
+            final isTagSelected = _selectedTags.contains(tag);
+
             return GestureDetector(
               onTap: () {
-                String currentText = _descriptionController.text.trim();
-                if (currentText.contains(tag)) return; // No repeats
-                if (currentText.isEmpty) {
-                  _descriptionController.text = tag;
-                } else {
-                  _descriptionController.text = "$currentText $tag";
-                }
+                setState(() {
+                  if (isTagSelected) {
+                    _selectedTags.remove(tag);
+                  } else {
+                    _selectedTags.add(tag);
+                    String currentText = _descriptionController.text.trim();
+                    if (!currentText.contains(tag)) {
+                      _descriptionController.text =
+                          currentText.isEmpty ? tag : "$currentText $tag";
+                    }
+                  }
+                });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
                 decoration: BoxDecoration(
-                  color: surfaceBg,
+                  color: isTagSelected
+                      ? accentColor.withValues(alpha: 0.09)
+                      : (isDark ? const Color(0x12FFFFFF) : theme.notesFieldBg),
+                  border: Border.all(
+                    color: isTagSelected
+                        ? accentColor.withValues(alpha: 0.33)
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   tag,
-                  style: TextStyle(color: tagTextColor, fontSize: 12),
+                  style: TextStyle(
+                    color: isTagSelected ? accentColor : theme.tagTextInactive,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             );
@@ -1035,40 +1009,44 @@ class _AddEditTransactionContentState
     );
   }
 
-  Widget _buildSubmitCTAButton(AppLocalizations l10n, bool isDark, Color accentColor, Color activeBg) {
+  Widget _buildSubmitCTAButton(AppLocalizations l10n, Color accentColor, bool isExpense) {
     final double? amount = double.tryParse(_amountController.text);
     final String amountStr = amount != null
         ? "$_userCurrencySymbol${amount.toStringAsFixed(2)}"
         : "${_userCurrencySymbol}0.00";
-    final isExpense = _selectedType == TransactionType.expense;
-    
-    // Background color: active toggle/accent color in dark mode, light overlay in light mode
     final String actionText = isExpense ? "Add Expense" : "Add Income";
 
     return InkWell(
       onTap: _saveTransaction,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: activeBg,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: accentColor, width: 1.5),
+          color: accentColor,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: accentColor.withValues(alpha: isDark ? 0.2 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: accentColor.withValues(alpha: 0.33),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Center(
-          child: Text(
-            "✓ $actionText · $amountStr",
-            style: TextStyle(
-              color: accentColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                "$actionText · $amountStr",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
         ),
       ),
