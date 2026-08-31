@@ -109,13 +109,10 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   }
 
   Future<void> _editTransaction() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(
-          account: widget.account,
-          transaction: widget.transaction,
-        ),
-      ),
+    final result = await AddEditTransactionScreen.push(
+      context,
+      account: widget.account,
+      transaction: widget.transaction,
     );
 
     if (result == true && mounted) {

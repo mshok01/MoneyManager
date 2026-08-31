@@ -247,6 +247,31 @@ class DeviceRecordService {
     }
   }
 
+  /// Clear device record but preserve FCM token (useful for logout)
+  /// This keeps the FCM token so the device can still receive notifications
+  Future<void> clearDeviceRecordButKeepFcmToken() async {
+    try {
+      if (_currentDeviceRecord == null) return;
+
+      // Save the FCM token before clearing
+      final fcmToken = _currentDeviceRecord!.fcmToken;
+
+      // Clear the device record
+      await _preferencesService?.clearDeviceRecord();
+      _currentDeviceRecord = null;
+
+      // Recreate device record with preserved FCM token
+      await _createNewDeviceRecord();
+
+      // Restore the FCM token if it existed
+      if (fcmToken.isNotEmpty) {
+        await updateFcmToken(fcmToken);
+      }
+    } catch (e) {
+      throw Exception('Failed to clear device record but keep FCM token: $e');
+    }
+  }
+
   /// Get a summary of device information for debugging
   String getDeviceRecordSummary() {
     if (_currentDeviceRecord == null) {

@@ -206,6 +206,10 @@
   "@addCategory": {
     "description": "Add category dialog title and button text"
   },
+  "editCategory": "Edit Category",
+  "@editCategory": {
+    "description": "Edit category screen title"
+  },
   "categoryTitle": "Category Title",
   "@categoryTitle": {
     "description": "Category title input field label"
@@ -821,6 +825,18 @@
   "editPaymentSource": "Edit Payment Source",
   "@editPaymentSource": {
     "description": "Edit payment source dialog title"
+  },
+  "paymentSourceCreatedSuccessfully": "Payment source created successfully",
+  "@paymentSourceCreatedSuccessfully": {
+    "description": "Success message when payment source is created"
+  },
+  "paymentSourceUpdatedSuccessfully": "Payment source updated successfully",
+  "@paymentSourceUpdatedSuccessfully": {
+    "description": "Success message when payment source is updated"
+  },
+  "paymentSourceDeleted": "Payment source deleted successfully",
+  "@paymentSourceDeleted": {
+    "description": "Success message when payment source is deleted"
   },
   "name": "Name",
   "@name": {
@@ -1497,5 +1513,193 @@
   "signOutFailed": "Sign out failed",
   "@signOutFailed": {
     "description": "Error message when sign out fails"
+  },
+  "syncCategories": "Sync Categories",
+  "@syncCategories": {
+    "description": "Tooltip for sync categories button"
+  },
+  "syncCompleted": "Categories synced successfully",
+  "@syncCompleted": {
+    "description": "Success message when category sync is completed"
+  },
+  "failedToSync": "Failed to sync categories: {error}",
+  "@failedToSync": {
+    "description": "Error message when category sync fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "syncPaymentSources": "Sync Payment Sources",
+  "@syncPaymentSources": {
+    "description": "Tooltip for sync payment sources button"
+  },
+  "paymentSourcesSyncCompleted": "Payment sources synced successfully",
+  "@paymentSourcesSyncCompleted": {
+    "description": "Success message when payment sources sync is completed"
+  },
+  "failedToSyncPaymentSources": "Failed to sync payment sources: {error}",
+  "@failedToSyncPaymentSources": {
+    "description": "Error message when payment sources sync fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile section header in settings"
+  },
+  "userProfile": "User Profile",
+  "@userProfile": {
+    "description": "User profile section title"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "preferences": "Preferences",
+  "@preferences": {
+    "description": "Preferences section header in settings"
+  },
+  "currencyTheme": "Currency and theme settings",
+  "@currencyTheme": {
+    "description": "Preferences section subtitle"
+  },
+  "management": "Management",
+  "@management": {
+    "description": "Management section header in settings"
+  },
+  "accountsCategoriesPayment": "Accounts, categories, and payment sources",
+  "@accountsCategoriesPayment": {
+    "description": "Management section subtitle"
+  },
+  "backupRestore": "Backup and restore your data",
+  "@backupRestore": {
+    "description": "Data & Privacy section subtitle"
+  },
+  "backupAccountSubtitle": "Backup and sync your data",
+  "@backupAccountSubtitle": {
+    "description": "Backup account setting subtitle"
+  },
+  "appVersion": "View app information",
+  "@appVersion": {
+    "description": "About section item subtitle"
+  },
+  "accountAndSecurity": "Account & Security",
+  "@accountAndSecurity": {
+    "description": "Account and security section header in settings"
+  },
+  "userProfileAndBackup": "User profile and backup settings",
+  "@userProfileAndBackup": {
+    "description": "Account and security section subtitle"
+  },
+  "userProfile": "User Profile",
+  "@userProfile": {
+    "description": "User profile setting item title"
+  },
+  "viewUserDetails": "View your profile information",
+  "@viewUserDetails": {
+    "description": "User profile setting item subtitle"
+  },
+  "addBackupAccount": "Add backup account",
+  "@addBackupAccount": {
+    "description": "Warning message to add backup account in user profile card"
+  },
+  "backupAccountDescription": "Protect your data by linking a backup account. Your financial data will be securely backed up and can be restored if needed.",
+  "@backupAccountDescription": {
+    "description": "Description of why backup account is needed"
+  },
+  "backupAccountConnected": "Backup account connected",
+  "@backupAccountConnected": {
+    "description": "Message when backup account is already connected"
+  },
+  "yourDataIsSecure": "Your data is secure and backed up",
+  "@yourDataIsSecure": {
+    "description": "Message indicating data is secure"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button text"
+  },
+  "logoutConfirmation": "Are you sure you want to logout? You can sign in again anytime.",
+  "@logoutConfirmation": {
+    "description": "Confirmation message for logout"
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Delete account button text"
+  },
+  "deleteAccountWarning": "Deleting your account will remove all your data. This action cannot be undone. Are you sure?",
+  "@deleteAccountWarning": {
+    "description": "Warning message for account deletion"
+  },
+  "deleteAccountConfirm": "Confirm Account Deletion",
+  "@deleteAccountConfirm": {
+    "description": "Confirmation title for account deletion"
+  },
+  "deleteAccountConfirmMessage": "This will permanently delete your account and all associated data. This action cannot be reversed.",
+  "@deleteAccountConfirmMessage": {
+    "description": "Final confirmation message for account deletion"
+  },
+  "deleteAccountPermanently": "Delete Permanently",
+  "@deleteAccountPermanently": {
+    "description": "Button text to permanently delete account"
+  },
+  "deletingAccount": "Deleting account...",
+  "@deletingAccount": {
+    "description": "Loading message while deleting account"
+  },
+  "deleteAccountFailed": "Failed to delete account",
+  "@deleteAccountFailed": {
+    "description": "Error message when account deletion fails"
+  },
+  "editUserProfile": "Edit Profile",
+  "@editUserProfile": {
+    "description": "Edit user profile screen title"
+  },
+  "profileUpdatedSuccessfully": "Profile updated successfully",
+  "@profileUpdatedSuccessfully": {
+    "description": "Success message when profile is updated"
+  },
+  "saving": "Saving...",
+  "@saving": {
+    "description": "Loading text while saving"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Generic error label"
+  },
+  "editName": "Edit Name",
+  "@editName": {
+    "description": "Dialog title for editing user name"
+  },
+  "enterName": "Enter your name",
+  "@enterName": {
+    "description": "Hint text for name input field"
+  },
+  "nameUpdatedSuccessfully": "Name updated successfully",
+  "@nameUpdatedSuccessfully": {
+    "description": "Success message when name is updated"
+  },
+  "failedToUpdateName": "Failed to update name",
+  "@failedToUpdateName": {
+    "description": "Error message when name update fails"
+  },
+  "yourName": "Your Name",
+  "@yourName": {
+    "description": "Label for user name in profile screen"
+  },
+  "analyticsComingSoon": "Analytics coming soon!",
+  "@analyticsComingSoon": {
+    "description": "Message shown when analytics feature is not yet implemented"
+  },
+  "noTransactions": "No transactions",
+  "@noTransactions": {
+    "description": "Message shown when there are no transactions"
   }
 }

@@ -7,6 +7,8 @@ import '../models/device.dart';
 import '../models/account.dart';
 import 'logging_service.dart';
 
+import '../config/api_config.dart';
+
 /// Response model for anonymous auth
 class RegisterUserResponse {
   final User user;
@@ -86,7 +88,6 @@ class AuthApiService {
   static final _log = LoggingService.getLogger('AuthApiService');
 
   // Backend base URL - should be configured from environment
-  static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
   /// Authenticate anonymously with the backend
   /// Sends Firebase ID token and user/device details
@@ -112,7 +113,7 @@ class AuthApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/auth/register'),
+            Uri.parse('${ApiConfig.baseUrl}/auth/register'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(requestBody),
           )
@@ -167,7 +168,7 @@ class AuthApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/auth/link-account'),
+            Uri.parse('${ApiConfig.baseUrl}/auth/link-account'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(requestBody),
           )
@@ -220,7 +221,7 @@ class AuthApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/auth/link-existing-account'),
+            Uri.parse('${ApiConfig.baseUrl}/auth/link-existing-account'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(requestBody),
           )
@@ -260,7 +261,7 @@ class AuthApiService {
 
       final response = await http
           .get(
-            Uri.parse('$_baseUrl/auth/remove-user/$firebaseUID'),
+            Uri.parse('${ApiConfig.baseUrl}/auth/remove-user/$firebaseUID'),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(

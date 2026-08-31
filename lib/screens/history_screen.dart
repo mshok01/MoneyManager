@@ -28,7 +28,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Map<String, PaymentSource> _paymentSourcesMap = {};
 
   bool _isLoading = true;
-  String _selectedPeriod = 'all'; // 'all', 'week', 'month', 'year'
+  String _selectedPeriod = 'all'; // 'all', 'week', 'month', 'year', 'date'
+
+  DateTime? _customSelectedDate;
+  String? _customDateFilterType; // 'day', 'month', 'year'
+
+  String? _selectedType; // 'income', 'expense'
+  String? _selectedCategoryId;
+  String? _selectedSourceId;
 
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
@@ -107,19 +114,61 @@ class _HistoryScreenState extends State<HistoryScreen> {
             .toList();
         break;
       case 'month':
-        final monthAgo = DateTime(now.year, now.month - 1, now.day);
         filtered = _transactions
-            .where((t) => t.transactionDateTime.isAfter(monthAgo))
+            .where(
+              (t) =>
+                  t.transactionDateTime.year == now.year &&
+                  t.transactionDateTime.month == now.month,
+            )
             .toList();
         break;
       case 'year':
-        final yearAgo = DateTime(now.year - 1, now.month, now.day);
         filtered = _transactions
-            .where((t) => t.transactionDateTime.isAfter(yearAgo))
+            .where((t) => t.transactionDateTime.year == now.year)
             .toList();
+        break;
+      case 'date':
+        if (_customSelectedDate != null && _customDateFilterType != null) {
+          filtered = _transactions.where((t) {
+            final date = t.transactionDateTime;
+            if (_customDateFilterType == 'day') {
+              return date.year == _customSelectedDate!.year &&
+                  date.month == _customSelectedDate!.month &&
+                  date.day == _customSelectedDate!.day;
+            } else if (_customDateFilterType == 'month') {
+              return date.year == _customSelectedDate!.year &&
+                  date.month == _customSelectedDate!.month;
+            } else if (_customDateFilterType == 'year') {
+              return date.year == _customSelectedDate!.year;
+            }
+            return false;
+          }).toList();
+        }
         break;
       default:
         filtered = _transactions;
+    }
+
+    // Apply type filter
+    if (_selectedType != null) {
+      final isRequestedIncome = _selectedType == 'income';
+      filtered = filtered
+          .where((t) => t.isIncome == isRequestedIncome)
+          .toList();
+    }
+
+    // Apply category filter
+    if (_selectedCategoryId != null) {
+      filtered = filtered
+          .where((t) => t.categoryId == _selectedCategoryId)
+          .toList();
+    }
+
+    // Apply source filter
+    if (_selectedSourceId != null) {
+      filtered = filtered
+          .where((t) => t.paymentSourceId == _selectedSourceId)
+          .toList();
     }
 
     // Apply search filter
@@ -228,19 +277,656 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildPeriodSelector() {
     final l10n = AppLocalizations.of(context)!;
 
+    String dateLabel = 'Date';
+    if (_selectedPeriod == 'date' &&
+        _customSelectedDate != null &&
+        _customDateFilterType != null) {
+      if (_customDateFilterType == 'day') {
+        dateLabel =
+            '${_customSelectedDate!.day}/${_customSelectedDate!.month}/${_customSelectedDate!.year}';
+      } else if (_customDateFilterType == 'month') {
+        dateLabel =
+            '${_customSelectedDate!.month}/${_customSelectedDate!.year}';
+      } else if (_customDateFilterType == 'year') {
+        dateLabel = '${_customSelectedDate!.year}';
+      }
+    }
+
     return Container(
-      margin: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _buildPeriodChip('all', l10n.allTime),
-          const SizedBox(width: 8),
-          _buildPeriodChip('week', l10n.week),
-          const SizedBox(width: 8),
-          _buildPeriodChip('month', l10n.month),
-          const SizedBox(width: 8),
-          _buildPeriodChip('year', l10n.year),
-        ],
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildPeriodChip('all', l10n.allTime),
+            const SizedBox(width: 8),
+            _buildPeriodChip('week', l10n.week),
+            const SizedBox(width: 8),
+            _buildPeriodChip('month', l10n.month),
+            const SizedBox(width: 8),
+            _buildPeriodChip('year', l10n.year),
+            const SizedBox(width: 8),
+            _buildDatePeriodChip('date', dateLabel),
+            const SizedBox(width: 8),
+            Container(
+              width: 1,
+              height: 24,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: _selectedType == 'income'
+                  ? l10n.income
+                  : _selectedType == 'expense'
+                  ? l10n.expensesTab
+                  : 'Type',
+              isActive: _selectedType != null,
+              onTap: _showTypePicker,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label:
+                  _selectedCategoryId != null &&
+                      _categoriesMap.containsKey(_selectedCategoryId)
+                  ? _categoriesMap[_selectedCategoryId!]!.name
+                  : 'Category',
+              isActive: _selectedCategoryId != null,
+              onTap: _showCategoryPicker,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label:
+                  _selectedSourceId != null &&
+                      _paymentSourcesMap.containsKey(_selectedSourceId)
+                  ? _paymentSourcesMap[_selectedSourceId!]!.name
+                  : 'Source',
+              isActive: _selectedSourceId != null,
+              onTap: _showSourcePicker,
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? theme.colorScheme.secondaryContainer
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive
+                ? theme.colorScheme.secondary
+                : theme.colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive
+                    ? theme.colorScheme.onSecondaryContainer
+                    : theme.colorScheme.onSurface,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
+              color: isActive
+                  ? theme.colorScheme.onSecondaryContainer
+                  : theme.colorScheme.onSurface,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTypePicker() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Filter by Type',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('All Types'),
+              trailing: _selectedType == null
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = null);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_downward, color: Colors.green),
+              title: Text(l10n.income),
+              trailing: _selectedType == 'income'
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = 'income');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_upward, color: Colors.red),
+              title: Text(l10n.expensesTab),
+              trailing: _selectedType == 'expense'
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedType = 'expense');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCategoryPicker() {
+    final theme = Theme.of(context);
+
+    // Sort categories: income first, then expense, alphabetically within each
+    final sortedCategories = _categoriesMap.values.toList()
+      ..sort((a, b) {
+        if (a.isIncome != b.isIncome) {
+          return a.isIncome ? -1 : 1;
+        }
+        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filter by Category', style: theme.textTheme.titleLarge),
+                  if (_selectedCategoryId != null)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() => _selectedCategoryId = null);
+                      },
+                      child: const Text('Clear'),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.all_inclusive),
+              ),
+              title: const Text('All Categories'),
+              trailing: _selectedCategoryId == null
+                  ? Icon(Icons.check, color: theme.colorScheme.primary)
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedCategoryId = null);
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: sortedCategories.length,
+                itemBuilder: (context, index) {
+                  final category = sortedCategories[index];
+                  final isSelected = _selectedCategoryId == category.id;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: category.color.withValues(alpha: 0.2),
+                      child: Icon(category.icon, color: category.color),
+                    ),
+                    title: Text(category.name),
+                    subtitle: Text(
+                      category.isIncome ? 'Income' : 'Expense',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: category.isIncome ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() => _selectedCategoryId = category.id);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSourcePicker() {
+    final theme = Theme.of(context);
+
+    // Sort sources alphabetically
+    final sortedSources = _paymentSourcesMap.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.8,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filter by Source', style: theme.textTheme.titleLarge),
+                  if (_selectedSourceId != null)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() => _selectedSourceId = null);
+                      },
+                      child: const Text('Clear'),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.all_inclusive),
+              ),
+              title: const Text('All Sources'),
+              trailing: _selectedSourceId == null
+                  ? Icon(Icons.check, color: theme.colorScheme.primary)
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _selectedSourceId = null);
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: sortedSources.length,
+                itemBuilder: (context, index) {
+                  final source = sortedSources[index];
+                  final isSelected = _selectedSourceId == source.id;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        source.icon,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    title: Text(source.name),
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() => _selectedSourceId = source.id);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePeriodChip(String period, String label) {
+    final theme = Theme.of(context);
+    final isSelected = _selectedPeriod == period;
+
+    return GestureDetector(
+      onTap: _showDateFilterOptions,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.calendar_today,
+              size: 14,
+              color: isSelected
+                  ? theme.colorScheme.onPrimary
+                  : theme.colorScheme.onSurface,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDateFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Filter by Date',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_view_day),
+              title: const Text('Day'),
+              onTap: () {
+                Navigator.pop(context);
+                _showDayPicker();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_view_month),
+              title: const Text('Month'),
+              onTap: () {
+                Navigator.pop(context);
+                _showMonthPicker();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Year'),
+              onTap: () {
+                Navigator.pop(context);
+                _showYearPicker();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDayPicker() async {
+    final now = DateTime.now();
+    final initialDate =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!
+        : now;
+
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isAfter(now) ? now : initialDate,
+      firstDate: DateTime(2000),
+      lastDate: now,
+    );
+
+    if (selectedDate != null) {
+      setState(() {
+        _selectedPeriod = 'date';
+        _customDateFilterType = 'day';
+        _customSelectedDate = selectedDate;
+      });
+    }
+  }
+
+  void _showMonthPicker() {
+    final now = DateTime.now();
+    int selectedYear =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!.year
+        : now.year;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final theme = Theme.of(context);
+            // Build years list
+            final years = List.generate(
+              now.year - 2000 + 1,
+              (index) => now.year - index,
+            );
+
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Select Month'),
+                  DropdownButton<int>(
+                    value: selectedYear,
+                    items: years.map((year) {
+                      return DropdownMenuItem<int>(
+                        value: year,
+                        child: Text(year.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          selectedYear = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  itemCount: 12,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.5,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final month = index + 1;
+                    final isFutureMonth =
+                        selectedYear == now.year && month > now.month;
+                    final isSelected =
+                        _selectedPeriod == 'date' &&
+                        _customDateFilterType == 'month' &&
+                        _customSelectedDate?.month == month &&
+                        _customSelectedDate?.year == selectedYear;
+
+                    final monthNames = [
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec',
+                    ];
+
+                    return InkWell(
+                      onTap: isFutureMonth
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                              setState(() {
+                                _selectedPeriod = 'date';
+                                _customDateFilterType = 'month';
+                                _customSelectedDate = DateTime(
+                                  selectedYear,
+                                  month,
+                                  1,
+                                );
+                              });
+                            },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : (isFutureMonth
+                                    ? theme.colorScheme.surfaceContainerHighest
+                                    : theme.colorScheme.surface),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.outline,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          monthNames[index],
+                          style: TextStyle(
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : (isFutureMonth
+                                      ? theme.colorScheme.onSurface.withValues(
+                                          alpha: 0.3,
+                                        )
+                                      : theme.colorScheme.onSurface),
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showYearPicker() {
+    final now = DateTime.now();
+    final initialDate =
+        (_selectedPeriod == 'date' && _customSelectedDate != null)
+        ? _customSelectedDate!
+        : now;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Year'),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(2000),
+              lastDate: now,
+              selectedDate: initialDate,
+              onChanged: (DateTime dateTime) {
+                Navigator.pop(context);
+                setState(() {
+                  _selectedPeriod = 'date';
+                  _customDateFilterType = 'year';
+                  _customSelectedDate = dateTime;
+                });
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -463,15 +1149,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         ),
                                       ),
                                       child: ListTile(
-                                        onTap: () => Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                TransactionDetailsScreen(
-                                                  transaction: transaction,
-                                                  account: widget.account,
+                                        onTap: () async {
+                                          final result =
+                                              await Navigator.of(
+                                                context,
+                                              ).push<bool>(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      TransactionDetailsScreen(
+                                                        transaction:
+                                                            transaction,
+                                                        account: widget.account,
+                                                      ),
                                                 ),
-                                          ),
-                                        ),
+                                              );
+                                          if (result == true && mounted) {
+                                            _loadData();
+                                          }
+                                        },
                                         leading: Container(
                                           width: 40,
                                           height: 40,

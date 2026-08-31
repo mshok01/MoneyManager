@@ -6,7 +6,8 @@ class Transaction {
   final double amount; // Transaction amount (in account's base currency)
   final String description; // Transaction description
   final String type; // 'income' or 'expense'
-  final int transactionDate; // Transaction date in milliseconds since epoch (UTC)
+  final int
+  transactionDate; // Transaction date in milliseconds since epoch (UTC)
   final int createdAt; // milliseconds since epoch in UTC
   final int updatedAt; // milliseconds since epoch in UTC
   final int isActive; // 1 for active, 0 for deleted/inactive
@@ -113,13 +114,16 @@ class Transaction {
   bool get hasValidType => type == 'income' || type == 'expense';
 
   /// Get transaction date as DateTime
-  DateTime get transactionDateTime => DateTime.fromMillisecondsSinceEpoch(transactionDate, isUtc: true);
+  DateTime get transactionDateTime =>
+      DateTime.fromMillisecondsSinceEpoch(transactionDate);
 
   /// Get created date as DateTime
-  DateTime get createdDateTime => DateTime.fromMillisecondsSinceEpoch(createdAt, isUtc: true);
+  DateTime get createdDateTime =>
+      DateTime.fromMillisecondsSinceEpoch(createdAt);
 
   /// Get updated date as DateTime
-  DateTime get updatedDateTime => DateTime.fromMillisecondsSinceEpoch(updatedAt, isUtc: true);
+  DateTime get updatedDateTime =>
+      DateTime.fromMillisecondsSinceEpoch(updatedAt);
 
   /// Check if transaction is income
   bool get isIncome => type == 'income';
@@ -188,10 +192,10 @@ class Transaction {
 class TransactionType {
   static const String income = 'income';
   static const String expense = 'expense';
-  
+
   /// Get all valid transaction types
   static List<String> get allTypes => [income, expense];
-  
+
   /// Check if type is valid
   static bool isValid(String type) => allTypes.contains(type);
 }

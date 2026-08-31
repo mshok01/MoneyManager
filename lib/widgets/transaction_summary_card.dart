@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/account.dart';
 import '../models/transaction_summary.dart';
-import '../services/transaction_service.dart';
+import '../providers/transaction_providers.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
 import '../utils/user_utils.dart';
@@ -9,164 +10,134 @@ import '../l10n/app_localizations.dart';
 import '../screens/transaction_history_screen.dart';
 
 /// Widget that displays transaction summaries for today, this month, and this year
-class TransactionSummaryCard extends StatefulWidget {
+class TransactionSummaryCard extends ConsumerWidget {
   final Account account;
 
   const TransactionSummaryCard({super.key, required this.account});
 
-  @override
-  State<TransactionSummaryCard> createState() => _TransactionSummaryCardState();
-}
-
-class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
-  late Future<Map<String, TransactionSummary>> _summariesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSummaries();
-  }
-
-  void _loadSummaries() {
-    _summariesFuture = _fetchSummaries();
-  }
-
-  Future<Map<String, TransactionSummary>> _fetchSummaries() async {
-    final transactionService = TransactionService.instance;
-
-    final todaySummary = await transactionService.getTodaySummary(
-      widget.account.id,
-    );
-    final monthSummary = await transactionService.getThisMonthSummary(
-      widget.account.id,
-    );
-    final yearSummary = await transactionService.getThisYearSummary(
-      widget.account.id,
-    );
-
-    return {'today': todaySummary, 'month': monthSummary, 'year': yearSummary};
-  }
-
   /// Format amount with user's preferred currency symbol
   String _formatAmount(double amount) {
     final currentUser = UserService.instance.currentUser;
-    final userCurrency =
-        currentUser?.currencyCode ?? widget.account.baseCurrency;
+    final userCurrency = currentUser?.currencyCode ?? account.baseCurrency;
     final currencySymbol = CurrencyUtils.getCurrencySymbol(userCurrency);
 
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return FutureBuilder<Map<String, TransactionSummary>>(
-      future: _summariesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Card(
-            margin: const EdgeInsets.all(16),
-            child: const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          );
-        }
+    // Watch providers for each period
+    final todayAsync = ref.watch(
+      transactionSummaryProvider((accountId: account.id, period: 'today')),
+    );
+    final monthAsync = ref.watch(
+      transactionSummaryProvider((accountId: account.id, period: 'month')),
+    );
+    final yearAsync = ref.watch(
+      transactionSummaryProvider((accountId: account.id, period: 'year')),
+    );
 
-        if (snapshot.hasError) {
-          return Card(
-            margin: const EdgeInsets.all(16),
-            child: SizedBox(
-              height: 200,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: theme.colorScheme.error,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.errorLoadingSummary,
-                      style: TextStyle(
-                        color: theme.colorScheme.error,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
+    // Check if any state is loading or error
+    if (todayAsync.isLoading || monthAsync.isLoading || yearAsync.isLoading) {
+      return Card(
+        margin: const EdgeInsets.all(16),
+        child: const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
 
-        final summaries = snapshot.data!;
-        final todaySummary = summaries['today']!;
-        final monthSummary = summaries['month']!;
-        final yearSummary = summaries['year']!;
-
-        return Card(
-          margin: const EdgeInsets.all(16),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+    if (todayAsync.hasError || monthAsync.hasError || yearAsync.hasError) {
+      return Card(
+        margin: const EdgeInsets.all(16),
+        child: SizedBox(
+          height: 200,
+          child: Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header
-                Row(
-                  children: [
-                    Icon(
-                      Icons.analytics_outlined,
-                      color: theme.colorScheme.primary,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.summary,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.error_outline,
+                  color: theme.colorScheme.error,
+                  size: 48,
                 ),
-                const SizedBox(height: 20),
-
-                // Summary periods
-                _buildSummaryPeriod(
-                  context,
-                  l10n.today,
-                  todaySummary,
-                  Icons.today,
-                  'today',
-                ),
-                const SizedBox(height: 16),
-                _buildSummaryPeriod(
-                  context,
-                  l10n.thisMonth,
-                  monthSummary,
-                  Icons.calendar_month,
-                  'month',
-                ),
-                const SizedBox(height: 16),
-                _buildSummaryPeriod(
-                  context,
-                  l10n.thisYear,
-                  yearSummary,
-                  Icons.event_note,
-                  'year',
+                const SizedBox(height: 8),
+                Text(
+                  l10n.errorLoadingSummary,
+                  style: TextStyle(color: theme.colorScheme.error, fontSize: 16),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+      );
+    }
+
+    // All data is available
+    final todaySummary = todayAsync.value!;
+    final monthSummary = monthAsync.value!;
+    final yearSummary = yearAsync.value!;
+
+    return Card(
+      margin: const EdgeInsets.all(16),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(
+                  Icons.analytics_outlined,
+                  color: theme.colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.summary,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Summary periods
+            _buildSummaryPeriod(
+              context,
+              l10n.today,
+              todaySummary,
+              Icons.today,
+              'today',
+            ),
+            const SizedBox(height: 16),
+            _buildSummaryPeriod(
+              context,
+              l10n.thisMonth,
+              monthSummary,
+              Icons.calendar_month,
+              'month',
+            ),
+            const SizedBox(height: 16),
+            _buildSummaryPeriod(
+              context,
+              l10n.thisYear,
+              yearSummary,
+              Icons.event_note,
+              'year',
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -181,9 +152,10 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
     final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
-      onTap: summary.hasTransactions
-          ? () => _navigateToTransactionHistory(context, title, periodType)
-          : null,
+      onTap:
+          summary.hasTransactions
+              ? () => _navigateToTransactionHistory(context, title, periodType)
+              : null,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -252,13 +224,13 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
                       summary.isPositiveBalance
                           ? Colors.green
                           : summary.isNegativeBalance
-                          ? Colors.red
-                          : theme.colorScheme.onSurface,
+                              ? Colors.red
+                              : theme.colorScheme.onSurface,
                       summary.isPositiveBalance
                           ? Icons.arrow_upward
                           : summary.isNegativeBalance
-                          ? Icons.arrow_downward
-                          : Icons.remove,
+                              ? Icons.arrow_downward
+                              : Icons.remove,
                     ),
                   ),
                 ],
@@ -300,27 +272,20 @@ class _TransactionSummaryCardState extends State<TransactionSummaryCard> {
         return;
     }
 
-    final result = await Navigator.of(context).push<bool>(
+    await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => TransactionHistoryScreen(
-          account: widget.account,
-          periodType: periodType,
-          periodTitle: title,
-          dateRange: dateRange,
-        ),
+        builder:
+            (context) => TransactionHistoryScreen(
+              account: account,
+              periodType: periodType,
+              periodTitle: title,
+              dateRange: dateRange,
+            ),
       ),
     );
-
-    // If transaction was edited or deleted, refresh the summary data
-    if (result == true) {
-      _refreshSummaries();
-    }
-  }
-
-  void _refreshSummaries() {
-    setState(() {
-      _loadSummaries();
-    });
+    
+    // No need to manually refresh, providers will update if invalidated elsewhere
+    // If TransactionHistoryScreen edits transactions, it should invalidate providers
   }
 
   Widget _buildAmountColumn(

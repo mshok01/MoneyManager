@@ -144,8 +144,8 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
     _focusNode.unfocus();
   }
 
-  void _navigateToTransactionDetails(Transaction transaction) {
-    Navigator.of(context).push(
+  Future<void> _navigateToTransactionDetails(Transaction transaction) async {
+    final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => TransactionDetailsScreen(
           transaction: transaction,
@@ -153,6 +153,12 @@ class _HomeSearchBarState extends State<HomeSearchBar> {
         ),
       ),
     );
+
+    if (result == true && mounted) {
+      if (_currentSearchTerm.isNotEmpty) {
+        _performSearch(_currentSearchTerm);
+      }
+    }
   }
 
   String _formatAmount(double amount) {

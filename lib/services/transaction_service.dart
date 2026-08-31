@@ -549,9 +549,15 @@ class TransactionService {
     final dailySummaries = <DailySummary>[];
 
     // Get the number of days in the month
-    final daysInMonth = DateTime(year, month + 1, 0).day;
+    int daysInMonth = DateTime(year, month + 1, 0).day;
 
-    // Generate summaries for all days in the month
+    // If it's the current month, only show up to today
+    final now = DateTime.now();
+    if (year == now.year && month == now.month) {
+      daysInMonth = now.day;
+    }
+
+    // Generate summaries for all days up to the limit
     for (int day = 1; day <= daysInMonth; day++) {
       final dailySummary = await getDailySummary(accountId, year, month, day);
       dailySummaries.add(dailySummary);
@@ -625,6 +631,21 @@ class TransactionService {
           dateRange['start']!,
           dateRange['end']!,
         );
+  }
+
+  /// Clear all transaction data (useful for logout or reset)
+  Future<void> clearAllTransactions() async {
+    if (!_isInitialized) {
+      throw Exception(
+        'TransactionService not initialized. Call initialize() first.',
+      );
+    }
+
+    try {
+      await DatabaseService.instance.transactionDao.clear();
+    } catch (e) {
+      throw Exception('Failed to clear all transactions: $e');
+    }
   }
 
   /// Helper method to sync transaction asynchronously

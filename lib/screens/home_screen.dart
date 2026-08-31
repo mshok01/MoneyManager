@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_manager/screens/home/home_bottom_bar.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
 import '../widgets/transaction_summary_card.dart';
 
 import '../services/nudge_service.dart';
-import '../services/account_service.dart';
 import '../services/preferences_service.dart';
-import '../services/transaction_service.dart';
 import '../models/account.dart';
+import '../providers/transaction_providers.dart';
+import '../providers/account_providers.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _showWelcomeNudge = true;
   String? _selectedAccountId;
+  bool _isInit = true;
 
   @override
   void initState() {
@@ -31,23 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initializeSelectedAccount() async {
     final prefsService = await PreferencesService.getInstance();
     final savedAccountId = prefsService.getSelectedAccount();
-    final accounts = await AccountService.instance.activeAccounts;
 
-    String? accountIdToUse;
-
-    if (savedAccountId != null &&
-        accounts.any((account) => account.id == savedAccountId)) {
-      // Use saved account if it still exists
-      accountIdToUse = savedAccountId;
-    } else if (accounts.isNotEmpty) {
-      // Fallback to first account and save it
-      accountIdToUse = accounts.first.id;
-      await prefsService.setSelectedAccount(accountIdToUse);
-    }
-
-    if (accountIdToUse != null && mounted) {
+    if (mounted) {
       setState(() {
-        _selectedAccountId = accountIdToUse;
+        _selectedAccountId = savedAccountId;
+        _isInit = false;
       });
     }
   }
@@ -62,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleAccountRename() {
-    // TODO: Implement account rename dialog
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.accountRenameComingSoon),
@@ -88,22 +77,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onAccountSelected(String accountId) async {
-    // Save selection to preferences
     final prefsService = await PreferencesService.getInstance();
     await prefsService.setSelectedAccount(accountId);
 
-    // Update UI
     if (mounted) {
       setState(() {
         _selectedAccountId = accountId;
       });
       Navigator.of(context).pop();
     }
-  }
-
-  Future<Account?> get _currentAccount async {
-    if (_selectedAccountId == null) return null;
-    return await AccountService.instance.getAccountById(_selectedAccountId!);
   }
 
   Widget _buildAccountSelector(
@@ -158,20 +140,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAccountSelectorBottomSheet() {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final accountsAsync = ref.watch(accountsProvider);
 
-    return FutureBuilder<List<Account>>(
-      future: AccountService.instance.activeAccounts,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final accounts = snapshot.data!;
-        return _buildAccountSelectorContent(theme, accounts, l10n);
-      },
+    return accountsAsync.when(
+      data: (accounts) => _buildAccountSelectorContent(theme, accounts, l10n),
+      loading: () => Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      ),
+      error: (error, stack) => Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Text('Error loading accounts: $error'),
+      ),
     );
   }
 
@@ -305,47 +287,83 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final accountsAsync = ref.watch(accountsProvider);
 
-    return FutureBuilder<List<Account>>(
-      future: AccountService.instance.activeAccounts,
-      builder: (context, accountsSnapshot) {
-        if (!accountsSnapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(l10n.appTitle),
-              backgroundColor: theme.colorScheme.inversePrimary,
-            ),
-            body: const Center(child: CircularProgressIndicator()),
-          );
+    return accountsAsync.when(
+      data: (accounts) {
+        // Handle initial selection if needed
+        if (_selectedAccountId == null && accounts.isNotEmpty && !_isInit) {
+          // If loaded and still null, default to first (and save it potentially)
+          // But we don't want to save recursively in build.
+          // Just use it for display.
+          // Or better: rely on `_initializeSelectedAccount` to have set it if found in prefs.
+          // If not in prefs (first run or cleared), pick first.
+          // We can schedule a SetState or just use a local var.
+           WidgetsBinding.instance.addPostFrameCallback((_) {
+             if (mounted && _selectedAccountId == null) {
+               _onAccountSelected(accounts.first.id);
+             }
+           });
         }
 
-        final accounts = accountsSnapshot.data!;
+        // If no accounts, show empty state or logic to force add
+        // ... handled in scaffold body mainly?
 
-        return FutureBuilder<Account?>(
-          future: _currentAccount,
-          builder: (context, currentAccountSnapshot) {
-            final currentAccount = currentAccountSnapshot.data;
-
-            return _buildScaffold(
-              context,
-              l10n,
-              theme,
-              accounts,
-              currentAccount,
-            );
-          },
-        );
+        return _buildScaffoldWithAccount(context, l10n, theme, accounts);
       },
+      loading: () => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.appTitle),
+          backgroundColor: theme.colorScheme.inversePrimary,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.appTitle),
+          backgroundColor: theme.colorScheme.inversePrimary,
+        ),
+        body: Center(child: Text('Error: $error')),
+      ),
     );
   }
 
-  Widget _buildScaffold(
+  Widget _buildScaffoldWithAccount(
     BuildContext context,
     AppLocalizations l10n,
     ThemeData theme,
     List<Account> accounts,
-    Account? currentAccount,
   ) {
+    // Determine current account
+    // If _selectedAccountId is set, find it in list (to ensure it's still active)
+    // If not found (deleted?), fallback to first.
+
+    Account? currentAccount;
+    if (_selectedAccountId != null) {
+      // Find in the list of active accounts
+      try {
+        currentAccount = accounts.firstWhere((a) => a.id == _selectedAccountId);
+      } catch (_) {
+        // Not found in active accounts
+        if (accounts.isNotEmpty) {
+          currentAccount = accounts.first;
+          // Ideally update selection
+        }
+      }
+    } else if (accounts.isNotEmpty) {
+      currentAccount = accounts.first;
+    }
+
+    // If we have a selected ID, we want to watch it specifically to get updates (like rename)
+    // The `accounts` list from `accountsProvider` should effectively already contain updated accounts
+    // because `updateAccountProvider` invalidates `accountsProvider`.
+    // So looking up from `accounts` list is sufficient for the name update!
+    // NO NEED to `ref.watch(accountDetailsProvider)` separately if we trust `accountsProvider` to be refreshed.
+    // AND `updateAccountProvider` invalidates `accountsProvider`.
+    // So `accounts` list here is fresh. `currentAccount` derived from it is fresh.
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: _buildAccountSelector(currentAccount, theme, l10n),
@@ -353,88 +371,87 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Welcome nudge card (shown only for first-time users)
           if (_showWelcomeNudge)
             WelcomeNudgeCard(
               onAccountRename: _handleAccountRename,
               onDismiss: _handleWelcomeNudgeDismiss,
             ),
 
-          // Main content
           Expanded(
             child: currentAccount != null
-                ? FutureBuilder<bool>(
-                    future: TransactionService.instance.hasTransactions(
-                      currentAccount.id,
-                    ),
-                    builder: (context, hasTransactionsSnapshot) {
-                      if (hasTransactionsSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      final hasTransactions =
-                          hasTransactionsSnapshot.data ?? false;
-
-                      if (hasTransactions) {
-                        // Show transaction summary
-                        return SafeArea(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TransactionSummaryCard(account: currentAccount),
-                              HomeBottomBarWidget(account: currentAccount),
-                            ],
-                          ),
-                        );
-                      } else {
-                        // Show empty state
-                        return SafeArea(
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.trending_up,
-                                      size: 64,
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      l10n.readyToTrackFinances,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      l10n.startByAddingTransaction,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                ? ref
+                      .watch(accountHasTransactionsProvider(currentAccount.id))
+                      .when(
+                        data: (hasTransactions) {
+                          if (hasTransactions) {
+                            return SafeArea(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TransactionSummaryCard(
+                                    account: currentAccount!,
+                                  ),
+                                  HomeBottomBarWidget(account: currentAccount),
+                                ],
                               ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: HomeBottomBarWidget(
-                                  account: currentAccount,
-                                ),
+                            );
+                          } else {
+                            return SafeArea(
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.trending_up,
+                                          size: 64,
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          l10n.readyToTrackFinances,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          l10n.startByAddingTransaction,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: HomeBottomBarWidget(
+                                      account: currentAccount!,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            );
+                          }
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, stack) => Center(
+                          child: Text(
+                            'Error loading data: $error',
+                            style: TextStyle(color: theme.colorScheme.error),
                           ),
-                        );
-                      }
-                    },
-                  )
+                        ),
+                      )
                 : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

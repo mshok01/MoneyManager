@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:money_manager/services/firebase_auth_service.dart';
 import '../models/transaction.dart';
 import 'logging_service.dart';
-import 'firebase_auth_service.dart';
+import '../config/api_config.dart';
 
 /// Service to handle transaction API calls to the backend
 class TransactionApiService {
@@ -14,7 +15,6 @@ class TransactionApiService {
   static final _log = LoggingService.getLogger('TransactionApiService');
 
   // Backend base URL - should be configured from environment
-  static const String _baseUrl = 'http://192.168.1.4:8080/api/v1';
 
   /// Add a transaction to the backend
   /// Throws exception on failure so caller can handle retry logic
@@ -44,7 +44,7 @@ class TransactionApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/transactions'),
+            Uri.parse('${ApiConfig.baseUrl}/transactions'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -104,7 +104,7 @@ class TransactionApiService {
 
       final response = await http
           .put(
-            Uri.parse('$_baseUrl/transactions/$transactionId'),
+            Uri.parse('${ApiConfig.baseUrl}/transactions/$transactionId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -154,7 +154,7 @@ class TransactionApiService {
 
       final response = await http
           .delete(
-            Uri.parse('$_baseUrl/transactions/$transactionId'),
+            Uri.parse('${ApiConfig.baseUrl}/transactions/$transactionId'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',
@@ -203,7 +203,7 @@ class TransactionApiService {
 
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/transactions/by-account-timestamp'),
+            Uri.parse('${ApiConfig.baseUrl}/transactions/by-account-timestamp'),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $jwtToken',

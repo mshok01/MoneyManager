@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_manager/services/firebase_auth_service.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/intro_screen.dart';
@@ -10,8 +11,8 @@ import 'screens/currency_selection_screen.dart';
 import 'screens/backup_account_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/category_screen.dart';
-import 'screens/payment_sources_screen.dart';
+import 'screens/categories/category_screen.dart';
+import 'screens/payment_sources/payment_sources_screen.dart';
 import 'screens/manage_accounts_screen.dart';
 import 'screens/account_details_screen.dart';
 import 'screens/add_account_screen.dart';
@@ -73,13 +74,13 @@ void main() async {
       SyncService.instance.syncPendingTransactions();
     });
 
-    runApp(const MoneyManagerApp());
+    runApp(const ProviderScope(child: MoneyManagerApp()));
   } catch (e) {
     // Use logging service for app initialization errors
     final log = LoggingService.getLogger('Main');
     log.e('Failed to initialize app', error: e);
     // Run app anyway with error handling
-    runApp(const MoneyManagerApp());
+    runApp(const ProviderScope(child: MoneyManagerApp()));
   }
 }
 
@@ -132,6 +133,7 @@ class _MoneyManagerAppState extends State<MoneyManagerApp> {
       home: _getInitialScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
+        '/intro': (context) => const IntroScreen(),
         '/auth-choice': (context) => const AuthChoiceScreen(),
         '/currency-selection': (context) => const CurrencySelectionScreen(),
         '/backup-account': (context) => const BackupAccountScreen(),

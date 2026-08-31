@@ -4,8 +4,9 @@ import '../services/preferences_service.dart';
 import '../services/theme_service.dart';
 import '../services/user_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/backup_account_widget.dart';
+import '../widgets/settings_section_card.dart';
 import 'backup_account_screen.dart';
+import 'user_profile_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -129,6 +130,257 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _navigateToUserProfile() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const UserProfileScreen()));
+  }
+
+  Widget _buildInitialsAvatar(String name, ThemeData theme) {
+    String initials = '';
+    if (name.isNotEmpty) {
+      final parts = name.trim().split(' ');
+      if (parts.isNotEmpty) {
+        initials = parts[0][0].toUpperCase();
+        if (parts.length > 1) {
+          initials += parts[1][0].toUpperCase();
+        }
+      }
+    }
+
+    return Center(
+      child: Text(
+        initials.isEmpty ? '?' : initials,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserProfileCard(AppLocalizations l10n) {
+    final currentUser = UserService.instance.currentUser;
+    final theme = Theme.of(context);
+    final hasBackupAccount =
+        currentUser != null && currentUser.email.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMd,
+        vertical: AppTheme.spacingSm,
+      ),
+      child: GestureDetector(
+        onTap: _navigateToUserProfile,
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.all(AppTheme.spacingMd),
+          child: Row(
+            children: [
+              // Profile Picture
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child:
+                    currentUser?.profilePic != null &&
+                        currentUser!.profilePic.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          currentUser.profilePic,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildInitialsAvatar(
+                              currentUser.name,
+                              theme,
+                            );
+                          },
+                        ),
+                      )
+                    : _buildInitialsAvatar(currentUser?.name ?? '', theme),
+              ),
+              const SizedBox(width: AppTheme.spacingMd),
+              // User Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      currentUser?.name ?? 'User',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (hasBackupAccount)
+                      Text(
+                        currentUser.email,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
+                          ),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.warning_rounded,
+                              size: 14,
+                              color: Colors.orange.shade700,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.addBackupAccount,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<SettingItem> _buildAccountSecurityItems(AppLocalizations l10n) {
+    final currentUser = UserService.instance.currentUser;
+
+    return [
+      // User Profile Item
+      SettingItem(
+        title: l10n.userProfile,
+        subtitle: l10n.viewUserDetails,
+        leadingIcon: Icons.person,
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+        onTap: () => _showUserProfileInfo(currentUser, l10n),
+      ),
+      // Backup & Sync Item
+      SettingItem(
+        title: l10n.backup,
+        subtitle: l10n.backupAccountSubtitle,
+        leadingIcon: Icons.cloud_upload,
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+        onTap: _navigateToBackupAccount,
+      ),
+    ];
+  }
+
+  void _showUserProfileInfo(dynamic currentUser, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.userProfile),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Picture
+              Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child:
+                      currentUser?.profilePic != null &&
+                          currentUser!.profilePic.isNotEmpty
+                      ? ClipOval(
+                          child: Image.network(
+                            currentUser.profilePic,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Theme.of(context).colorScheme.primary,
+                              );
+                            },
+                          ),
+                        )
+                      : Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Name
+              Text(
+                '${l10n.name}:',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(currentUser?.name ?? 'N/A'),
+              const SizedBox(height: 12),
+              // Email
+              Text(
+                '${l10n.email}:',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(currentUser?.email ?? 'N/A'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.ok),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _showThemeSelectionDialog() async {
     final l10n = AppLocalizations.of(context)!;
     final currentTheme = ThemeService.instance.currentTheme;
@@ -216,104 +468,95 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          // Currency Section
-          _buildSectionHeader(l10n.currency),
-          ListTile(
-            leading: const Icon(Icons.attach_money),
-            title: Text(l10n.currency),
-            subtitle: Text(
-              _currentCurrencyName ?? _currentCurrency ?? l10n.usd,
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: _changeCurrency,
+          // User Profile Header Card
+          _buildUserProfileCard(l10n),
+
+          // Preferences Section (Currency & Appearance)
+          SettingsSectionCard(
+            title: l10n.preferences,
+            subtitle: l10n.currencyTheme,
+            icon: Icons.tune,
+            iconBackgroundColor: Colors.blue.withValues(alpha: 0.2),
+            items: [
+              SettingItem(
+                title: l10n.currency,
+                subtitle: _currentCurrencyName ?? _currentCurrency ?? l10n.usd,
+                leadingIcon: Icons.attach_money,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: _changeCurrency,
+              ),
+              SettingItem(
+                title: l10n.theme,
+                subtitle: ThemeService.instance.getCurrentThemeDisplayName(
+                  l10n,
+                ),
+                leadingIcon: Icons.palette,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: _showThemeSelectionDialog,
+              ),
+            ],
           ),
-          const Divider(),
 
-          // Appearance Section
-          _buildSectionHeader(l10n.appearance),
-          ListTile(
-            leading: const Icon(Icons.palette),
-            title: Text(l10n.theme),
-            subtitle: Text(
-              ThemeService.instance.getCurrentThemeDisplayName(l10n),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: _showThemeSelectionDialog,
+          // Management Section (Accounts, Categories, Payment Sources)
+          SettingsSectionCard(
+            title: l10n.management,
+            subtitle: l10n.accountsCategoriesPayment,
+            icon: Icons.settings_suggest,
+            iconBackgroundColor: Colors.purple.withValues(alpha: 0.2),
+            items: [
+              SettingItem(
+                title: l10n.manageAccounts,
+                subtitle: l10n.manageAccountsSubtitle,
+                leadingIcon: Icons.account_balance_wallet,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: _navigateToManageAccounts,
+              ),
+              SettingItem(
+                title: l10n.categories,
+                subtitle: l10n.manageCategories,
+                leadingIcon: Icons.category,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: _navigateToCategories,
+              ),
+              SettingItem(
+                title: l10n.paymentSourcesTitle,
+                subtitle: l10n.paymentSourcesSubtitle,
+                leadingIcon: Icons.payment,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: _navigateToPaymentSources,
+              ),
+            ],
           ),
-          const Divider(),
 
-          // Accounts Section
-          _buildSectionHeader(l10n.accounts),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet),
-            title: Text(l10n.manageAccounts),
-            subtitle: Text(l10n.manageAccountsSubtitle),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: _navigateToManageAccounts,
+          // Account & Security Section (User Profile + Data & Privacy)
+          SettingsSectionCard(
+            title: l10n.accountAndSecurity,
+            subtitle: l10n.userProfileAndBackup,
+            icon: Icons.security,
+            iconBackgroundColor: Colors.orange.withValues(alpha: 0.2),
+            items: _buildAccountSecurityItems(l10n),
           ),
-          const Divider(),
-
-          // Categories Section
-          _buildSectionHeader(l10n.categories),
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: Text(l10n.categories),
-            subtitle: Text(l10n.manageCategories),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: _navigateToCategories,
-          ),
-          const Divider(),
-
-          // Payment Sources Section
-          _buildSectionHeader(l10n.paymentSources),
-          ListTile(
-            leading: const Icon(Icons.payment),
-            title: Text(l10n.paymentSourcesTitle),
-            subtitle: Text(l10n.paymentSourcesSubtitle),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: _navigateToPaymentSources,
-          ),
-          const Divider(),
-
-          // Data & Privacy Section
-          _buildSectionHeader(l10n.dataPrivacy),
-          BackupAccountWidget(onTap: _navigateToBackupAccount),
-          const Divider(),
-
-          // Notifications Section - Hidden for now
-          // _buildSectionHeader(l10n.notifications),
-          // ListTile(
-          //   leading: const Icon(Icons.notifications),
-          //   title: Text(l10n.notifications),
-          //   subtitle: Text(l10n.enabled),
-          //   trailing: const Icon(Icons.arrow_forward_ios),
-          //   onTap: () => _showComingSoonSnackBar(l10n.notifications),
-          // ),
-          // const Divider(),
 
           // About Section
-          _buildSectionHeader(l10n.about),
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: Text(l10n.about),
-            subtitle: Text('${l10n.version} 1.0.0'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showComingSoonSnackBar(l10n.about),
+          SettingsSectionCard(
+            title: l10n.about,
+            subtitle: '${l10n.version} 1.0.0',
+            icon: Icons.info,
+            iconBackgroundColor: Colors.green.withValues(alpha: 0.2),
+            items: [
+              SettingItem(
+                title: l10n.about,
+                subtitle: l10n.appVersion,
+                leadingIcon: Icons.info_outline,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: () => _showComingSoonSnackBar(l10n.about),
+              ),
+            ],
           ),
+
+          const SizedBox(height: AppTheme.spacingLg),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppTheme.spacingMd,
-        AppTheme.spacingMd,
-        AppTheme.spacingMd,
-        AppTheme.spacingSm,
-      ),
-      child: Text(title, style: AppTheme.sectionHeaderStyle(context)),
     );
   }
 }

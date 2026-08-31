@@ -120,6 +120,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    
+    // Calculate Averages
+    int activeMonths = 0;
+    double totalYearlyIncome = 0;
+    double totalYearlyExpenses = 0;
+    
+    for (var summary in _yearlyMonthlySummaries) {
+      if (summary.hasTransactions) {
+        activeMonths++;
+        totalYearlyIncome += summary.totalIncome;
+        totalYearlyExpenses += summary.totalExpenses;
+      }
+    }
+    
+    final averageIncome = activeMonths > 0 ? totalYearlyIncome / activeMonths : 0.0;
+    final averageExpenses = activeMonths > 0 ? totalYearlyExpenses / activeMonths : 0.0;
+    final averageBalance = averageIncome - averageExpenses;
 
     return Scaffold(
       appBar: AppBar(
@@ -148,7 +165,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Quick Stats
-                    _buildQuickStats(theme, l10n),
+                    _buildQuickStats(
+                      theme,
+                      l10n,
+                      averageIncome,
+                      averageExpenses,
+                      averageBalance,
+                    ),
                     const SizedBox(height: 24),
 
                     // Monthly Breakdown
@@ -160,7 +183,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _buildQuickStats(ThemeData theme, AppLocalizations l10n) {
+  Widget _buildQuickStats(
+    ThemeData theme,
+    AppLocalizations l10n,
+    double avgIncome,
+    double avgExpenses,
+    double avgBalance,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,6 +233,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           Icons.event_note,
           Colors.purple,
           l10n,
+        ),
+        const SizedBox(height: 12),
+        
+        // Monthly Average
+        _buildAverageCard(
+          theme,
+          l10n,
+          avgIncome,
+          avgExpenses,
+          avgBalance,
         ),
       ],
     );
@@ -276,6 +315,79 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     summary.isPositiveBalance
                         ? Icons.arrow_upward
                         : summary.isNegativeBalance
+                        ? Icons.arrow_downward
+                        : Icons.remove,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAverageCard(
+    ThemeData theme,
+    AppLocalizations l10n,
+    double avgIncome,
+    double avgExpenses,
+    double avgBalance,
+  ) {
+    bool isPositiveBalance = avgBalance > 0;
+    bool isNegativeBalance = avgBalance < 0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.query_stats, color: Colors.teal, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Monthly Average',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildAmountColumn(
+                    l10n.income,
+                    avgIncome,
+                    Colors.green,
+                    Icons.trending_up,
+                  ),
+                ),
+                Expanded(
+                  child: _buildAmountColumn(
+                    l10n.expensesTab,
+                    avgExpenses,
+                    Colors.red,
+                    Icons.trending_down,
+                  ),
+                ),
+                Expanded(
+                  child: _buildAmountColumn(
+                    l10n.balance,
+                    avgBalance,
+                    isPositiveBalance
+                        ? Colors.green
+                        : isNegativeBalance
+                        ? Colors.red
+                        : theme.colorScheme.onSurface,
+                    isPositiveBalance
+                        ? Icons.arrow_upward
+                        : isNegativeBalance
                         ? Icons.arrow_downward
                         : Icons.remove,
                   ),

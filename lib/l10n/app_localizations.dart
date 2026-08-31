@@ -226,10 +226,10 @@ abstract class AppLocalizations {
   /// **'Secure Your Data'**
   String get secureYourData;
 
-  /// Description on backup account screen
+  /// Description of why backup account is needed
   ///
   /// In en, this message translates to:
-  /// **'Add a backup account to sync across devices'**
+  /// **'Protect your data by linking a backup account. Your financial data will be securely backed up and can be restored if needed.'**
   String get backupAccountDescription;
 
   /// Google sign-in button text
@@ -394,6 +394,12 @@ abstract class AppLocalizations {
   /// **'Add Category'**
   String get addCategory;
 
+  /// Edit category screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get editCategory;
+
   /// Category title input field label
   ///
   /// In en, this message translates to:
@@ -454,7 +460,7 @@ abstract class AppLocalizations {
   /// **'Failed to update account: {error}'**
   String failedToUpdateAccount(String error);
 
-  /// Delete account dialog title and tooltip
+  /// Delete account button text
   ///
   /// In en, this message translates to:
   /// **'Delete Account'**
@@ -1144,6 +1150,24 @@ abstract class AppLocalizations {
   /// **'Edit Payment Source'**
   String get editPaymentSource;
 
+  /// Success message when payment source is created
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source created successfully'**
+  String get paymentSourceCreatedSuccessfully;
+
+  /// Success message when payment source is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source updated successfully'**
+  String get paymentSourceUpdatedSuccessfully;
+
+  /// Success message when payment source is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Payment source deleted successfully'**
+  String get paymentSourceDeleted;
+
   /// Name field label
   ///
   /// In en, this message translates to:
@@ -1420,10 +1444,10 @@ abstract class AppLocalizations {
   /// **'Connected'**
   String get connected;
 
-  /// Button text to add backup account
+  /// Warning message to add backup account in user profile card
   ///
   /// In en, this message translates to:
-  /// **'Add Backup Account'**
+  /// **'Add backup account'**
   String get addBackupAccount;
 
   /// Display backup account email
@@ -1947,6 +1971,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out failed'**
   String get signOutFailed;
+
+  /// Tooltip for sync categories button
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Categories'**
+  String get syncCategories;
+
+  /// Success message when category sync is completed
+  ///
+  /// In en, this message translates to:
+  /// **'Categories synced successfully'**
+  String get syncCompleted;
+
+  /// Error message when category sync fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync categories: {error}'**
+  String failedToSync(String error);
+
+  /// Tooltip for sync payment sources button
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Payment Sources'**
+  String get syncPaymentSources;
+
+  /// Success message when payment sources sync is completed
+  ///
+  /// In en, this message translates to:
+  /// **'Payment sources synced successfully'**
+  String get paymentSourcesSyncCompleted;
+
+  /// Error message when payment sources sync fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync payment sources: {error}'**
+  String failedToSyncPaymentSources(String error);
+
+  /// Profile section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// User profile setting item title
+  ///
+  /// In en, this message translates to:
+  /// **'User Profile'**
+  String get userProfile;
+
+  /// Email field label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// Preferences section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// Preferences section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Currency and theme settings'**
+  String get currencyTheme;
+
+  /// Management section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get management;
+
+  /// Management section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts, categories, and payment sources'**
+  String get accountsCategoriesPayment;
+
+  /// Data & Privacy section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore your data'**
+  String get backupRestore;
+
+  /// Backup account setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and sync your data'**
+  String get backupAccountSubtitle;
+
+  /// About section item subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View app information'**
+  String get appVersion;
+
+  /// Account and security section header in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Security'**
+  String get accountAndSecurity;
+
+  /// Account and security section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'User profile and backup settings'**
+  String get userProfileAndBackup;
+
+  /// User profile setting item subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View your profile information'**
+  String get viewUserDetails;
+
+  /// Message when backup account is already connected
+  ///
+  /// In en, this message translates to:
+  /// **'Backup account connected'**
+  String get backupAccountConnected;
+
+  /// Message indicating data is secure
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is secure and backed up'**
+  String get yourDataIsSecure;
+
+  /// Logout button text
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// Confirmation message for logout
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout? You can sign in again anytime.'**
+  String get logoutConfirmation;
+
+  /// Warning message for account deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account will remove all your data. This action cannot be undone. Are you sure?'**
+  String get deleteAccountWarning;
+
+  /// Confirmation title for account deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Account Deletion'**
+  String get deleteAccountConfirm;
+
+  /// Final confirmation message for account deletion
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your account and all associated data. This action cannot be reversed.'**
+  String get deleteAccountConfirmMessage;
+
+  /// Button text to permanently delete account
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Permanently'**
+  String get deleteAccountPermanently;
+
+  /// Loading message while deleting account
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting account...'**
+  String get deletingAccount;
+
+  /// Error message when account deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete account'**
+  String get deleteAccountFailed;
+
+  /// Edit user profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editUserProfile;
+
+  /// Success message when profile is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdatedSuccessfully;
+
+  /// Loading text while saving
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// Generic error label
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// Dialog title for editing user name
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Name'**
+  String get editName;
+
+  /// Hint text for name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterName;
+
+  /// Success message when name is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Name updated successfully'**
+  String get nameUpdatedSuccessfully;
+
+  /// Error message when name update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update name'**
+  String get failedToUpdateName;
+
+  /// Label for user name in profile screen
+  ///
+  /// In en, this message translates to:
+  /// **'Your Name'**
+  String get yourName;
+
+  /// Message shown when analytics feature is not yet implemented
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics coming soon!'**
+  String get analyticsComingSoon;
+
+  /// Message shown when there are no transactions
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions'**
+  String get noTransactions;
 }
 
 class _AppLocalizationsDelegate

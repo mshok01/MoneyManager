@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupAccountDescription =>
-      'Add a backup account to sync across devices';
+      'Protect your data by linking a backup account. Your financial data will be securely backed up and can be restored if needed.';
 
   @override
   String get signInWithGoogle => 'Sign in with Google';
@@ -165,6 +165,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addCategory => 'Add Category';
+
+  @override
+  String get editCategory => 'Edit Category';
 
   @override
   String get categoryTitle => 'Category Title';
@@ -586,6 +589,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editPaymentSource => 'Edit Payment Source';
 
   @override
+  String get paymentSourceCreatedSuccessfully =>
+      'Payment source created successfully';
+
+  @override
+  String get paymentSourceUpdatedSuccessfully =>
+      'Payment source updated successfully';
+
+  @override
+  String get paymentSourceDeleted => 'Payment source deleted successfully';
+
+  @override
   String get name => 'Name';
 
   @override
@@ -737,7 +751,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connected => 'Connected';
 
   @override
-  String get addBackupAccount => 'Add Backup Account';
+  String get addBackupAccount => 'Add backup account';
 
   @override
   String backupAccountEmail(String email) {
@@ -1047,4 +1061,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutFailed => 'Sign out failed';
+
+  @override
+  String get syncCategories => 'Sync Categories';
+
+  @override
+  String get syncCompleted => 'Categories synced successfully';
+
+  @override
+  String failedToSync(String error) {
+    return 'Failed to sync categories: $error';
+  }
+
+  @override
+  String get syncPaymentSources => 'Sync Payment Sources';
+
+  @override
+  String get paymentSourcesSyncCompleted =>
+      'Payment sources synced successfully';
+
+  @override
+  String failedToSyncPaymentSources(String error) {
+    return 'Failed to sync payment sources: $error';
+  }
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get userProfile => 'User Profile';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get currencyTheme => 'Currency and theme settings';
+
+  @override
+  String get management => 'Management';
+
+  @override
+  String get accountsCategoriesPayment =>
+      'Accounts, categories, and payment sources';
+
+  @override
+  String get backupRestore => 'Backup and restore your data';
+
+  @override
+  String get backupAccountSubtitle => 'Backup and sync your data';
+
+  @override
+  String get appVersion => 'View app information';
+
+  @override
+  String get accountAndSecurity => 'Account & Security';
+
+  @override
+  String get userProfileAndBackup => 'User profile and backup settings';
+
+  @override
+  String get viewUserDetails => 'View your profile information';
+
+  @override
+  String get backupAccountConnected => 'Backup account connected';
+
+  @override
+  String get yourDataIsSecure => 'Your data is secure and backed up';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutConfirmation =>
+      'Are you sure you want to logout? You can sign in again anytime.';
+
+  @override
+  String get deleteAccountWarning =>
+      'Deleting your account will remove all your data. This action cannot be undone. Are you sure?';
+
+  @override
+  String get deleteAccountConfirm => 'Confirm Account Deletion';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'This will permanently delete your account and all associated data. This action cannot be reversed.';
+
+  @override
+  String get deleteAccountPermanently => 'Delete Permanently';
+
+  @override
+  String get deletingAccount => 'Deleting account...';
+
+  @override
+  String get deleteAccountFailed => 'Failed to delete account';
+
+  @override
+  String get editUserProfile => 'Edit Profile';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get editName => 'Edit Name';
+
+  @override
+  String get enterName => 'Enter your name';
+
+  @override
+  String get nameUpdatedSuccessfully => 'Name updated successfully';
+
+  @override
+  String get failedToUpdateName => 'Failed to update name';
+
+  @override
+  String get yourName => 'Your Name';
+
+  @override
+  String get analyticsComingSoon => 'Analytics coming soon!';
+
+  @override
+  String get noTransactions => 'No transactions';
 }

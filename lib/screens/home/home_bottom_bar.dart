@@ -148,10 +148,6 @@ class HomeBottomBarWidget extends StatelessWidget {
       return;
     }
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AddEditTransactionScreen(account: account!),
-      ),
-    );
+    AddEditTransactionScreen.push(context, account: account!);
   }
 }

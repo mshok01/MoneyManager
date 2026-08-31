@@ -25,14 +25,17 @@ class CategoryItem {
     required this.accessTo,
   });
 
+  bool get isIncome => id.startsWith('income_');
+  bool get isExpense => !isIncome;
+
   // Factory constructor to create CategoryItem from JSON
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
     return CategoryItem(
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String,
-      icon: _iconFromString(json['icon'] as String),
-      color: _colorFromString(json['color'] as String),
+      icon: iconFromString(json['icon'] as String),
+      color: colorFromString(json['color'] as String),
       isDefault: json['isDefault'] as bool,
       createdBy: json['createdBy'] as String,
       createdAt: json['createdAt'] as int,
@@ -47,8 +50,8 @@ class CategoryItem {
       'id': id,
       'name': name,
       'description': description,
-      'icon': _iconToString(icon),
-      'color': _colorToString(color),
+      'icon': iconToString(icon),
+      'color': colorToString(color),
       'isDefault': isDefault,
       'createdBy': createdBy,
       'createdAt': createdAt,
@@ -58,7 +61,7 @@ class CategoryItem {
   }
 
   // Helper method to convert string to IconData
-  static IconData _iconFromString(String iconName) {
+  static IconData iconFromString(String iconName) {
     switch (iconName) {
       case 'work':
         return Icons.work;
@@ -98,7 +101,7 @@ class CategoryItem {
   }
 
   // Helper method to convert IconData to string
-  static String _iconToString(IconData icon) {
+  static String iconToString(IconData icon) {
     if (icon == Icons.work) return 'work';
     if (icon == Icons.person_outline) return 'person_outline';
     if (icon == Icons.business) return 'business';
@@ -118,7 +121,7 @@ class CategoryItem {
   }
 
   // Helper method to convert string to Color
-  static Color _colorFromString(String colorName) {
+  static Color colorFromString(String colorName) {
     switch (colorName) {
       case 'green':
         return Colors.green;
@@ -150,7 +153,7 @@ class CategoryItem {
   }
 
   // Helper method to convert Color to string
-  static String _colorToString(Color color) {
+  static String colorToString(Color color) {
     if (color == Colors.green) return 'green';
     if (color == Colors.lightGreen) return 'lightGreen';
     if (color == Colors.blue) return 'blue';
