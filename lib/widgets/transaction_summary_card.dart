@@ -5,9 +5,8 @@ import '../models/transaction_summary.dart';
 import '../providers/transaction_providers.dart';
 import '../services/user_service.dart';
 import '../utils/currency_utils.dart';
-import '../utils/user_utils.dart';
 import '../l10n/app_localizations.dart';
-import '../screens/transaction_history_screen.dart';
+import '../screens/history_screen.dart';
 
 /// Widget that displays transaction summaries for today, this month, and this year
 class TransactionSummaryCard extends ConsumerWidget {
@@ -256,31 +255,24 @@ class TransactionSummaryCard extends ConsumerWidget {
     String title,
     String periodType,
   ) async {
-    Map<String, int> dateRange;
+    final now = DateTime.now();
+    int? year;
+    int? month;
 
-    switch (periodType) {
-      case 'today':
-        dateRange = UserUtils.getTodayDateRange();
-        break;
-      case 'month':
-        dateRange = UserUtils.getThisMonthDateRange();
-        break;
-      case 'year':
-        dateRange = UserUtils.getThisYearDateRange();
-        break;
-      default:
-        return;
+    if (periodType == 'month') {
+      year = now.year;
+      month = now.month;
+    } else if (periodType == 'year') {
+      year = now.year;
     }
 
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder:
-            (context) => TransactionHistoryScreen(
-              account: account,
-              periodType: periodType,
-              periodTitle: title,
-              dateRange: dateRange,
-            ),
+        builder: (context) => HistoryScreen(
+          account: account,
+          initialYear: year,
+          initialMonth: month,
+        ),
       ),
     );
     
