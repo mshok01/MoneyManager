@@ -888,9 +888,8 @@ class _HistoryFilterSheetWidgetState extends State<_HistoryFilterSheetWidget> {
     super.initState();
     _local = widget.filters.clone();
 
-    // Extract available years from transactions + current year
-    final currentYear = DateTime.now().year;
-    final Set<int> yearsSet = {currentYear - 1, currentYear, currentYear + 1};
+    // Extract ONLY years for which transactions exist
+    final Set<int> yearsSet = {};
     for (final tx in widget.transactions) {
       yearsSet.add(tx.transactionDateTime.year);
     }
@@ -1035,27 +1034,29 @@ class _HistoryFilterSheetWidgetState extends State<_HistoryFilterSheetWidget> {
                     ),
                     const SizedBox(height: 20),
 
-                    // 2. Year
-                    _buildSectionHeader('YEAR', theme),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _availableYears.map((y) {
-                        final isSelected = _local.year == y;
-                        return _buildPill(
-                          label: '$y',
-                          active: isSelected,
-                          color: theme.cyanAccent,
-                          theme: theme,
-                          onTap: () {
-                            setState(() {
-                              _local.year = isSelected ? null : y;
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
+                    // 2. Year (only show if transactions exist)
+                    if (_availableYears.isNotEmpty) ...[
+                      _buildSectionHeader('YEAR', theme),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _availableYears.map((y) {
+                          final isSelected = _local.year == y;
+                          return _buildPill(
+                            label: '$y',
+                            active: isSelected,
+                            color: theme.cyanAccent,
+                            theme: theme,
+                            onTap: () {
+                              setState(() {
+                                _local.year = isSelected ? null : y;
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
 
                     // 3. Month
                     _buildSectionHeader(
