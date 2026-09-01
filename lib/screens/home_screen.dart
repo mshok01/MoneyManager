@@ -4,7 +4,9 @@ import 'package:money_manager/screens/home/home_bottom_bar.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/welcome_nudge_card.dart';
 import '../widgets/transaction_summary_card.dart';
-
+import 'history_screen.dart';
+import 'home/analytics_screen.dart';
+import 'settings_screen.dart';
 import '../services/nudge_service.dart';
 import '../services/preferences_service.dart';
 import '../services/user_service.dart';
@@ -23,6 +25,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _showWelcomeNudge = true;
   String? _selectedAccountId;
   bool _isInit = true;
+  HomeBottomBarTab _currentTab = HomeBottomBarTab.home;
 
   // Account badge colors matching Figma palette
   static const List<Color> _accountColors = [
@@ -185,7 +188,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed('/settings'),
+      onTap: () {
+        setState(() {
+          _currentTab = HomeBottomBarTab.settings;
+        });
+      },
       child: Container(
         width: 38,
         height: 38,
@@ -489,146 +496,184 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final scaffoldBg = isDark ? const Color(0xFF121212) : const Color(0xFFFFFFFF);
+    final isHomeTab = _currentTab == HomeBottomBarTab.home;
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleSpacing: 20,
-        title: _buildFigmaAccountSelectorPill(
+    return PopScope(
+      canPop: isHomeTab,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !isHomeTab) {
+          setState(() {
+            _currentTab = HomeBottomBarTab.home;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: scaffoldBg,
+        appBar: isHomeTab
+            ? AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                titleSpacing: 20,
+                title: _buildFigmaAccountSelectorPill(
+                  account: currentAccount,
+                  accounts: accounts,
+                  isDark: isDark,
+                  l10n: l10n,
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: _buildSettingsAvatarButton(context, isDark),
+                  ),
+                ],
+              )
+            : null,
+        bottomNavigationBar: HomeBottomBarWidget(
           account: currentAccount,
-          accounts: accounts,
-          isDark: isDark,
-          l10n: l10n,
+          currentTab: _currentTab,
+          onTabSelected: (tab) {
+            setState(() {
+              _currentTab = tab;
+            });
+          },
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: _buildSettingsAvatarButton(context, isDark),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          if (_showWelcomeNudge)
-            WelcomeNudgeCard(
-              onAccountRename: _handleAccountRename,
-              onDismiss: _handleWelcomeNudgeDismiss,
-            ),
+        body: IndexedStack(
+          index: _currentTab.index,
+          children: [
+            // Tab 0: Home Dashboard
+            _buildHomeDashboard(context, l10n, theme, currentAccount),
 
-          Expanded(
-            child: currentAccount != null
-                ? ref
-                    .watch(accountHasTransactionsProvider(currentAccount.id))
-                    .when(
-                      data: (hasTransactions) {
-                        if (hasTransactions) {
-                          return SafeArea(
-                            child: Column(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                TransactionSummaryCard(
-                                  account: currentAccount!,
+            // Tab 1: History
+            currentAccount != null
+                ? HistoryScreen(
+                    key: ValueKey('history_${currentAccount.id}'),
+                    account: currentAccount,
+                    isEmbedded: true,
+                  )
+                : const SizedBox.shrink(),
+
+            // Tab 2: Analytics
+            currentAccount != null
+                ? AnalyticsScreen(
+                    key: ValueKey('analytics_${currentAccount.id}'),
+                    account: currentAccount,
+                    isEmbedded: true,
+                  )
+                : const SizedBox.shrink(),
+
+            // Tab 3: Settings
+            const SettingsScreen(isEmbedded: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeDashboard(
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeData theme,
+    Account? currentAccount,
+  ) {
+    return Column(
+      children: [
+        if (_showWelcomeNudge)
+          WelcomeNudgeCard(
+            onAccountRename: _handleAccountRename,
+            onDismiss: _handleWelcomeNudgeDismiss,
+          ),
+
+        Expanded(
+          child: currentAccount != null
+              ? ref
+                  .watch(accountHasTransactionsProvider(currentAccount.id))
+                  .when(
+                    data: (hasTransactions) {
+                      if (hasTransactions) {
+                        return SingleChildScrollView(
+                          child: TransactionSummaryCard(
+                            account: currentAccount,
+                          ),
+                        );
+                      } else {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.trending_up,
+                                size: 64,
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.readyToTrackFinances,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
                                 ),
-                                HomeBottomBarWidget(account: currentAccount),
-                              ],
-                            ),
-                          );
-                        } else {
-                          return SafeArea(
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.trending_up,
-                                        size: 64,
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        l10n.readyToTrackFinances,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w600,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        l10n.startByAddingTransaction,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: theme.colorScheme.onSurface
-                                              .withValues(alpha: 0.7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.startByAddingTransaction,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
                                 ),
-                                Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: HomeBottomBarWidget(
-                                    account: currentAccount!,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, stack) => Center(
-                        child: Text(
-                          'Error loading data: $error',
-                          style: TextStyle(color: theme.colorScheme.error),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        'Error loading data: $error',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ),
+                  )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 64,
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.5,
                         ),
                       ),
-                    )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.account_balance_wallet_outlined,
-                          size: 64,
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.5,
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.noAccountSelected,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.pleaseSelectAccountFirst,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.noAccountSelected,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.pleaseSelectAccountFirst,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.7,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-          ),
-        ],
-      ),
+                ),
+        ),
+      ],
     );
   }
 }

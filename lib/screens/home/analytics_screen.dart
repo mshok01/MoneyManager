@@ -9,8 +9,13 @@ import '../../l10n/app_localizations.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   final Account account;
+  final bool isEmbedded;
 
-  const AnalyticsScreen({super.key, required this.account});
+  const AnalyticsScreen({
+    super.key,
+    required this.account,
+    this.isEmbedded = false,
+  });
 
   @override
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
@@ -140,6 +145,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.isEmbedded,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

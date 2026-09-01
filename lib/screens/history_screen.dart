@@ -141,6 +141,7 @@ class HistoryScreen extends StatefulWidget {
   final int? initialYear;
   final int? initialMonth;
   final String? initialType;
+  final bool isEmbedded;
 
   const HistoryScreen({
     super.key,
@@ -148,6 +149,7 @@ class HistoryScreen extends StatefulWidget {
     this.initialYear,
     this.initialMonth,
     this.initialType,
+    this.isEmbedded = false,
   });
 
   @override
@@ -346,7 +348,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   // Top Title Row
                   Row(
                     children: [
-                      if (Navigator.of(context).canPop())
+                      if (Navigator.of(context).canPop() && !widget.isEmbedded)
                         GestureDetector(
                           onTap: () => Navigator.of(context).pop(),
                           child: Container(

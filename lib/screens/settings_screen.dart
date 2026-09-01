@@ -9,7 +9,9 @@ import 'backup_account_screen.dart';
 import 'user_profile_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final bool isEmbedded;
+
+  const SettingsScreen({super.key, this.isEmbedded = false});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -454,6 +456,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: !widget.isEmbedded,
           title: Text(l10n.settings),
           backgroundColor: theme.colorScheme.inversePrimary,
         ),
@@ -463,6 +466,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.isEmbedded,
         title: Text(l10n.settings),
         backgroundColor: theme.colorScheme.inversePrimary,
       ),
